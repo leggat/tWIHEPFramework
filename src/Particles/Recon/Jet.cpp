@@ -66,7 +66,7 @@ ClassImp(Jet)
  * Output: None                                                               *
  ******************************************************************************/
   Jet::Jet() : Particle::Particle(),
-  _numberOfConstituents(0), _chargedMultiplicity(0),  _bDiscriminator ( -999.0), _pileupId ( 0.0), _mass ( 0.0), _uncorrPt ( 0.0), _neutralHadEnergyFraction(0.0), _neutralEmEmEnergyFraction ( 0.0), _chargedHadronEnergyFraction (0.0), _chargedEmEnergyFraction(0.0), _muonEnergyFraction(0.0), _electronEnergy(0.0), _photonEnergy(0.0), _jesUp(false), _jesDown(false), _jerUp(false), _jerDown(false), _hadronFlavour(-1), _tagged(0), _nominalPx(0.), _nominalPy(0.), _nominalPz(0.), _passesIDs(false)
+  _numberOfConstituents(0), _chargedMultiplicity(0),  _bDiscriminator ( -999.0), _pileupId ( 0.0), _mass ( 0.0), _uncorrPt ( 0.0), _neutralHadEnergyFraction(0.0), _neutralEmEmEnergyFraction ( 0.0), _chargedHadronEnergyFraction (0.0), _chargedEmEnergyFraction(0.0), _muonEnergyFraction(0.0), _electronEnergy(0.0), _photonEnergy(0.0), _jesUp(false), _jesDown(false), _jerUp(false), _jerDown(false), _hadronFlavour(-1), _tagged(0), _prefireVeto(0), _nominalPx(0.), _nominalPy(0.), _nominalPz(0.), _passesIDs(false)
 {
 } //Jet()
 
@@ -94,6 +94,7 @@ Jet::Jet(const Jet& other): Particle(other),
 _numberOfConstituents		(other.GetnumberOfConstituents()), 
 _hadronFlavour		        (other.GethadronFlavour()), 
 _tagged				(other.IsTagged()),
+_prefireVeto			(other.IsPrefireVeto()),
 _chargedMultiplicity		(other.GetchargedMultiplicity()),  
 _bDiscriminator 		(other.GetbDiscriminator()), 
 _pileupId 			(other.GetpileupId()), 
@@ -123,7 +124,7 @@ _jesShifts 			(other.GetJesShifts())
  * Output: None                                                               *
  ******************************************************************************/
 Jet::Jet(const Particle& other): Particle(other),
-				 _numberOfConstituents(0), _hadronFlavour(-1), _chargedMultiplicity(0),  _bDiscriminator ( -999.0), _pileupId ( 0.0), _mass ( 0.0), _uncorrPt ( 0.0), _neutralHadEnergyFraction(0.0), _neutralEmEmEnergyFraction ( 0.0), _chargedHadronEnergyFraction (0.0), _chargedEmEnergyFraction(0.0), _muonEnergyFraction(0.0), _electronEnergy(0.0), _photonEnergy(0.0), _tagged(0), _nominalPx(0.), _nominalPy(0.), _nominalPz(0.), _passesIDs(false)
+				 _numberOfConstituents(0), _hadronFlavour(-1), _chargedMultiplicity(0),  _bDiscriminator ( -999.0), _pileupId ( 0.0), _mass ( 0.0), _uncorrPt ( 0.0), _neutralHadEnergyFraction(0.0), _neutralEmEmEnergyFraction ( 0.0), _chargedHadronEnergyFraction (0.0), _chargedEmEnergyFraction(0.0), _muonEnergyFraction(0.0), _electronEnergy(0.0), _photonEnergy(0.0), _tagged(0), _prefireVeto(0), _nominalPx(0.), _nominalPy(0.), _nominalPz(0.), _passesIDs(false)
 {
  
 } //Jet()
@@ -175,6 +176,7 @@ Jet& Jet::operator=(const Particle& other)
   SetnumberOfConstituents(0), 
   SethadronFlavour(-1),
   SetTagged(0),
+  SetPrefireVeto(0),
   SetchargedMultiplicity(0),  
   SetbDiscriminator ( -999.0), 
   SetpileupId ( 0.0), 
@@ -189,6 +191,7 @@ Jet& Jet::operator=(const Particle& other)
   SetNominalPx(0.),
   SetNominalPy(0.), 
   SetNominalPz(0.), 
+  SetNominalE(0.),
   SetPassesIDs(false),
   SetphotonEnergy(0.0);
 
@@ -210,6 +213,7 @@ Jet& Jet::operator=(const Jet& other)
   SetnumberOfConstituents		(other.GetnumberOfConstituents());
   SethadronFlavour	         	(other.GethadronFlavour());
   SetTagged				(other.IsTagged());
+  SetPrefireVeto			(other.IsPrefireVeto());
   SetchargedMultiplicity		(other.GetchargedMultiplicity()); 
   SetbDiscriminator 			(other.GetbDiscriminator());
   SetpileupId 				(other.GetpileupId());
@@ -225,6 +229,7 @@ Jet& Jet::operator=(const Jet& other)
   SetNominalPx                      (other.GetNominalPx());
   SetNominalPy                      (other.GetNominalPy());
   SetNominalPz                      (other.GetNominalPz());
+  SetNominalE                       (other.GetNominalE());
   SetJesShifts			    (other.GetJesShifts());
   SetPassesIDs                      (other.GetPassesIDs());
 
@@ -245,6 +250,7 @@ Jet& Jet::operator=(Jet& other)
   SetnumberOfConstituents		(other.GetnumberOfConstituents());
   SethadronFlavour	         	(other.GethadronFlavour());
   SetTagged			        (other.IsTagged());
+  SetPrefireVeto		        (other.IsPrefireVeto());
   SetchargedMultiplicity		(other.GetchargedMultiplicity()); 
   SetbDiscriminator 			(other.GetbDiscriminator());
   SetpileupId 				(other.GetpileupId());
@@ -260,6 +266,7 @@ Jet& Jet::operator=(Jet& other)
   SetNominalPx                      (other.GetNominalPx());
   SetNominalPy                      (other.GetNominalPy());
   SetNominalPz                      (other.GetNominalPz());
+  SetNominalE                       (other.GetNominalE());
   SetJesShifts			    (other.GetJesShifts());
   SetPassesIDs                      (other.GetPassesIDs());
 
@@ -336,6 +343,7 @@ Bool_t Jet::Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selecte
   SetNominalPx(Px());
   SetNominalPy(Py());
   SetNominalPz(Pz());
+  SetNominalE(E());
 
   // Now we want to do the JER and JES systematic adjustments to the jet. This also requires correcting the MET.
   if (_jesUp || _jesDown || _jerUp || _jerDown) SystematicPtShift(evtr, iE, met);  
@@ -418,6 +426,17 @@ Bool_t Jet::Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selecte
   if (closestLepton < _closestLeptonCut) passesCleaning = kFALSE;
 
   SetClosestLep(closestLepton);
+
+  /////////////////////////////////////////////////////////////////////////
+  // Set prefire veto tag
+  /////////////////////////////////////////////////////////////////////////
+
+  SetPrefireVeto(0);
+
+  if (Pt() > 100. && TMath::Abs(Eta()) > 2.25 && TMath::Abs(Eta()) < 3.0) {
+    //    std::cout << "vetoing " << Pt() << " " << Eta() << std::endl;
+    SetPrefireVeto(1);
+  }
 
   /////////////////////////////////////////////////////////////////////////
   // B-tag related cuts
@@ -608,7 +627,6 @@ void Jet::SystematicPtShift(EventTree * evtr, Int_t iE, TLorentzVector * met){
 std::vector<Double_t> Jet::GetJESShifts(EventTree * evtr, Int_t iE){
   std::vector<Double_t> jesShifts;
   Double_t nominalJES = evtr -> Jet_JesSF->operator[](iE);
-
   //Now get all of the correction factors
   if (NULL == evtr->Jet_JesSF_AbsoluteStat_up) return jesShifts;
   jesShifts.push_back(evtr->Jet_JesSF_AbsoluteStat_up->operator[](iE)/nominalJES);
@@ -659,15 +677,20 @@ std::vector<Double_t> Jet::GetJESShifts(EventTree * evtr, Int_t iE){
   jesShifts.push_back(evtr->Jet_JesSF_PileUpPtEC2_down->operator[](iE)/nominalJES);
   jesShifts.push_back(evtr->Jet_JesSF_PileUpPtHF_up->operator[](iE)/nominalJES);
   jesShifts.push_back(evtr->Jet_JesSF_PileUpPtHF_down->operator[](iE)/nominalJES);
-
+  nominalJES = evtr->Jet_JerSF->operator[](iE);
+  jesShifts.push_back(evtr->Jet_JerSFup->operator[](iE)/nominalJES);
+  jesShifts.push_back(evtr->Jet_JerSFdown->operator[](iE)/nominalJES);
+  if (NULL == evtr->Jet_JerSFup_syst) return jesShifts;
+  jesShifts.push_back(evtr->Jet_JerSFup_syst->operator[](iE)/nominalJES);
+  jesShifts.push_back(evtr->Jet_JerSFdown_syst->operator[](iE)/nominalJES);
   return jesShifts;
 
 }
 
 Bool_t Jet::ShiftPtWithJESCorr(Int_t jesShiftInd, TLorentzVector * met){
 
-  met->SetPx(met->Px() + Px());                                               
-  met->SetPy(met->Py() + Py());                                     
+  //  met->SetPx(met->Px() + Px());                                               
+  // met->SetPy(met->Py() + Py());                                     
 
   Double_t ptSF = _jesShifts[jesShiftInd];
 
@@ -675,12 +698,15 @@ Bool_t Jet::ShiftPtWithJESCorr(Int_t jesShiftInd, TLorentzVector * met){
   SetPx(nominalPx()*ptSF);                                                           
   SetPy(nominalPy()*ptSF);                                                           
   SetPz(nominalPz()*ptSF);                      
+  SetE(nominalE()*ptSF);
 
   //std::cout << Px() << " " << Py() << " " << Pt() << std::endl << std::endl;
+
+  //  std::cout << met->Px() << " " << met->Py() << " " << ptSF << " ";
                                                                               
   //Propagate to MET                                                          
-  met->SetPx(met->Px() - Px());                                               
-  met->SetPy(met->Py() - Py());                                               
+  met->SetPx(met->Px() + (1-ptSF)*nominalPx());                                               
+  met->SetPy(met->Py() + (1-ptSF)*nominalPy());                                               
 
   Bool_t passPt = Pt() > _minPtCut;               
   Bool_t passEta = TMath::Abs(Eta()) < _maxEtaCut;

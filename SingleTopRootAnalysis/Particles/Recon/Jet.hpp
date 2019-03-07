@@ -136,6 +136,10 @@ class Jet: public Particle
   inline Int_t IsTagged() const {return _tagged;};
   inline Int_t tagged() const {return _tagged;};
 
+  inline void SetPrefireVeto(Int_t prefireVeto){_prefireVeto = prefireVeto;};
+  inline Int_t IsPrefireVeto() const {return _prefireVeto;};
+  inline Int_t prefireVeto() const {return _prefireVeto;};
+
   inline void SetClosestLep(Double_t closestLep){_closestLep = closestLep;};
   inline Double_t GetClosestLep() const {return _closestLep;};
   inline Double_t closestLep() const {return _closestLep;};
@@ -153,6 +157,11 @@ class Jet: public Particle
   inline void SetNominalPz(Double_t nomPz){_nominalPz = nomPz;};
   inline Double_t GetNominalPz() const {return _nominalPz;};
   inline Double_t nominalPz() const {return _nominalPz;};
+
+  inline void SetNominalE(Double_t nomE){_nominalE = nomE;};
+  inline Double_t GetNominalE() const {return _nominalE;};
+  inline Double_t nominalE() const {return _nominalE;};
+
 
   Bool_t ShiftPtWithJESCorr(Int_t jesShiftInd, TLorentzVector * met);
 
@@ -185,6 +194,7 @@ class Jet: public Particle
   Double_t _photonEnergy;   
   Double_t _uncorrPt;  
   Int_t _tagged;
+  Int_t _prefireVeto;
   Double_t _closestLep;
 
   //This is a variable that will be filled once during the normal filling but used by the JES shift to check
@@ -219,6 +229,7 @@ class Jet: public Particle
   Double_t _nominalPx;
   Double_t _nominalPy;
   Double_t _nominalPz;
+  Double_t _nominalE; //Iguess I need to change E as well?
 
   // Apply the jet correction systematics
   void SystematicPtShift(EventTree * evtr, Int_t iE, TLorentzVector * met);
