@@ -601,6 +601,8 @@ public :
    std::vector<double>  *Jet_JerSF;
    std::vector<double>  *Jet_JerSFup;
    std::vector<double>  *Jet_JerSFdown;
+   std::vector<double>  *Jet_JerSFup_syst;
+   std::vector<double>  *Jet_JerSFdown_syst;
    std::vector<double>  *Jet_partonFlavour;
    std::vector<double>  *Jet_hadronFlavour;
    std::vector<double>  *BoostedJet_pt;
@@ -1365,6 +1367,8 @@ public :
    TBranch        *b_Jet_JerSF;   //!
    TBranch        *b_Jet_JerSFup;   //!
    TBranch        *b_Jet_JerSFdown;   //!
+   TBranch        *b_Jet_JerSFup_syst;   //!
+   TBranch        *b_Jet_JerSFdown_syst;   //!
    TBranch        *b_Jet_partonFlavour;   //!
    TBranch        *b_Jet_hadronFlavour;   //!
    TBranch        *b_BoostedJet_pt;   //!
@@ -2105,6 +2109,8 @@ void EventTree::Init(TTree *tree)
    Jet_JerSF = 0;
    Jet_JerSFup = 0;
    Jet_JerSFdown = 0;
+   Jet_JerSFup_syst = 0;
+   Jet_JerSFdown_syst = 0;
    Jet_partonFlavour = 0;
    Jet_hadronFlavour = 0;
    BoostedJet_pt = 0;
@@ -2837,6 +2843,8 @@ void EventTree::Init(TTree *tree)
    fChain->SetBranchAddress("Jet_JesSF_AbsoluteStat_down", &Jet_JesSF_AbsoluteStat_down, &b_Jet_JesSF_AbsoluteStat_down);
    fChain->SetBranchAddress("Jet_JesSF_AbsoluteStat_up", &Jet_JesSF_AbsoluteStat_up, &b_Jet_JesSF_AbsoluteStat_up);
    fChain->SetBranchAddress("Jet_JerSF", &Jet_JerSF, &b_Jet_JerSF);
+   fChain->SetBranchAddress("Jet_JerSFup_syst", &Jet_JerSFup_syst, &b_Jet_JerSFup_syst);
+   fChain->SetBranchAddress("Jet_JerSFdown_syst", &Jet_JerSFdown_syst, &b_Jet_JerSFdown_syst);
    fChain->SetBranchAddress("Jet_JerSFup", &Jet_JerSFup, &b_Jet_JerSFup);
    fChain->SetBranchAddress("Jet_JerSFdown", &Jet_JerSFdown, &b_Jet_JerSFdown);
    fChain->SetBranchAddress("Jet_partonFlavour", &Jet_partonFlavour, &b_Jet_partonFlavour);
