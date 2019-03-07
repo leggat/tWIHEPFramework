@@ -214,7 +214,7 @@ EventContainer::EventContainer():
   _eventCount(0),   _targetTopMass(175.),
   _debugLevel(0),   _doFastSim(false),_doSkim(false),
   _sourceName("NONE"),
-  _globalEventWeight(1.), _treeEventWeight(1.), _outputEventWeight(1.),_EventPileupWeight(-1),
+  _globalEventWeight(1.), _treeEventWeight(1.), _outputEventWeight(1.),_EventPileupWeight(-1),_generalReweight(1.),
   _EventPileupMinBiasUpWeight(-1),_EventPileupMinBiasDownWeight(-1),
   _config("Configuration"), _JESconfig("JESConfiguration"),_jesError(0.), _jesShift(0), _bTagAlgo("default"), _bTagCut(999), _misTagCut(999), jeteoverlap(kFALSE),closeindex(999),ejordr(999), bestjetdr(999), _isFirstEvent(true), isSimulation(kTRUE), _badJetEvent(kFALSE),  _celloutShift(0),_softjetShift(0),_pileupShift(0),_larShift(0),_metShift(0), _JESconfigread(false),_jesUShift(0),_jesPtShift(0),_jesEtaShift(0),_useUnisolatedLeptons(kFALSE),_trigID(0)
 {
@@ -534,6 +534,9 @@ Int_t EventContainer::ReadEvent()
 
     passesMETFilters = _eventTree->Flag_METFilters;
 
+    missingEtUpSF = _eventTree->Met_type1PF_pt/_eventTree->Met_type1PF_shiftedPtUp;
+    missingEtDownSF = _eventTree->Met_type1PF_pt/_eventTree->Met_type1PF_shiftedPtDown;
+
     //Fill pvtx information
     nPvtx = _eventTree->nBestVtx;
     trueInteractions = _eventTree->trueInteractions;
@@ -647,18 +650,17 @@ Int_t EventContainer::ReadEvent()
       ejordr = 999;
       bestjetdr = 999;
       //      missingEt = -888; 
-      useObj = newJet.Fill(1.0,1.0, *muonsToUsePtr, *electronsToUsePtr, _eventTree, io, &missingEtVec, isSimulation);
+      useObj = newJet.Fill(1.0,1.0, *muonsToUsePtr, *electronsToUsePtr, _eventTree, io, &missingEtVec_xy, isSimulation);
       //      useObj = newJet.Fill(1.0,1.0, _eventTree, io);
       
       missingEt = TMath::Sqrt(pow(missingEx,2) + pow(missingEy,2));//so MET gets JES adjustment toogEx=top_met.MET_ExMiss();
       /////////////////////////////////////
-     
       //On the first jet in the event fill up the JES corrected met and jet lists
       if (io == 0) {
 	metVecsJESShifted.clear();
 	jesShiftedJets.clear();
 	for (int jesSyst = 0; jesSyst < newJet.GetNumberOfJESCorrections(); jesSyst++){
-	  metVecsJESShifted.push_back(missingEtVec);
+	  metVecsJESShifted.push_back(missingEtVec_xy);
 	  std::vector<Jet> tempVec;
 	  jesShiftedJets.push_back(tempVec);
 	}
