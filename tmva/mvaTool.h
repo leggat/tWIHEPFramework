@@ -47,19 +47,24 @@ class mvaTool {
  mvaTool() : mvaTool(0,true) {}
  mvaTool(Int_t channel) :  mvaTool(channel,true) {}
  mvaTool(Bool_t useIterFit ) : mvaTool(0,useIterFit) {}
-  mvaTool(Int_t channel, Bool_t useIterFit);
+ mvaTool(Bool_t useIterFit, Bool_t isEle) : mvaTool(0,useIterFit,isEle) {}
+ mvaTool(Int_t channel, Bool_t useIterFit) : mvaTool(channel,useIterFit,kFALSE) {}
+  mvaTool(Int_t channel, Bool_t useIterFit, Bool_t isEle);
   //  ~mvaTool();
 
   void doBothTraining(TString inDir);
   void doTraining(TString inDir, bool isttbar);
-  void doReading(TString sampleName, TString inDir = "tW",TString outDir = "mvaOutput/", bool isData = false);
+  void doReading(TString sampleName, TString inDir = "tW",TString outDir = "mvaOutput/", bool isData = false, int minFile = -1, int maxFile = -1);
   void doReadingNoMVA(TString sampleName, TString inDir = "tW",TString outDir = "mvaOutput/", bool isData = false);
 
   void setChannel(Int_t channel){_channel = channel;};
   //  void doReading();
   void printVarList();
   void initialiseVarList();
-
+  void setNTrees(Int_t nTrees){_nTrees = nTrees;};
+  void setDepth(Int_t depth){_depth = depth;};
+  void setNCuts(Int_t nCuts){_nCuts = nCuts;};
+  
  private:
 
 
@@ -67,8 +72,8 @@ class mvaTool {
   std::vector<TString> regionNames;
 
   //Used to loop over things
-  void processMCSample(TString sampleName,TString inDir,TString outDir, float * treevars, bool isData, bool doMVA = true);
-  void loopInSample(TString dirName, TString sampleName, float* treevars, bool isData, bool doMVA = true);
+  void processMCSample(TString sampleName,TString inDir,TString outDir, float * proxyvars, float * treevars,std::vector<std::vector<float> * >  treevarsJetShifts, bool isData, bool doMVA = true, int minFile = -1, int maxFile = -1);
+  void loopInSample(TTree* theTree, TString sampleName, float* proxyvars, float* treevars, std::vector<std::vector<float> * > treevarsJetShifts, bool isData, bool doMVA = true);
   void createHists(TString sampleName);
   void fillHists(TString sampleName, float* treevars, double mvaValue, double mvawJets, double theweight, float met, float mtw, int theChannel);
   void saveHists(std::vector<TFile *> outFile);
@@ -92,11 +97,20 @@ class mvaTool {
 
   Bool_t _useIterFit;
 
+  Bool_t _isEle;
+
   TMVA::Reader *reader;
 
   float theweight;
   float mvaValue;
   float mvawJetsValue;
+  
+  int _nTrees;
+  int _depth;
+  int _nCuts;
+
+  TString _bdtName;
+
 };
 
 #endif

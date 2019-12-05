@@ -1,13 +1,33 @@
 from ROOT import *
 
-import sys,os,math,weightProcesses
+import sys,os,math,weightProcesses,analysisComponents
 
-histoGramPerSample = {"tW_top":"tW","tW_antitop":"tW","sChan":"singleTop","tChan":"singleTop","zz":"VV","zPlusJetsLowMass":"zPlusJets","zPlusJetsHighMass":"zPlusJets","wz":"VV","ww":"VV","wPlusJets":"wPlusJets","ttbar":"ttbar","qcd700_1000":"qcd","qcd500_700":"qcd","qcd300_500":"qcd","qcd200_300":"qcd","qcd2000_inf":"qcd","qcd1500_2000":"qcd","qcd100_200":"qcd","qcd1000_1500":"qcd","wPlusJetsMCatNLO":"wPlusJets","tChan_top":"singleTop","tChan_antitop":"singleTop","ttbarBU":"ttbar","tW_top_nfh":"tW","tW_antitop_nfh":"tW","wPlusJetsMadgraph":"wPlusJets","wPlus0Jets":"wPlusJets","wPlus1Jets":"wPlusJets","wPlus2Jets":"wPlusJets"}
+components = analysisComponents.AnalysisComponents()
+
+jetShiftNames = components.jetShiftDict
+translateNames = True
+
+if "--help" in sys.argv or "-h" in sys.argv or "--options" in sys.argv or "-o" in sys.argv:
+    print "Assemble BDT discriminants into one root file per region/channel for the fit"
+    print "Usage: python createDatacardRootFile.py <inDir> <outDir> [options]"
+    print "   Options:"
+    print "      ele             Do electron channel"
+    print "      --usetWmcanlo   Use the mcanlo tW sample (for validation)"
+    print "      --extendRegions Include 0 tag regions"
+    sys.exit(1)
+
+usetWmcanlo = False
+if "--usetWmcanlo" in sys.argv: usetWmcanlo = True
+
+histoGramPerSample = {"tW_top":"tW","tW_antitop":"tW","sChan":"singleTop","tChan":"singleTop","zz":"VV","zPlusJetsLowMass":"zPlusJets","zPlusJetsHighMass":"zPlusJets","wz":"VV","ww":"VV","wPlusJets":"wPlusJets","ttbar":"ttbar","qcd700_1000":"qcdMC","qcd500_700":"qcdMC","qcd300_500":"qcdMC","qcd200_300":"qcdMC","qcd2000_inf":"qcdMC","qcd1500_2000":"qcdMC","qcd100_200":"qcdMC","qcd1000_1500":"qcdMC","wPlusJetsMCatNLO":"wPlusJets","tChan_top":"singleTop","tChan_antitop":"singleTop","ttbarBU":"ttbar","tW_top_nfh":"tW","tW_antitop_nfh":"tW","wPlusJetsMadgraph":"wPlusJets","wPlus0Jets":"wPlusJets","wPlus1Jets":"wPlusJets","wPlus2Jets":"wPlusJets","tW_mcanlo":"tW"}
 
 samples = ["tW_top_nfh","tW_antitop_nfh","tChan_top","tChan_antitop","sChan","zz","zPlusJetsLowMass","zPlusJetsHighMass","wz","ww","wPlusJetsMCatNLO","ttbar","ttbarBU"]
 #samples = ["tW_top_nfh","tW_antitop_nfh","tChan_top","tChan_antitop","sChan","zz","zPlusJetsLowMass","zPlusJetsHighMass","wz","ww","wPlusJetsMadgraph","ttbar"]
-samples = ["tW_top_nfh","tW_antitop_nfh","tChan_top","tChan_antitop","sChan","zz","zPlusJetsLowMass","zPlusJetsHighMass","wz","ww","ttbar","ttbarBU","wPlus0Jets","wPlus1Jets","wPlus2Jets"]
+samples = ["tW_top_nfh","tW_antitop_nfh","tChan_top","tChan_antitop","sChan","zz","zPlusJetsLowMass","zPlusJetsHighMass","wz","ww","ttbar","ttbarBU","wPlus0Jets","wPlus1Jets","wPlus2Jets","qcd100_200","qcd200_300","qcd300_500","qcd500_700","qcd700_1000","qcd1000_1500","qcd1500_2000"]
+if usetWmcanlo: samples = ["tW_mcanlo","tChan_top","tChan_antitop","sChan","zz","zPlusJetsLowMass","zPlusJetsHighMass","wz","ww","ttbar","ttbarBU","wPlus0Jets","wPlus1Jets","wPlus2Jets","qcd100_200","qcd200_300","qcd300_500","qcd500_700","qcd700_1000","qcd1000_1500","qcd1500_2000"]
+
 #samples = ["tW_top_nfh","tW_antitop_nfh","tChan_top","tChan_antitop","sChan","zz","zPlusJetsLowMass","zPlusJetsHighMass","wz","ww","ttbar","ttbarBU","wPlus2Jets"]
+#samples = ["tW_top_nfh"]
 
 samplesDataMu = ["SingMuB","SingMuC","SingMuD","SingMuE","SingMuF","SingMuG","SingMuH"]
 samplesDataEle = ["SingEleB","SingEleC","SingEleD","SingEleE","SingEleF","SingEleG","SingEleH"]
@@ -21,9 +41,17 @@ legendOrder = ["tW","wPlusJets","ttbar","qcd","VV","zPlusJets","singleTop"]
 
 plotLeptonSampleName = "Mu"
 
+makeCutAndCountTemplates = False #This will only ever run once anyway
+def setMakeCutAndCount(bool):
+    global makeCutAndCountTemplates
+    makeCutAndCountTemplates = False
+
 includeDataInStack = False
 
 makeStatBins = False
+
+includeJetVariations = True
+nJetVariations = 54
 
 setNegToZero = False
 
@@ -37,20 +65,35 @@ latex = TLatex()
 latex.SetNDC()
 latex.SetTextAlign(31)
 
+gStyle.SetTitleYOffset(0.8)
+gStyle.SetOptTitle(0)
+
+gStyle.SetPalette(1)
+gStyle.SetCanvasBorderMode(0)
+gStyle.SetCanvasColor(kWhite)
+gStyle.SetCanvasDefH(600)
+gStyle.SetCanvasDefW(600)
+gStyle.SetLabelFont(18,"")
+
 cmsTextFont = 61
 extraTextFont = 52
+
+ratioMax = 1.1
+ratioMin = 0.9
 
 latex2 = TLatex();
 latex2.SetNDC();
 latex2.SetTextSize(0.04);
 latex2.SetTextAlign(31);
 
+
+
 cmsText = "CMS"
 extraText = "Preliminary"
 
-makeSystComps = True #Make a whole bunch of comparison plots if true
+makeSystComps = False #Make a whole bunch of comparison plots if true
 makeStackPlots = True #Make some stack plots of the output
-reduceBinsToFilled = True #Reduce the histograms to only their filled bins. This might possibly influence the fit, but my tests do not indicate that it does.
+reduceBinsToFilled = False #Reduce the histograms to only their filled bins. This might possibly influence the fit, but my tests do not indicate that it does.
 
 mvaNameDef = "MVA_ttbar_"
 mvaPostfix = ""
@@ -61,24 +104,29 @@ doSystDir = True
 systDir = inDir+"Systs/"
 isEle = False
 channeltr = "mu"
+leptonType = "Mu"
+leptonStringLabel = "#mu"
 if "ele" in sys.argv:
     samplesData = samplesDataEle
     plotLeptonSampleName = "Ele"
     channeltr = "ele"
+    leptonStringLabel = "e"
     isEle = True
+
 #if len(sys.argv) > 3: systDir = sys.argv[3]
 
 weights = weightProcesses.ReweightObject(False,isEle)
 
 if (not os.path.isdir(outDir)):
     os.makedirs(outDir)
-if makeSystComps and not os.path.isdir(outDir+"plots/"): os.makedirs(outDir+"plots/")
+if (makeSystComps or makeStackPlots) and not os.path.isdir(outDir+"plots/"): os.makedirs(outDir+"plots/")
 
 nominal = {}
 
 systs = [
 "LSF","PU","bTag","PDF","Trig","mistag"
 ]
+
 nStatsBins = 0
 systHists = {}
 
@@ -124,9 +172,11 @@ def setAllNegBinsToZero(hist):
 def makeAllSystHists(nominal,systHists,region,savePost=""):
     latexFile = open(outDir+"plots/{0}latexFile{1}.tex".format(region,savePost),"w")
     secondLatexFile = open(outDir+"plots/{0}latexFile{1}NotBeamer.tex".format(region,savePost),"w")
+    latexFileSystsOnOne = open(outDir+"plots/{0}latexSystComp{1}.tex".format(region,savePost),"w")
+    latexFileSystsOnOne.write("\\documentclass{beamer}\n\\usetheme{Warsaw}\n\n\\usepackage{graphicx}\n\\useoutertheme{infolines}\n\\setbeamertemplate{headline}{}\n\n\\begin{document}\n\n")
     latexFile.write("\\documentclass{beamer}\n\\usetheme{Warsaw}\n\n\\usepackage{graphicx}\n\\useoutertheme{infolines}\n\\setbeamertemplate{headline}{}\n\n\\begin{document}\n\n")
     for sample in nominal.keys():
-        if sample == "data" or sample == "qcd": continue
+        if sample == "data" or sample == "qcd" or sample == "qcdMC": continue
         for syst in systHists[sample].keys():
             doPlot = True
             for ignore in ignoreSystPlots:
@@ -153,8 +203,27 @@ def makeAllSystHists(nominal,systHists,region,savePost=""):
     latexFile.write("\\includegraphics[width=0.9\\textwidth]{{mva{0}{1}.png}}".format(region,savePost))
     latexFile.write("\n}\n")                                                                       
 
+    #make a latex file with comparison plots for each sample on one slide for each syst
+    for syst in systHists[nominal.keys()[0]]:
+        if "Down" in syst or "stat" in syst or "down" in syst: continue
+        downSystName = syst.split("Up")[0]+"Down"
+        shortenedName = syst.split("Up")[0]
+        latexFileSystsOnOne.write("\\frame{{\n\\frametitle{{{0}-{1}}}\n".format(region,shortenedName))
+        nSamp = 0
+        for sample in nominal.keys():
+            if sample == "data" or sample == "qcd": continue
+            if syst not in systHists[sample].keys(): continue
+            for ignore in ignoreSystPlots:
+                if ignore in syst: continue
+            if "herwig" in syst or "PS" in syst: continue
+            latexFileSystsOnOne.write("\\includegraphics[width=0.3\\textwidth]{"+region+sample+shortenedName+savePost+".png}\n")
+            nSamp += 1
+            if nSamp % 3 == 0: latexFileSystsOnOne.write("\\\\\n")
+        latexFileSystsOnOne.write("\n}\n")
+
+
     latexFile.write("\\end{document}")
-            
+    latexFileSystsOnOne.write("\\end{document}")
 
 def getStatUpDownHists(nominal):
     #get histograms with the bins altered up and down by the bin error
@@ -213,8 +282,8 @@ def makeSystHist(nominalHist,upHist,downHist,canvasName):
 
     upHistRatio = upHist.Clone()
     upHistRatio.Divide(nominalHist)
-    upHistRatio.SetMaximum(1.3)
-    upHistRatio.SetMinimum(0.7)
+    upHistRatio.SetMaximum(ratioMax)
+    upHistRatio.SetMinimum(ratioMin)
     upHistRatio.Draw("hist same")
     downHistRatio = downHist.Clone()
     downHistRatio.Divide(nominalHist)
@@ -240,6 +309,7 @@ def makeStackPlot(nominal,systHists,region,savePost = ""):
     sumHist = nominal[nominal.keys()[0]].Clone()
     sumHist.Reset()
     for i in nominal.keys():
+        if i == "qcdMC": continue
         if i == "data":
             dataHist = nominal["data"]
             dataHist.SetMarkerStyle(20)
@@ -256,19 +326,54 @@ def makeStackPlot(nominal,systHists,region,savePost = ""):
     if "data" in nominal.keys():
         leggy.AddEntry(nominal['data'],"Data","p")
     for entry in legendOrder:
+        if entry not in nominal.keys(): continue
         leggy.AddEntry(nominal[entry],entry,"f")
-
+        nominal[entry].GetXaxis().SetTitle("BDT discriminant")
+        nominal[entry].GetYaxis().SetTitle("Events")
     legendOrder.reverse()
     for entry in legendOrder:
+        if entry not in nominal.keys(): continue
         stack.Add(nominal[entry])
 
+
+    legendOrder.reverse()
     maxi = stack.GetMaximum()
     if dataHist.GetMaximum() > stack.GetMaximum(): maxi = dataHist.GetMaximum()
-    stack.SetMaximum(maxi)
+    stack.SetMaximum(maxi * 1.2)
     stack.Draw("hist")
-    
+    if stack.GetXaxis(): stack.GetXaxis().SetTitle("BDT discriminant") 
+    if stack.GetYaxis(): 
+        stack.GetYaxis().SetTitle("Events")
+        stack.GetYaxis().SetTitleOffset(1.4)
+        stack.GetYaxis().SetLabelSize(0.04) 
+        stack.GetYaxis().SetTitleSize(0.05) 
+        stack.GetXaxis().SetLabelSize(0.04) 
+        stack.GetXaxis().SetTitleSize(0.05) 
+        
+        
     if includeDataInStack: dataHist.Draw("e1x0 same")
     leggy.Draw()
+
+    latex.SetTextSize(0.04)
+    latex.SetTextFont(cmsTextFont)
+    latex.DrawLatex(0.23, 0.95, cmsText )
+
+    latex.SetTextFont(extraTextFont)
+    latex.SetTextSize(0.04*0.76)
+    latex.DrawLatex(0.35, 0.95 , extraText )
+
+    latex2.DrawLatex(0.95, 0.95, "35.9 fb^{-1} (13TeV)");
+
+    text2 = TLatex(0.45,0.98, "{1} channel, {0}".format(region,leptonStringLabel))
+    text2.SetNDC()
+    text2.SetTextAlign(13)
+    text2.SetX(0.18)
+    text2.SetY(0.92)
+    text2.SetTextFont(42)
+    text2.SetTextSize(0.0610687)
+
+    text2.Draw()
+
 
     if includeDataInStack:
         ratioCanvy = TPad("mva_ratio","mva_ratio",0.0,0.0,1.0,1.0)
@@ -311,8 +416,8 @@ def getDownHist(upHist,nominalHist):
 
 def makeStatBinVariations(hist, binNumber, region):
 
-    variationHistUp = hist.Clone("{2}_{2}_Mu{1}_statbin{0}Up".format(binNumber,region,hist.GetName()))
-    variationHistDown = hist.Clone("{2}_{2}_Mu{1}_statbin{0}Down".format(binNumber,region,hist.GetName()))
+    variationHistUp = hist.Clone("{2}_{2}_{3}{1}_statbin{0}Up".format(binNumber,region,hist.GetName(),plotLeptonSampleName))
+    variationHistDown = hist.Clone("{2}_{2}_{3}{1}_statbin{0}Down".format(binNumber,region,hist.GetName(),plotLeptonSampleName))
     binWeight = hist.GetBinContent(binNumber)
     shift = 0
 
@@ -322,32 +427,74 @@ def makeStatBinVariations(hist, binNumber, region):
     return (variationHistUp,variationHistDown)
 
 
+def bookCCTemplatePlots(nomsCC,systCC,nBins,samples):
+    for sample in (legendOrder+['data']):
+        nomsCC[sample] = TH1F(sample,sample,nBins,0,nBins)
+        nomsCC[sample].SetDirectory(0)
+        systCC[sample] = {}
+
+def fillCutAndCountPlots(nominal,systHists,nomCC,systCC,fillBin):
+    for sample in nominal.keys():
+        if sample == "qcdMC": continue
+        nomCC[sample].SetBinContent(fillBin+1,nominal[sample].Integral())
+        if sample == "data": continue
+        for systName in systHists[sample].keys():
+            #if we haven't made the syst hist yet, make it now.
+            if systName not in systCC[sample].keys():
+                systCC[sample][systName] = nomCC[sample].Clone("{0}_{1}".format(sample,systName))
+                systCC[sample][systName].SetDirectory(0)
+                systCC[sample][systName].Reset()
+            systCC[sample][systName].SetBinContent(fillBin+1,systHists[sample][systName].Integral())
+
 def makeDatacard(mvaName,regions,savePostfix=""):
-    for region in regions:
+
+    cutAndCountNom = {}
+    cutAndCountSysts = {}
+    if makeCutAndCountTemplates: bookCCTemplatePlots(cutAndCountNom,cutAndCountSysts,len(regions),samples)
+
+    for regionIt in range(len(regions)):
+        region = regions[regionIt]
         saveName = "3j1t"
         if not region == "": saveName = region
         outFile = TFile(outDir+"mvaDists_{0}_{1}{2}.root".format(saveName,channeltr,savePostfix),"RECREATE")
 
         totalYieldsCount[region] = {}
         nominal = {}
+        invNominal = {}
         systHists = {}
         if doSystDir: systDir = inDir + "Systs" + region + "/"
         for sample in samples:
             #get input file
             inFile = TFile(inDir+region+"/output_"+sample+".root","READ")
+            inFileInv = False
+            if os.path.exists(inDir+"QCD"+region+"/output_"+sample+".root"):
+                inFileInv = TFile(inDir+"QCD"+region+"/output_"+sample+".root","READ")
             print sample
             #get nominal plot"
             if histoGramPerSample[sample] in nominal.keys():
                 
                 nominal[histoGramPerSample[sample]].Add(inFile.Get(mvaName+sample))
+                if inFileInv: invNominal[histoGramPerSample[sample]].Add(inFileInv.Get(mvaName+sample))
                 for sys in systs:
                     #print mvaName+sample+"_"+sys+"_up"
                     systHists[histoGramPerSample[sample]][sys+"Up"].Add(inFile.Get(mvaName+sample+"_"+sys+"_up"))
                     systHists[histoGramPerSample[sample]][sys+"Down"].Add(inFile.Get(mvaName+sample+"_"+sys+"_down"))
+                if includeJetVariations: #If we're doing jet variations, we'll add them here.
+                    for jetShiftSyst in range(nJetVariations/2.):
+                        if translateNames: jetShiftName = jetShiftNames["jetShift{0}".format(jetShiftSyst)]
+                        else: jetShiftName = "jetShift{0}".format(jetShiftSyst)
+                        systHists[histoGramPerSample[sample]]["{0}Up".format(jetShiftName)].Add(inFile.Get(mvaName+sample+"_JetShifts_{0}".format(jetShiftSyst*2)))
+                        systHists[histoGramPerSample[sample]]["{0}Down".format(jetShiftName)].Add(inFile.Get(mvaName+sample+"_JetShifts_{0}".format((jetShiftSyst*2)+1)))
+                        
+                    
             else:
                 nominal[histoGramPerSample[sample]] = inFile.Get(mvaName+sample).Clone(histoGramPerSample[sample])
                 nominal[histoGramPerSample[sample]].Sumw2()
                 nominal[histoGramPerSample[sample]].SetDirectory(0)
+                if inFileInv:
+                    invNominal[histoGramPerSample[sample]] = inFileInv.Get(mvaName+sample).Clone(histoGramPerSample[sample])
+                    invNominal[histoGramPerSample[sample]].Sumw2()
+                    invNominal[histoGramPerSample[sample]].SetDirectory(0)
     #            if nStatsBins == 0:
     #                nStatsBins = nominal[histoGramPerSample[sample]].GetXaxis().GetNbins()
     #                print "nStatsBins: ",nStatsBins
@@ -364,23 +511,40 @@ def makeDatacard(mvaName,regions,savePostfix=""):
                     systHists[histoGramPerSample[sample]][sys+"Down"].SetDirectory(0)
                     systHists[histoGramPerSample[sample]][sys+"Up"].Sumw2()
                     systHists[histoGramPerSample[sample]][sys+"Down"].Sumw2()
+                if includeJetVariations:
+                    for jetShiftSyst in range(nJetVariations/2.):
+                        if translateNames: jetShiftName = jetShiftNames["jetShift{0}".format(jetShiftSyst)]
+                        else: jetShiftName = "jetShift{0}".format(jetShiftSyst)
+                        systNameForClone = histoGramPerSample[sample]+"_{0}".format(jetShiftName)
+                        systHists[histoGramPerSample[sample]]["{0}Up".format(jetShiftName)] = inFile.Get(mvaName+sample+"_JetShifts_{0}".format(jetShiftSyst*2)).Clone(systNameForClone+"Up")
+                        systHists[histoGramPerSample[sample]]["{0}Up".format(jetShiftName)].SetTitle(systNameForClone+"Up")
+                        systHists[histoGramPerSample[sample]]["{0}Up".format(jetShiftName)].SetDirectory(0)
+                        systHists[histoGramPerSample[sample]]["{0}Up".format(jetShiftName)].Sumw2()
+                        systHists[histoGramPerSample[sample]]["{0}Down".format(jetShiftName)] = inFile.Get(mvaName+sample+"_JetShifts_{0}".format((jetShiftSyst*2)+1)).Clone(systNameForClone+"Down")
+                        systHists[histoGramPerSample[sample]]["{0}Down".format(jetShiftName)].SetTitle(systNameForClone+"Down")
+                        systHists[histoGramPerSample[sample]]["{0}Down".format(jetShiftName)].SetDirectory(0)
+                        systHists[histoGramPerSample[sample]]["{0}Down".format(jetShiftName)].Sumw2()
+                        
 
-        dirSysts = ["JES","JER"]
-        upDown = ["Up","Down"]
-        if doSystDir:
-            for ud in upDown:
-                for syst in dirSysts:
-                    dirName = syst+ud
-                    print "Processing systematic in {0}".format(dirName)
-                    for sample in samples:
-                        inFile = TFile(inDir+dirName+region+"/output_"+sample+".root","READ")
-                        print "Processing sample {0}".format(sample)
-                        if dirName not in systHists[histoGramPerSample[sample]]:
-                            systHists[histoGramPerSample[sample]][dirName] = inFile.Get(mvaName+sample).Clone(histoGramPerSample[sample]+"_"+syst+ud)
-                            systHists[histoGramPerSample[sample]][dirName].SetDirectory(0)
-                        else:
-                            systHists[histoGramPerSample[sample]][dirName].Add(inFile.Get(mvaName+sample).Clone(histoGramPerSample[sample]+"_"+syst+ud))
-
+        if "wPlusJets" in invNominal.keys(): invNominal["wPlusJets"].Scale(2.98)
+        
+        if not includeJetVariations: #Only need to do this if we haven't included those things in the root files directly
+            dirSysts = ["JES","JER"]
+            upDown = ["Up","Down"]
+            if doSystDir:
+                for ud in upDown:
+                    for syst in dirSysts:
+                        dirName = syst+ud
+                        print "Processing systematic in {0}".format(dirName)
+                        for sample in samples:
+                            inFile = TFile(inDir+dirName+region+"/output_"+sample+".root","READ")
+                            print "Processing sample {0}".format(sample)
+                            if dirName not in systHists[histoGramPerSample[sample]]:
+                                systHists[histoGramPerSample[sample]][dirName] = inFile.Get(mvaName+sample).Clone(histoGramPerSample[sample]+"_"+syst+ud)
+                                systHists[histoGramPerSample[sample]][dirName].SetDirectory(0)
+                            else:
+                                systHists[histoGramPerSample[sample]][dirName].Add(inFile.Get(mvaName+sample).Clone(histoGramPerSample[sample]+"_"+syst+ud))
+                                
         for sample in samplesData:
             print "Dataset: {0}".format(sample)
             inFile = TFile(inDir+region+"/output_"+sample+".root","READ")
@@ -396,6 +560,23 @@ def makeDatacard(mvaName,regions,savePostfix=""):
                 nominal["qcd"].Add(inFileQCD.Get(mvaName+sample))
                 print "QCD template has {0}".format(nominal["qcd"].Integral())
 
+        #Subtract non QCD templates from DD background
+        print "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<"
+        totalMC = nominal["qcd"].Clone("totalMC")
+        totalMC.Reset()
+        totalTotal = totalMC.Clone("totalTotal")
+        for key in invNominal.keys():
+            totalTotal.Add(invNominal[key])
+            if "qcdMC" in key: continue
+            totalMC.Add(invNominal[key])
+        if totalTotal.Integral() > 0: totalMC.Scale(nominal["qcd"].Integral()/totalTotal.Integral())
+#        print nominal["qcd"].Integral(), key, invNominal[key].Integral()
+        nominal["qcd"].Add(totalMC,-1)
+        #No negative bins, please.
+        for i in range(1,nominal["qcd"].GetXaxis().GetNbins()+1):
+            if nominal["qcd"].GetBinContent(i) < 0: nominal["qcd"].SetBinContent(i,0)
+        totalYieldsCount[region]["qcd"] = invNominal[key].Integral()
+
         #Here we should grab the systematic samples if we're doing that.        
         sysDirNamesList = []
         sysNamesToGetDownHist = []
@@ -403,6 +584,7 @@ def makeDatacard(mvaName,regions,savePostfix=""):
             for fileName in os.listdir(systDir):
                 sample = fileName.split("_")[1]
                 sample2 = fileName.split("output_")[1].split(".root")[0]
+                if (sample2[-1]).isdigit():continue
                 syst = fileName.split("_")[-1].split(".")[0]
                 inFile = TFile(systDir+fileName,"READ")
                 if syst in systHists[sample].keys():
@@ -458,10 +640,11 @@ def makeDatacard(mvaName,regions,savePostfix=""):
         #Here make a loop to find out the highest and lowest filled bins so get rid of zero occupancy bins?
     #    for key in nominal.keys():
 
-        (nominal,systHists) = findMaxAndMinBins(nominal,systHists)
+        if reduceBinsToFilled: (nominal,systHists) = findMaxAndMinBins(nominal,systHists)
         outFile.cd()
         print sysDirNamesList
         for key in nominal.keys():
+            if "qcdMC" in key: continue
             scaleFactor = weights.getDatasetWeight(key,region)
             nominal[key].Scale(scaleFactor)
             totalYieldsCount[region][key] *= scaleFactor
@@ -487,6 +670,70 @@ def makeDatacard(mvaName,regions,savePostfix=""):
         if makeStackPlots:
             makeStackPlot(nominal,systHists,region,savePostfix)
 
+        if makeCutAndCountTemplates:
+            fillCutAndCountPlots(nominal,systHists,cutAndCountNom,cutAndCountSysts,regionIt)
+
+    #Here we're going to make a quick table for each of the systematic uncertainties impact on the tW rate
+        if not region == "3j1t": continue
+        systUpAllSamples = {}
+        systDownAllSamples = {}
+        for sample in nominal.keys():
+            if "data" in sample or "qcd" in sample : continue
+            totalJESUp = 0.
+            totalJESDown = 0.
+            systUp = {}
+            systDown = {}
+            nomInt = nominal[sample].Integral()
+            for key in systHists[sample].keys():
+                fraction = (1-(systHists[sample][key].Integral()/nomInt))
+                if "statbin" in key: continue
+                if "JES" in key:
+                    if "Up" in key: 
+                        totalJESUp += fraction * fraction
+                    elif "Down" in key:
+                        totalJESDown += fraction * fraction
+                    continue
+                if "Up" in key or "up" in key:
+                    systName = key[:-2]
+                    systUp[systName] = fraction
+                elif "Down" in key or "down" in key:
+                    systName = key[:-4]
+                    systDown[systName] = fraction
+            systUpAllSamples[sample] = systUp
+            systDownAllSamples[sample] = systDown
+            systUpAllSamples[sample]["JES"] = math.sqrt(totalJESUp)
+            systDownAllSamples[sample]["JES"] = math.sqrt(totalJESDown)
+#        print systUp.keys(), systDown.keys()
+        print "\\hline"
+        for sample in systUpAllSamples.keys():
+            print "& {0}".format(sample),
+        print "\\\\\n\\hline"
+        for syst in systUpAllSamples["tW"].keys():
+            print "{0}".format(syst),
+            for sample in systUpAllSamples.keys():
+                systUpPrint,systDownPrint = 0.0,0.0
+                if syst in systUpAllSamples[sample].keys():
+                    systUpPrint = 100*systUpAllSamples[sample][syst]
+                    systDownPrint = 100*systDownAllSamples[sample][syst]
+                if not ( systUpPrint == 0.0 and systDownPrint == 0.0):
+                    print "\t& {1:.1f}\\%/{2:.1f}\\%".format(syst,systUpPrint,systDownPrint),
+                else:
+                    print "\t& -/-",
+            print "\\\\"
+        print "\\hline"
+#        print "JES \t& {0:.1f}%/{1:.1f}%".format(100*math.sqrt(totalJESUp),100*math.sqrt(totalJESDown))
+
+
+    if makeCutAndCountTemplates:
+        outFileCC = TFile(outDir+"mvaDists_cc_{1}.root".format(saveName,channeltr),"RECREATE")
+        outFileCC.cd()
+        for sample in cutAndCountNom.keys():
+            cutAndCountNom[sample].Write()
+            for syst in cutAndCountSysts[sample].keys():
+                cutAndCountSysts[sample][syst].Write()
+        setMakeCutAndCount(False)
+#        makeCutAndCountTemplates = False #We only need to run this once.
+        outFile.cd()
 
     for region in regions:
         print region
@@ -494,8 +741,10 @@ def makeDatacard(mvaName,regions,savePostfix=""):
             print key, totalYieldsCount[region][key]
 
     for j in regions:
+        print "\"{0}\":[".format(j),
         for i in ["VV", "wPlusJets", "zPlusJets", "ttbar", "singleTop", "qcd", "tW"]:
-            print totalYieldsCount[j][i],
+            print "{0},".format(totalYieldsCount[j][i]),
+        print "],",
 
     print ""
 
@@ -506,16 +755,22 @@ def makeDatacard(mvaName,regions,savePostfix=""):
     print
 
     for j in regions:
-        print totalYieldsCount[j]["data"],
+        print "\"{0}\":{1},".format(j,totalYieldsCount[j]["data"]),
 
 if __name__ == "__main__":
 
-    regions = ["3j1t","2j1t","3j2t","4j1t","4j2t"]
+    regions = components.regions
+    if "--extendRegions" in sys.argv: regions = components.extendedRegions
 #    regions = ["3j1t"]
+#    regions = ["3j1t","2j1t","3j2t","4j1t","4j2t"]
+    bins = ["bin10_","bin20_","bin30_","bin40_","bin50_","bin80_","bin100_","bin1000_"]
+#    bins = ["bin10_","bin20_","bin30_","bin40_","bin50_","bin80_"]
+    bins = ["bin1000_"]
+#    bins = ["bin10_"]
 #    for postName in ["bin10_","bin20_","bin30_","bin40_","bin50_","bin80_","bin100_","bin1000_"]:
 #    for postName in ["bin10_","bin20_","bin30_","bin40_","bin50_","bin80_"]:
 #    for postName in ["bin80_","bin100_"]:
-#    for postName in ["bin1000_"]:
-    for postName in ["bin30_"]:
+#    for postName in ["bin10_"]:
+    for postName in bins:
         print mvaNameDef+postName, "_"+postName[:-1]
         makeDatacard(mvaNameDef+postName,regions,"_"+postName[:-1])
