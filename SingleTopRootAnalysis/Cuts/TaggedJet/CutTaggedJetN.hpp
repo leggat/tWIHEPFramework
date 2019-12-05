@@ -55,6 +55,7 @@ private:
   // Histograms
   myTH1F* _hJetNumberBefore;    // Histogram number of jets before the cut
   myTH1F* _hJetNumberAfter;     // Histogram number of jets after the cut
+  myTH1F* _hJetNumberTopologyShift;
 
   // Cut parameters
   Int_t _JetNumberMin;           // Minimum number of jets to require

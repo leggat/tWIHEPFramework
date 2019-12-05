@@ -26,6 +26,9 @@ public:
   };
 
   ChannelFlag();
+
+  //Add in additional channel variables for each JES systematic
+  bool AddAdditionalVariables(EventContainer * obj);
   
   //void BookBranches(TTree * skimTree);
   void FillBranches(EventContainer * evtObj);

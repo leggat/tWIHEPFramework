@@ -22,6 +22,10 @@ public:
   //Standard set event container method
   inline void SetEventContainer(EventContainer * obj){ _eventContainerObj = obj;};
 
+  //Add in additional variables from the event container if we need to know how many things to include based on the event
+  //Example of this is add in extra channel variables based on jets with JES shifts
+  virtual bool AddAdditionalVariables(EventContainer * obj){return true;};
+
   //Book the branches
   void BookBranches(TTree * skimTree);
 
@@ -45,6 +49,7 @@ _histos.Add(h);
   //Do we want to make histograms for these variables?
   void SetDoHists(bool doHists){_makeHists = doHists;};
   bool DoHists(){return _makeHists;};
+  inline bool runAdditionalVariables() const {return _runAdditionalVariables;};
 
   //Fill the variables. There are two methods for this - the first is called from the AdditionalVarsProcessor which calls the individual VarBase classes filling routines before filling the branches themselves.
   virtual void FillBranches(EventContainer * evtObj) = 0;
@@ -62,6 +67,10 @@ private:
 protected:
   std::map<string,int> _intVars;
   std::map<string,float> _floatVars;
+  //vectors of ints and float can also be saved
+  std::map<string,std::vector<int> > _intVecVars;
+  std::map<string,std::vector<float> > _floatVecVars;
+  //The branches that will be added to the tree
   std::map<string,TBranch*> _branchVec;
 
   //Fill the histograms if we're doinng that
@@ -73,6 +82,10 @@ protected:
   TDirectory* _histogramDir;
 
   TObjArray _histos;
+
+  //A flag to know whether to run the additional variable adding based on event container
+  bool _runAdditionalVariables;
+  void SetRunAdditionalVariables(bool run){_runAdditionalVariables = run;};
 
   ////////////////////////////////////////////////////////////////////////////////
   // Integrate classes into the Root system                                       

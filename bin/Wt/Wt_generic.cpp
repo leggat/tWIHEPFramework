@@ -54,8 +54,10 @@
 //Include the additional variables that we would want in the skim tree
 #include "SingleTopRootAnalysis/Vars/TestVar.hpp"
 #include "SingleTopRootAnalysis/Vars/BDTVars.hpp"
+#include "SingleTopRootAnalysis/Vars/JESBDTVars.hpp"
 #include "SingleTopRootAnalysis/Vars/WeightVars.hpp"
 #include "SingleTopRootAnalysis/Vars/ChannelFlag.hpp"
+#include "SingleTopRootAnalysis/Vars/Bootstrap.hpp"
 
 using std::cout;
 using std::endl;
@@ -100,8 +102,10 @@ int main(int argc, char **argv)
   Bool_t useInvertedIsolation = kFALSE;
   Bool_t useLeptonSFs = kFALSE;
   Bool_t usebTagReweight = kFALSE;
+  Bool_t useIterFitbTag = kTRUE;
   TString leptonTypeToSelect = "Tight"; //This variable is altered to unisolated when running QCD estimation.
   string evtListFileName="";
+  Bool_t verbose = kFALSE;
   int whichtrig = -1;
   // A couple of jet selection overrides to limit the number of config faces.  
   // -1 means use the value from the config file
@@ -117,6 +121,10 @@ int main(int argc, char **argv)
 	//	evtListFileName="WtDiElectron_"+ListName.substr(b)+".lst.root";
 	//cout << "evtListFileName : " << evtListFileName << endl;
     }
+    if (!strcmp(argv[i], "-verbose")){
+      verbose = kTRUE;
+      cout << "Driver: Running in verbose mode" << std::endl;
+    }
     if (!strcmp(argv[i], "-lepSFs")){
       useLeptonSFs = kTRUE;
       cout << "Driver: Using lepton ID/iso SFs" << endl;
@@ -124,6 +132,10 @@ int main(int argc, char **argv)
     if (!strcmp(argv[i], "-bTagReshape")){
       usebTagReweight = kTRUE;
       cout << "Driver: Enable b-tag discriminant reshaping" << endl;
+    }
+    if (!strcmp(argv[i], "-noIterFitbTag")){
+      useIterFitbTag = kFALSE;
+      cout << "Driver: Not using iterative fit b-tag reshaping" << endl;
     }
     if (!strcmp(argv[i], "-fast")) {
       doFast = kTRUE;
@@ -213,10 +225,10 @@ int main(int argc, char **argv)
   /////////////////////////////////////////////////////////////////////////////////
   // ******** Cuts and Histograms applied to all studies ********
 
-  mystudy.AddCut(new EventWeight(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight));
+  mystudy.AddCut(new EventWeight(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight, useIterFitbTag, verbose));
 
   mystudy.AddCut(new HistogrammingMuon(particlesObj,"All"));  // make the muon plots, hopefully.
-  mystudy.AddCut(new HistogrammingMuon(particlesObj,"Tight"));  // make the muon plots, hopefully.
+  mystudy.AddCut(new HistogrammingMuon(particlesObj,"Tight",useInvertedIsolation));  // make the muon plots, hopefully.
   mystudy.AddCut(new HistogrammingMuon(particlesObj,"Veto"));  // make the muon plots, hopefully.
   mystudy.AddCut(new HistogrammingMuon(particlesObj,"UnIsolated"));  // make the muon plots, hopefully.
   mystudy.AddCut(new CutPrimaryVertex(particlesObj));
@@ -233,7 +245,7 @@ int main(int argc, char **argv)
   mystudy.AddCut(new CutElectronN(particlesObj, leptonTypeToSelect)); //require that lepton to be isolated, central, high pt
   mystudy.AddCut(new CutElectronN(particlesObj, "Veto")); //require that lepton to be isolated, central, high pt
 
-  mystudy.AddCut(new HistogrammingElectron(particlesObj,leptonTypeToSelect));  // make the muon plots, hopefully.
+  mystudy.AddCut(new HistogrammingElectron(particlesObj,leptonTypeToSelect,useInvertedIsolation));  // make the muon plots, hopefully.
   mystudy.AddCut(new HistogrammingElectron(particlesObj,"Veto"));  // make the muon plots, hopefully.
 
   mystudy.AddCut(new HistogrammingMET(particlesObj));
@@ -250,7 +262,7 @@ int main(int argc, char **argv)
   
   mystudy.AddCut(new CutTaggedJetN(particlesObj,nbJets));
 
-  mystudy.AddCut(new EventWeight(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight));
+  //  mystudy.AddCut(new EventWeight(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight));
 
   mystudy.AddCut(new HistogrammingMuon(particlesObj,"Tight"));  // make the muon plots, hopefully.
 
@@ -273,8 +285,10 @@ int main(int argc, char **argv)
   //  mystudy.AddVars(new TestVar());
   //if (whichtrig) mystudy.AddVars(new BDTVars(true));
   mystudy.AddVars(new BDTVars(true));
-  mystudy.AddVars(new WeightVars());
+  mystudy.AddVars(new JESBDTVars());
+  mystudy.AddVars(new WeightVars(useIterFitbTag));
   mystudy.AddVars(new ChannelFlag());
+  mystudy.AddVars(new Bootstrap());
 
   TFile *_skimBDTFile;
   TString NNname = mystudy.GetHistogramFileName() + "skimBDT.root" ;

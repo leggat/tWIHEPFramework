@@ -1026,27 +1026,32 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
     // Fill the histograms
     writeThisEvent = CutListProcessor::Apply(this);
     // Fill Trees for Skim Events
-    if(DoSkim() && writeThisEvent) {
+    if (writeThisEvent) { 
       if (!firstEventWritten) {
 	firstEventWritten = kTRUE;
-	if( NULL != _skimEventTree) {
-	  AdditionalVarsProcessor::BookBranches(_skimEventTree);
-	  _HFORb = -999;
-	  _newBranchHFORb = _skimEventTree->Branch("hfor_type", &_HFORb, "hfor_type/I");
-	  _EventNBeforePreselb = -999;
-	  _newBranchNBPb                 = _skimEventTree->Branch("EventNBeforePresel",   &_EventNBeforePreselb,   "EventNBeforePresel/F");
-
+	if (!AdditionalVarsProcessor::BookBranches(_skimEventTree,this)){
+	  std::cout << "Something has gone wrong in the branch booking!" << std::endl;
+	  break;
+	}
+	if (DoSkim()){
+	  if( NULL != _skimEventTree) {
+	    _HFORb = -999;
+	    _newBranchHFORb = _skimEventTree->Branch("hfor_type", &_HFORb, "hfor_type/I");
+	    _EventNBeforePreselb = -999;
+	    _newBranchNBPb                 = _skimEventTree->Branch("EventNBeforePresel",   &_EventNBeforePreselb,   "EventNBeforePresel/F"); 
+	  }
+	}
+      }
+      AdditionalVarsProcessor::ResetBranches();
+      AdditionalVarsProcessor::FillBranches(this);
+      if(DoSkim()) {
+	if(NULL != _skimEventTree) {
+	  _EventNBeforePreselb   = _totalMCatNLOEvents;
+	  //AdditionalVarsProcessor::OutputBranches();
+	  _skimEventTree          -> Fill();
 	}
       } //if
-    
-      if(NULL != _skimEventTree) {
-	_EventNBeforePreselb   = _totalMCatNLOEvents;
-	AdditionalVarsProcessor::ResetBranches();
-	AdditionalVarsProcessor::FillBranches(this);
-	//AdditionalVarsProcessor::OutputBranches();
-	_skimEventTree          -> Fill();
-      }
-    } //if
+    }
 
     // Read the next event in the chain
     //cout << "<AnalysisMain::Loop> " << "Getting next event in chain " << eventInChain<<endl;

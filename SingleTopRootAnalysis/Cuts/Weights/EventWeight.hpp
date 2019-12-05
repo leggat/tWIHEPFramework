@@ -57,7 +57,7 @@ public:
 
   Double_t PileupAdjust(int eventNumber = 0, int runnumber = 0);
 
-  // methods for weighting for MC generatd with MCatNLO
+ // methods for weighting for MC generatd with MCatNLO
   void setMCatNLO(Bool_t val=true) { _useMCatNLO=val; };
   void setPileUpWgt(Bool_t val=true) { _usePileUpWgt=val; };
   void setPileUpSyst(Bool_t val=false) { _doPileupSysts=val; };
@@ -104,13 +104,13 @@ private:
   BTagCalibrationReader _bTagCalibReader;
 
   //Histograms that are used for applying scale factors to leptons
-  //For now we are only using muons as we veto on electroons anyway
   TH2F* _muonIsoSF;
   TH2F* _muonIDSF;
   TH2F* _muonTrigSF;
   TGraphAsymmErrors* _muonTkSF;
   TH2F* _eleRecoSF;
   TH2F* _eleIDSF;
+  TH2F* _eleTrigSF;
 
   //Pileup reweighting hisotgrams
   TH1F* _dataPV;
@@ -135,7 +135,7 @@ private:
   std::map<std::string,float> _bTagSystValues;
 
   std::tuple<Double_t,Double_t,Double_t,Double_t,Double_t,Double_t> getLeptonWeight(EventContainer * EventContainerObj);
-  void setLeptonHistograms(TString muonIDFileName, TString muonIDHistName, TString muonIsoFileName, TString muonIsoHistName, TString muonTrigFileName, TString muonTrigHistName, TString muonTkFileName, TString eleRecoFileName, TString eleRecoHistName, TString eleIDFileName, TString eleIDHistName);
+  void setLeptonHistograms(TString muonIDFileName, TString muonIDHistName, TString muonIsoFileName, TString muonIsoHistName, TString muonTrigFileName, TString muonTrigHistName, TString muonTkFileName, TString eleRecoFileName, TString eleRecoHistName, TString eleIDFileName, TString eleIDHistName, TString eleTrigFileName, TString eleTrigHistName);
   std::tuple<Double_t,Double_t> getBTagReshape(EventContainer * EventContainerObj, std::string systName = "central");
   std::tuple<Double_t,Double_t> getEfficBTagReshape(EventContainer * EventContainerObj, std::string systName = "central");
 

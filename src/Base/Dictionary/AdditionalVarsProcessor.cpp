@@ -30,7 +30,7 @@ void AdditionalVarsProcessor::AddVars(VarBase* variables){
  * Input: None                                                                  
  * Output: None                                                                 
  ******************************************************************************/
-void AdditionalVarsProcessor::BookBranches(TTree * skimTree){
+bool AdditionalVarsProcessor::BookBranches(TTree * skimTree, EventContainer * evtObj){
 
   //Put out some information on the histograms we're making
   std::cout << "<AdditionalVarsProcessor::BookBranches>      ----------------------------------  " << std::endl;
@@ -52,6 +52,8 @@ void AdditionalVarsProcessor::BookBranches(TTree * skimTree){
       it->SetDirectory(directory);
       _nCuts++;
     }
+    
+    if (it->runAdditionalVariables()) it->AddAdditionalVariables(evtObj);
 
     it->BookBranches(skimTree);
 
@@ -59,6 +61,7 @@ void AdditionalVarsProcessor::BookBranches(TTree * skimTree){
   }
 
   std::cout << "<AdditionalVarsProcessor::BookBranches>      ----------------------------------" << std::endl;
+  return true;
 }
 
 /****************************************************************************** 

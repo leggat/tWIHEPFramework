@@ -79,6 +79,11 @@ void CutTaggedJetN::BookHistogram(){
   _hJetNumberAfter =  DeclareTH1F("TaggedJetNumberAfter","Number of Tagged Jets after the cut",10, 0.0, 10.0);
   _hJetNumberAfter -> SetXAxisTitle("N_{Jet}^{Tagged}");
   _hJetNumberAfter -> SetYAxisTitle("Events");
+
+  // Histogram that will be filled if JES shifts the jet topology of the event"
+  _hJetNumberTopologyShift = DeclareTH1F("bJetTopologyChangeJESShift","Number of events in which the topolgy changes with b-jet JES shift",2,0,2.);
+  _hJetNumberTopologyShift -> SetXAxisTitle("1 change");
+  _hJetNumberTopologyShift -> SetYAxisTitle("Events");
   
   // Get configuration
   EventContainer *EventContainerObj = GetEventContainer();
@@ -125,6 +130,23 @@ Bool_t CutTaggedJetN::Apply()
 
   Int_t JetNumber = evObj->taggedJets.size();
 
+  Int_t minJets = JetNumber;
+  Int_t maxJets = JetNumber;
+
+  if (evObj->jets.size() > 0){
+    for (int i = 0; i > evObj->jets[0].GetNumberOfJESCorrections(); i++){
+      Int_t nBJets = 0;
+      for (auto const jet : evObj->jesShiftedJets[i]){
+	if (jet.IsTagged()) nBJets++;
+      }
+      if (nBJets < minJets) minJets = nBJets;
+      if (nBJets > maxJets) maxJets = nBJets;
+    }
+  }
+
+  if (minJets == JetNumber && maxJets == JetNumber) _hJetNumberTopologyShift->Fill(0.);
+  else _hJetNumberTopologyShift->Fill(1.);
+
   // Fill the histogram before the cut
   _hJetNumberBefore -> Fill(JetNumber);
 
@@ -134,7 +156,7 @@ Bool_t CutTaggedJetN::Apply()
 
   // Cut on Min Pt of Jet
   // Negative cut value for Min means there is no Min cut
-  if( (_JetNumberMin != 999) && (JetNumber < _JetNumberMin) ){
+  if( (_JetNumberMin != 999) && (maxJets < _JetNumberMin) ){
      JetNumberMinPass = kFALSE;
      GetCutFlowTable()->FailCut("Tagged.Jet.Number.Min");
   }//if
@@ -144,7 +166,7 @@ Bool_t CutTaggedJetN::Apply()
 
   // Cut on Min Pt of Jet
   // Negative cut value for Min means there is no Min cut
-  if( (_JetNumberMax != 999) && (JetNumber > _JetNumberMax) ){
+  if( (_JetNumberMax != 999) && (minJets > _JetNumberMax) ){
      JetNumberMaxPass = kFALSE;
      GetCutFlowTable()->FailCut("Tagged.Jet.Number.Max");
   } //if

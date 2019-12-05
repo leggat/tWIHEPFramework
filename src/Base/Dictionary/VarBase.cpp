@@ -34,6 +34,7 @@ ClassImp(VarBase);
 VarBase::VarBase(bool addHists){
   //Set up whether we want to make histograms of the BDT variables
   _makeHists = addHists;
+  _runAdditionalVariables = false;
 //Nothing immediately happens in here.
 }
 
@@ -65,7 +66,7 @@ void VarBase::BookBranches(TTree * skimTree){
 
   for (auto intVar : _intVars){
     string tempString = intVar.first;
-    _branchVec[tempString.c_str()] = skimTree->Branch(tempString.c_str(),&(_intVars[tempString.c_str()]),(tempString+"/I").c_str());
+    if (skimTree != NULL) _branchVec[tempString.c_str()] = skimTree->Branch(tempString.c_str(),&(_intVars[tempString.c_str()]),(tempString+"/I").c_str());
     if (DoHists()) {
       _histograms[tempString] = BookTH1FHistogram(tempString,tempString,10,0.,intVar.second);
     }
@@ -73,12 +74,22 @@ void VarBase::BookBranches(TTree * skimTree){
 
   for (auto floatVar: _floatVars){
     string tempString = floatVar.first;
-    _branchVec[tempString.c_str()] = skimTree->Branch(tempString.c_str(),&(_floatVars[tempString.c_str()]),(tempString+"/F").c_str());
+    if (skimTree!= NULL) _branchVec[tempString.c_str()] = skimTree->Branch(tempString.c_str(),&(_floatVars[tempString.c_str()]),(tempString+"/F").c_str());
     if (DoHists()) {
       float startVar = 0.;
       if (floatVar.second < 0.) startVar = floatVar.second;
       _histograms[tempString] = BookTH1FHistogram(tempString,tempString,100,startVar,std::fabs(floatVar.second));
     }
+  }
+
+  for (auto intVecVar : _intVecVars){
+    string tempString = intVecVar.first;
+    if (skimTree != NULL) _branchVec[tempString.c_str()] = skimTree->Branch(tempString.c_str(),&(_intVecVars[tempString.c_str()]));
+  }
+
+  for (auto floatVecVar: _floatVecVars){
+    string tempString = floatVecVar.first;
+    if (skimTree!= NULL) _branchVec[tempString.c_str()] = skimTree->Branch(tempString.c_str(),&(_floatVecVars[tempString.c_str()]));
   }
 
 
@@ -99,6 +110,16 @@ void VarBase::ResetBranches(){
   for (auto floatVar : _floatVars){
     floatVar.second = -999.;
   }
+  for (auto intVecVar : _intVecVars){
+    for (auto intVecItem : intVecVar.second){
+      intVecItem = -999;
+    }
+  }
+  for (auto floatVecVar : _floatVecVars){
+    for (auto floatVecItem : floatVecVar.second){
+      floatVecItem = -999.;
+    }
+  }
 }
 
 /****************************************************************************** 
@@ -117,6 +138,21 @@ void VarBase::OutputBranches(){
   for (auto intVar : _intVars){
     std::cout << intVar.first << " " << intVar.second << std::endl;
   }
+
+  for (auto floatVec : _floatVecVars){
+    std::cout << floatVec.first << std::endl;
+    for (int i = 0; i < floatVec.second.size() ; i++) {
+      std::cout << "Index: " << i << " Value: " << floatVec.second[i] << std::endl;
+    }
+  }
+
+  for (auto intVec : _intVecVars){
+    std::cout << intVec.first << std::endl;
+    for (int i = 0; i < intVec.second.size() ; i++) {
+      std::cout << "Index: " << i << " Value: " << intVec.second[i] << std::endl;
+    }
+  }
+
 }
 
 /****************************************************************************** 
@@ -135,6 +171,7 @@ void VarBase::TouchBranches(){
     int temp = intVar.second;
   }
 }
+
 
 /****************************************************************************** 
  * void VarBase::FillHistograms ()                                             * 

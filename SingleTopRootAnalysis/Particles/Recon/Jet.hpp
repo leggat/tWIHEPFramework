@@ -136,9 +136,34 @@ class Jet: public Particle
   inline Int_t IsTagged() const {return _tagged;};
   inline Int_t tagged() const {return _tagged;};
 
+  inline void SetPrefireVeto(Int_t prefireVeto){_prefireVeto = prefireVeto;};
+  inline Int_t IsPrefireVeto() const {return _prefireVeto;};
+  inline Int_t prefireVeto() const {return _prefireVeto;};
+
   inline void SetClosestLep(Double_t closestLep){_closestLep = closestLep;};
   inline Double_t GetClosestLep() const {return _closestLep;};
   inline Double_t closestLep() const {return _closestLep;};
+
+  inline Int_t GetNumberOfJESCorrections() const {return _jesShifts.size();};
+
+  inline void SetNominalPx(Double_t nomPx){_nominalPx = nomPx;};
+  inline Double_t GetNominalPx() const {return _nominalPx;};
+  inline Double_t nominalPx() const {return _nominalPx;};
+
+  inline void SetNominalPy(Double_t nomPy){_nominalPy = nomPy;};
+  inline Double_t GetNominalPy() const {return _nominalPy;};
+  inline Double_t nominalPy() const {return _nominalPy;};
+
+  inline void SetNominalPz(Double_t nomPz){_nominalPz = nomPz;};
+  inline Double_t GetNominalPz() const {return _nominalPz;};
+  inline Double_t nominalPz() const {return _nominalPz;};
+
+  inline void SetNominalE(Double_t nomE){_nominalE = nomE;};
+  inline Double_t GetNominalE() const {return _nominalE;};
+  inline Double_t nominalE() const {return _nominalE;};
+
+
+  Bool_t ShiftPtWithJESCorr(Int_t jesShiftInd, TLorentzVector * met);
 
   // Overloaded Operators
   // +=
@@ -169,7 +194,14 @@ class Jet: public Particle
   Double_t _photonEnergy;   
   Double_t _uncorrPt;  
   Int_t _tagged;
+  Int_t _prefireVeto;
   Double_t _closestLep;
+
+  //This is a variable that will be filled once during the normal filling but used by the JES shift to check
+  Bool_t _passesIDs;
+  inline void SetPassesIDs(Bool_t passesIDs){_passesIDs = passesIDs;};
+  inline Bool_t GetPassesIDs() const {return _passesIDs;};
+  inline Bool_t passesIDs() const {return _passesIDs;};
 
   // Cuts applied to the jet objects
   Double_t _maxEtaCut;
@@ -185,8 +217,25 @@ class Jet: public Particle
   Int_t _jerUp;
   Int_t _jerDown;
 
+  // New approach to running JES shifts. We will save a list of the shifted Pts
+  std::vector<Double_t> _jesShifts;
+  
+  //Setters/getters
+  void SetJesShifts(std::vector<Double_t> jesShifts){_jesShifts = jesShifts;};
+  std::vector<Double_t> GetJesShifts() const {return _jesShifts;};
+  std::vector<Double_t> jesShifts() const {return _jesShifts;};
+
+  //Nominal p_{x,y,z} for 
+  Double_t _nominalPx;
+  Double_t _nominalPy;
+  Double_t _nominalPz;
+  Double_t _nominalE; //Iguess I need to change E as well?
+
   // Apply the jet correction systematics
   void SystematicPtShift(EventTree * evtr, Int_t iE, TLorentzVector * met);
+
+  //Read out the JES shifts from the event tree
+  std::vector<Double_t> GetJESShifts(EventTree * evtr, Int_t iE);
  
   ////////////////////////////////////////////////////////////////////////////////
   // Integrate classes into the Root system

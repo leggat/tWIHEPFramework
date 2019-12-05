@@ -277,6 +277,10 @@ class EventContainer
   inline Double_t GetpileupShift() const { return _pileupShift; };
   inline Double_t pileupShift() const { return GetpileupShift(); };
 
+  inline void SeteventReweight(Double_t is) { _generalReweight=is; };
+  inline Double_t GeteventReweight() const { return _generalReweight; };
+  inline Double_t eventReweight() const { return GeteventReweight(); };
+
  // Bkgd Tree name (if set, is also a sign to set DoBkgdTree true
   inline void SetBkgdTreeName(const TString& tna) { _BkgdTreeName=tna; };
   inline TString GetBkgdTreeName() const { return _BkgdTreeName; };
@@ -422,6 +426,8 @@ class EventContainer
   inline bool GetIsSimulation(){return isSimulation;};
   //inline bool isSimulation() { return _isSimulation;};
 
+  inline Double_t GetMETShiftUp(){return missingEtUpSF;};
+  inline Double_t GetMETShiftDown(){return missingEtDownSF;};
 
    // Get the configuration 
   TEnv * GetConfig() {return &_config; };
@@ -518,6 +524,7 @@ class EventContainer
   std::vector<Jet>        jetms;//overlap removal vector for muons
   std::vector<Jet>        taggedJets;
   std::vector<Jet>        unTaggedJets;
+  std::vector<std::vector<Jet> > jesShiftedJets;
   std::vector<Jet>        bLabeledJets;
   std::vector<Jet>        cLabeledJets;
   std::vector<Jet>        tauLabeledJets;
@@ -544,6 +551,13 @@ class EventContainer
   Double_t missingEy_xy;
   Double_t missingPhi_xy;
   TLorentzVector missingEtVec_xy;
+  
+  //SFs for met up/down
+  Double_t missingEtUpSF;
+  Double_t missingEtDownSF;
+
+  //A vector of JES shifted METs
+  std::vector<TLorentzVector> metVecsJESShifted;
 
   //Track whterh it passes the MET filters
   Int_t passesMETFilters;
@@ -670,6 +684,7 @@ private:
   Double_t _celloutShift;
   Double_t _softjetShift;
   Double_t _pileupShift;
+  Double_t _generalReweight;
   Int_t _larShift;
 
   //met uncertainty shift, +1,-1 or 0 as above.

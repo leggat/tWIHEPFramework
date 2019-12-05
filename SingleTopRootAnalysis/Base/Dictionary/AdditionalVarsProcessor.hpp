@@ -21,7 +21,7 @@ public:
   void AddVars(VarBase* variables);
 
   // Add variables to skim tree - this is done once before the loop  
-  void BookBranches(TTree* skimTree);                                   
+  bool BookBranches(TTree* skimTree, EventContainer * evtObj = NULL);                                   
                                                                      
   // Reset the variables in the branches. Do this once for each event
   void ResetBranches();                                  

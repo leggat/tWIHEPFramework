@@ -314,7 +314,7 @@ void EventWeight::BookHistogram()
   } //if
 
   //Set up the lepton efficiency SF histograms
-  if (_useLeptonSFs) setLeptonHistograms(conf->GetValue("Include.MuonIDSFsFile","null"),conf->GetValue("LeptonID.MuonIDSFHistName","null"),conf->GetValue("Include.MuonISOSFsFile","null"),conf->GetValue("LeptonID.MuonIsoSFHistName","null"),conf->GetValue("Include.MuonTrigSFsFile","null"),conf->GetValue("LeptonID.MuonTrigSHHistName","null"),conf->GetValue("Include.MuonTKSFsFile","null"),conf->GetValue("Include.EleRecoFileName","null"),conf->GetValue("LeptonID.EleRecoHistName","null"),conf->GetValue("Include.EleIDFileName","null"),conf->GetValue("LeptonID.EleIDHistName","null"));
+  if (_useLeptonSFs) setLeptonHistograms(conf->GetValue("Include.MuonIDSFsFile","null"),conf->GetValue("LeptonID.MuonIDSFHistName","null"),conf->GetValue("Include.MuonISOSFsFile","null"),conf->GetValue("LeptonID.MuonIsoSFHistName","null"),conf->GetValue("Include.MuonTrigSFsFile","null"),conf->GetValue("LeptonID.MuonTrigSHHistName","null"),conf->GetValue("Include.MuonTKSFsFile","null"),conf->GetValue("Include.EleRecoFileName","null"),conf->GetValue("LeptonID.EleRecoHistName","null"),conf->GetValue("Include.EleIDFileName","null"),conf->GetValue("LeptonID.EleIDHistName","null"),conf->GetValue("Include.EleTrigFileName","null"),conf->GetValue("LeptonID.EleTrigHistName","null"));
 
   if (_usebTagReshape){
     _bTagCalib = BTagCalibration(conf->GetValue("BTaggerAlgo","CSVv2"),conf->GetValue("Include.BTagCSVFile","null"));
@@ -345,37 +345,39 @@ void EventWeight::BookHistogram()
 Bool_t EventWeight::Apply()
 {
      EventContainer *EventContainerObj = GetEventContainer();
-   // Set output event weight- no difference
 
      EventTree* tree = EventContainerObj->GetEventTree();
 
-  Double_t wgt = EventContainerObj -> GetGlobalEventWeight();
- Double_t mnwgt = 1;
-  //
-  // multiply by MCatNLO weight if desired.
- //Note that if files like data are flagged as MCatNLO, strange weights might result (negative yields...)
-  if(isMCatNLO()) {
-    //  cout<<"we found MCatNLO"<<endl;
-    if(EventContainerObj->DoFastSim()){
-      mnwgt =EventContainerObj -> GetFastSimTree() ->eventWeightMCatNLO;
-    }else{
-      mnwgt = 1; //EventContainerObj -> GetEventTree() -> weight;
-      // For comparison
-      //mnwgt = 1;
-    }
-    //    cout << tree->EVENT_genWeight << " " << tree->bWeight << " " << tree->PUWeight << "weight" << endl;
-    //  Double_t mnwgt = EventContainerObj->GetTruthTree()->eventWeightMCatNLO;
-    // cout<<"the weight is "<<mnwgt<<endl;
+     Double_t wgt = EventContainerObj -> GetGlobalEventWeight();
+     Double_t mnwgt = 1;
+     EventContainerObj->SeteventReweight(1.); //Reset the reweighting variable
+     //
+     // multiply by MCatNLO weight if desired.
+     //Note that if files like data are flagged as MCatNLO, strange weights might result (negative yields...)
+     if(isMCatNLO()) {
+       //  cout<<"we found MCatNLO"<<endl;
+       if(EventContainerObj->DoFastSim()){
+	 mnwgt =EventContainerObj -> GetFastSimTree() ->eventWeightMCatNLO;
+       }else{
+	 mnwgt = 1; //EventContainerObj -> GetEventTree() -> weight;
+	 // For comparison
+	 //mnwgt = 1;
+       }
+       //    cout << tree->EVENT_genWeight << " " << tree->bWeight << " " << tree->PUWeight << "weight" << endl;
+       //  Double_t mnwgt = EventContainerObj->GetTruthTree()->eventWeightMCatNLO;
+       // cout<<"the weight is "<<mnwgt<<endl;
 
-    // cout<<wgt<<"  "<<mnwgt<<"  "<<endl;
-    wgt *= mnwgt;
-    _hMCatNLOWeight->FillWithoutWeight(mnwgt);
-  }
+       // cout<<wgt<<"  "<<mnwgt<<"  "<<endl;
+       wgt *= mnwgt;
+       _hMCatNLOWeight->FillWithoutWeight(mnwgt);
+     }
   
-  float genWeight(1.0);
-  if (tree->EVENT_genWeight < 0.) genWeight = -1.;
+     float genWeight(1.0);
+     if (tree->EVENT_genWeight < 0.) genWeight = -1.;
 
-  wgt *= genWeight;
+     wgt *= genWeight;
+
+     // multiply by PileUpWgt weight if desired.
 
   // multiply by PileUpWgt weight if desired.
  float pileupEventWeight(-1.0);
@@ -533,7 +535,7 @@ Bool_t EventWeight::Apply()
  * Input:  Names of files and histograms that are relevant to the calculation * 
  * Output: none                                                               * 
  ******************************************************************************/
-void EventWeight::setLeptonHistograms(TString muonIDFileName, TString muonIDHistName, TString muonIsoFileName, TString muonIsoHistName, TString muonTrigFileName, TString muonTrigHistName, TString muonTkFileName, TString eleRecoFileName, TString eleRecoHistName, TString eleIDFileName, TString eleIDHistName){
+void EventWeight::setLeptonHistograms(TString muonIDFileName, TString muonIDHistName, TString muonIsoFileName, TString muonIsoHistName, TString muonTrigFileName, TString muonTrigHistName, TString muonTkFileName, TString eleRecoFileName, TString eleRecoHistName, TString eleIDFileName, TString eleIDHistName, TString eleTrigFileName, TString eleTrigHistName){
 
   if (muonIsoFileName == "null" || muonIDFileName == "null"){
     std::cout << "You want lepton SFs included in the weight but you haven't specified files for this! Fix your config!" << std::endl;
@@ -574,7 +576,14 @@ void EventWeight::setLeptonHistograms(TString muonIDFileName, TString muonIDHist
   _eleIDSF = (TH2F*)eleIDFile->Get(eleIDHistName)->Clone();
   _eleIDSF->SetDirectory(0);
   eleIDFile->Close();
-  delete muonIsoFile,muonIDFile,muonTrigFile,muonTkFile,eleRecoFile,eleIDFile;
+
+  TFile* eleTrigFile = TFile::Open(eleTrigFileName,"READ");
+  if (!eleTrigFile) std::cout << "Electron Trig SF file not found!" << std::endl;
+  _eleTrigSF = (TH2F*)eleTrigFile->Get(eleTrigHistName)->Clone();
+  _eleTrigSF->SetDirectory(0);
+  eleTrigFile->Close();
+
+  delete muonIsoFile,muonIDFile,muonTrigFile,muonTkFile,eleRecoFile,eleIDFile,eleTrigFile;
 
 }
 
@@ -642,6 +651,20 @@ std::tuple<Double_t,Double_t,Double_t,Double_t,Double_t,Double_t> EventWeight::g
     if (ele.Pt() > 500) xAxisBin = _eleIDSF->GetYaxis()->FindBin(499.);
     Float_t idSF = _eleIDSF->GetBinContent(xAxisBin,yAxisBin);
     Float_t idUnc = _eleIDSF->GetBinError(xAxisBin,yAxisBin);
+
+    //And finally trigger
+    yAxisBin = _eleTrigSF->GetYaxis()->FindBin(ele.scEta());
+    if (ele.scEta() > 2.5) yAxisBin = _eleTrigSF->GetYaxis()->FindBin(2.49);
+    if (ele.scEta() < -2.5) yAxisBin = _eleTrigSF->GetYaxis()->FindBin(-2.49);
+    xAxisBin = _eleTrigSF->GetXaxis()->FindBin(ele.Pt());
+    if (ele.Pt() > 200) xAxisBin = _eleTrigSF->GetXaxis()->FindBin(199.);
+    Float_t trigSF = _eleTrigSF->GetBinContent(xAxisBin,yAxisBin);
+    Float_t trigUnc = _eleTrigSF->GetBinError(xAxisBin,yAxisBin);
+
+    triggerWeight = trigSF;              
+    triggerWeightUp = trigSF + trigUnc;  
+    triggerWeightDown = trigSF - trigUnc;
+
     leptonWeight *= recoSF * idSF;
     leptonWeightUp *= (recoSF + recoUnc) * (idSF + idUnc);
     leptonWeightDown *= (recoSF - recoUnc) * (idSF - idUnc);
