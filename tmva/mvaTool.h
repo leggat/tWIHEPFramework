@@ -72,10 +72,10 @@ class mvaTool {
   std::vector<TString> regionNames;
 
   //Used to loop over things
-  void processMCSample(TString sampleName,TString inDir,TString outDir, float * proxyvars, float * treevars,std::vector<std::vector<float> * >  treevarsJetShifts, bool isData, bool doMVA = true, int minFile = -1, int maxFile = -1);
-  void loopInSample(TTree* theTree, TString sampleName, float* proxyvars, float* treevars, std::vector<std::vector<float> * > treevarsJetShifts, bool isData, bool doMVA = true);
+  void processMCSample(TString sampleName,TString inDir,TString outDir, std::vector<std::vector<float > > proxyvars, bool isData, bool doMVA = true, int minFile = -1, int maxFile = -1);
+  void loopInSample(TTree* theTree, TString sampleName, std::vector<std::vector<float > > proxyvars, bool isData, bool doMVA = true);
   void createHists(TString sampleName);
-  void fillHists(TString sampleName, float* treevars, double mvaValue, double mvawJets, double theweight, float met, float mtw, int theChannel);
+  void fillHists(TString sampleName, std::vector<float> treevars, double mvaValue, double mvawJets, double theweight, float met, float mtw, int theChannel);
   void saveHists(std::vector<TFile *> outFile);
   void setbTagVars(TChain* theTree); 
 
@@ -89,7 +89,10 @@ class mvaTool {
   std::map<TString,std::vector<std::vector<TH1F*> > > bdtHistoMap;
   std::map<TString,std::vector<TH2F*> > the2DHistoMap;
 
-  std::vector<TString > varList;
+  std::vector<std::vector<TString > > varList;
+  std::map<TString,float > _varsInBDTs;
+  std::map<TString,std::vector<float > * > _varsInBDT_JESShifts;
+
   std::vector<TString > samplelist;
   std::vector<TString > systlist;
   TString baseName;
@@ -99,7 +102,8 @@ class mvaTool {
 
   Bool_t _isEle;
 
-  TMVA::Reader *reader;
+  std::vector<TMVA::Reader *> reader;
+  //TMVA::Reader * reader;
 
   float theweight;
   float mvaValue;
@@ -109,7 +113,7 @@ class mvaTool {
   int _depth;
   int _nCuts;
 
-  TString _bdtName;
+  std::vector<TString> _bdtName;
 
 };
 
