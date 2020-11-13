@@ -41,8 +41,11 @@
 //#include "SingleTopRootAnalysis/Base/Dictionary/MultijetJESUncertaintyProvider.hpp"
 //#include "SingleTopRootAnalysis/Base/Dictionary/JetEfficiencyEstimator.hpp"
 //#include "SingleTopRootAnalysis/Base/Dictionary/JERProvider.hpp"
+//#include "SingleTopRootAnalysis/Base/Dictionary/JetResolution.hpp"
+//#include "SingleTopRootAnalysis/Base/Dictionary/JetResolutionObject.hpp"
 //
 #include <TString.h>
+#include <TFormula.h>
 
 //using namespace Analysis;
 
@@ -71,7 +74,7 @@ class Jet: public Particle
   void SetCuts(TEnv* config);
 
   // Fill the jet from an EventTree 
-  Bool_t Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, EventTree *evtr, Int_t iE, TLorentzVector * met, bool isMC);
+  Bool_t Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, EventTree *evtr, Int_t iE, TLorentzVector * met, bool isMC, std::vector<std::vector<std::string> > * resolution, std::vector<std::vector<std::string> > * resSFs, TString * resFormula);
   //  Bool_t Fill( double myJESCorr, double myJERCorr, std::vector<Electron>& selectedElectrons, EventTree *evtr, Int_t iE);
   // Also fill from FastSim tree:
   Bool_t FillFastSim( std::vector<MCJet>& MCBJets, std::vector<MCJet>& MCCJets, std::vector<MCTau>& MCTaus,  std::vector<Electron>& electrons, FastSimTree *tr,Int_t iE,TEnv *config,const TString& tagName="default", Double_t btagCut = 999, Double_t mistagCut = 999, Double_t eshift = 0 );
@@ -162,6 +165,21 @@ class Jet: public Particle
   inline Double_t GetNominalE() const {return _nominalE;};
   inline Double_t nominalE() const {return _nominalE;};
 
+  inline void SetgenPt(Double_t genPt){_genPt = genPt;};
+  inline Double_t GetgenPt() const {return _genPt;};
+  inline Double_t genPt() const {return _genPt;};
+
+  inline void SetjerSF(Double_t jerSF){_jerSF = jerSF;};
+  inline Double_t GetjerSF() const {return _jerSF;};
+  inline Double_t jerSF() const {return _jerSF;};
+
+  inline void SetjesSF(Double_t jesSF){_jesSF = jesSF;};
+  inline Double_t GetjesSF() const {return _jesSF;};
+  inline Double_t jesSF() const {return _jesSF;};
+
+  inline void SetsmearFactor(Double_t smearFactor){_smearFactor = smearFactor;};
+  inline Double_t GetsmearFactor() const {return _smearFactor;};
+  inline Double_t smearFactor() const {return _smearFactor;};
 
   Bool_t ShiftPtWithJESCorr(Int_t jesShiftInd, TLorentzVector * met);
 
@@ -193,6 +211,10 @@ class Jet: public Particle
   Double_t _electronEnergy;   
   Double_t _photonEnergy;   
   Double_t _uncorrPt;  
+  Double_t _genPt;  
+  Double_t _jerSF;
+  Double_t _jesSF;
+  Double_t _smearFactor;
   Int_t _tagged;
   Int_t _prefireVeto;
   Double_t _closestLep;
@@ -202,6 +224,10 @@ class Jet: public Particle
   inline void SetPassesIDs(Bool_t passesIDs){_passesIDs = passesIDs;};
   inline Bool_t GetPassesIDs() const {return _passesIDs;};
   inline Bool_t passesIDs() const {return _passesIDs;};
+
+  float GetStochasticFactor(float pt, float eta, float rho, std::vector<std::vector<std::string> > * resolution, TString * resFormula);
+  float GetJerFromFile(float eta, std::vector<std::vector<std::string> > * resSFs, int central);
+  float GetSmearFactor(float pt, float genPt, float eta, float rho, float jer_sf, std::vector<std::vector<std::string> > * resolution, TString * resFormula);
 
   // Cuts applied to the jet objects
   Double_t _maxEtaCut;
@@ -220,6 +246,9 @@ class Jet: public Particle
   // New approach to running JES shifts. We will save a list of the shifted Pts
   std::vector<Double_t> _jesShifts;
   
+  //In order to calculate the resolution for the stoachastic smearing
+  //  JME::JetResolution resolution;
+
   //Setters/getters
   void SetJesShifts(std::vector<Double_t> jesShifts){_jesShifts = jesShifts;};
   std::vector<Double_t> GetJesShifts() const {return _jesShifts;};
@@ -235,7 +264,7 @@ class Jet: public Particle
   void SystematicPtShift(EventTree * evtr, Int_t iE, TLorentzVector * met);
 
   //Read out the JES shifts from the event tree
-  std::vector<Double_t> GetJESShifts(EventTree * evtr, Int_t iE);
+  std::vector<Double_t> GetJESShifts(EventTree * evtr, Int_t iE, float jetEta, std::vector<std::vector<std::string> > * resSFs, std::vector<std::vector<std::string> > * resolution, TString * resFormula);
  
   ////////////////////////////////////////////////////////////////////////////////
   // Integrate classes into the Root system

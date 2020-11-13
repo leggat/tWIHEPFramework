@@ -66,7 +66,7 @@ ClassImp(Jet)
  * Output: None                                                               *
  ******************************************************************************/
   Jet::Jet() : Particle::Particle(),
-  _numberOfConstituents(0), _chargedMultiplicity(0),  _bDiscriminator ( -999.0), _pileupId ( 0.0), _mass ( 0.0), _uncorrPt ( 0.0), _neutralHadEnergyFraction(0.0), _neutralEmEmEnergyFraction ( 0.0), _chargedHadronEnergyFraction (0.0), _chargedEmEnergyFraction(0.0), _muonEnergyFraction(0.0), _electronEnergy(0.0), _photonEnergy(0.0), _jesUp(false), _jesDown(false), _jerUp(false), _jerDown(false), _hadronFlavour(-1), _tagged(0), _prefireVeto(0), _nominalPx(0.), _nominalPy(0.), _nominalPz(0.), _passesIDs(false)
+  _numberOfConstituents(0), _chargedMultiplicity(0),  _bDiscriminator ( -999.0), _pileupId ( 0.0), _mass ( 0.0), _uncorrPt ( 0.0), _neutralHadEnergyFraction(0.0), _neutralEmEmEnergyFraction ( 0.0), _chargedHadronEnergyFraction (0.0), _chargedEmEnergyFraction(0.0), _muonEnergyFraction(0.0), _electronEnergy(0.0), _photonEnergy(0.0),_genPt(-999.0), _jerSF(1.0), _jesSF(1.0), _smearFactor(1.0), _jesUp(false), _jesDown(false), _jerUp(false), _jerDown(false), _hadronFlavour(-1), _tagged(0), _prefireVeto(0), _nominalPx(0.), _nominalPy(0.), _nominalPz(0.), _passesIDs(false)
 {
 } //Jet()
 
@@ -110,6 +110,10 @@ _photonEnergy			(other.GetphotonEnergy()),
 _nominalPx                      (other.GetNominalPx()),
 _nominalPy                      (other.GetNominalPy()),
 _nominalPz                      (other.GetNominalPz()),
+_genPt                          (other.GetgenPt()),
+_jerSF                          (other.GetjerSF()),
+_jesSF                          (other.GetjesSF()),
+_smearFactor                    (other.GetsmearFactor()),
 _passesIDs			(other.GetPassesIDs()),
 _jesShifts 			(other.GetJesShifts())
 {
@@ -124,7 +128,7 @@ _jesShifts 			(other.GetJesShifts())
  * Output: None                                                               *
  ******************************************************************************/
 Jet::Jet(const Particle& other): Particle(other),
-				 _numberOfConstituents(0), _hadronFlavour(-1), _chargedMultiplicity(0),  _bDiscriminator ( -999.0), _pileupId ( 0.0), _mass ( 0.0), _uncorrPt ( 0.0), _neutralHadEnergyFraction(0.0), _neutralEmEmEnergyFraction ( 0.0), _chargedHadronEnergyFraction (0.0), _chargedEmEnergyFraction(0.0), _muonEnergyFraction(0.0), _electronEnergy(0.0), _photonEnergy(0.0), _tagged(0), _prefireVeto(0), _nominalPx(0.), _nominalPy(0.), _nominalPz(0.), _passesIDs(false)
+				 _numberOfConstituents(0), _hadronFlavour(-1), _chargedMultiplicity(0),  _bDiscriminator ( -999.0), _pileupId ( 0.0), _mass ( 0.0), _uncorrPt ( 0.0), _neutralHadEnergyFraction(0.0), _neutralEmEmEnergyFraction ( 0.0), _chargedHadronEnergyFraction (0.0), _chargedEmEnergyFraction(0.0), _muonEnergyFraction(0.0), _electronEnergy(0.0), _photonEnergy(0.0), _genPt(-999.0), _jerSF(1.0), _jesSF(1.0), _smearFactor(1.0), _tagged(0), _prefireVeto(0), _nominalPx(0.), _nominalPy(0.), _nominalPz(0.), _passesIDs(false)
 {
  
 } //Jet()
@@ -192,6 +196,10 @@ Jet& Jet::operator=(const Particle& other)
   SetNominalPy(0.), 
   SetNominalPz(0.), 
   SetNominalE(0.),
+  SetgenPt(-999.0),
+  SetjerSF(1.0),
+  SetjesSF(1.0),
+  SetsmearFactor(1.0),
   SetPassesIDs(false),
   SetphotonEnergy(0.0);
 
@@ -230,6 +238,10 @@ Jet& Jet::operator=(const Jet& other)
   SetNominalPy                      (other.GetNominalPy());
   SetNominalPz                      (other.GetNominalPz());
   SetNominalE                       (other.GetNominalE());
+  SetgenPt                          (other.GetgenPt());
+  SetjerSF                          (other.GetjerSF());
+  SetjesSF                          (other.GetjesSF());
+  SetsmearFactor                    (other.GetsmearFactor());
   SetJesShifts			    (other.GetJesShifts());
   SetPassesIDs                      (other.GetPassesIDs());
 
@@ -267,6 +279,10 @@ Jet& Jet::operator=(Jet& other)
   SetNominalPy                      (other.GetNominalPy());
   SetNominalPz                      (other.GetNominalPz());
   SetNominalE                       (other.GetNominalE());
+  SetgenPt                          (other.GetgenPt());
+  SetjerSF                          (other.GetjerSF());
+  SetjesSF                          (other.GetjesSF());
+  SetsmearFactor                    (other.GetsmearFactor());
   SetJesShifts			    (other.GetJesShifts());
   SetPassesIDs                      (other.GetPassesIDs());
 
@@ -307,7 +323,7 @@ void Jet::SetCuts(TEnv * config)
  * Output: True if this jet passes jet ID cuts                                *         
  ******************************************************************************/
 
-Bool_t Jet::Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, EventTree *evtr, Int_t iE, TLorentzVector * met, bool isMC)
+Bool_t Jet::Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, EventTree *evtr, Int_t iE, TLorentzVector * met, bool isMC, std::vector<std::vector<std::string> > * resolution, std::vector<std::vector<std::string> > * resSFs, TString * resFormula)
 {
 
   Double_t jetPt, jetEta,jetPhi,jetE, jetCharge, jetM;
@@ -335,10 +351,51 @@ Bool_t Jet::Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selecte
   SetmuonEnergyFraction			(evtr -> Jet_muonEnergyFraction     	-> operator[](iE));
   SetelectronEnergy			(evtr -> Jet_electronEnergy     	-> operator[](iE));
   SetphotonEnergy			(evtr -> Jet_photonEnergy     		-> operator[](iE));
-  if (isMC)  SethadronFlavour           (evtr -> Jet_hadronFlavour              -> operator[](iE));
+
+
+  if (isMC){
+    SethadronFlavour                    (evtr -> Jet_hadronFlavour              -> operator[](iE));
+    SetgenPt                            (evtr -> Jet_genpt                      -> operator[](iE));
+    SetjerSF                            (evtr -> Jet_JerSF                      -> operator[](iE));
+    SetjesSF                            (evtr -> Jet_JesSF                      -> operator[](iE));
+
+    //    if (jerSF() == 1.) SetjerSF(GetJerFromFile(Eta(),resSFs,0));
+    SetjerSF(GetJerFromFile(Eta(),resSFs,0)); //Let's do rthis all from the file...
+    if (jerSF() <= 0.) SetjerSF(1.);
+    if (jesSF() <= 0.) SetjesSF(1.);
+
+    //Use JER to shift jet. Not actually what we want to do?
+    /*SetPx(Px()*GetjerSF());
+    SetPy(Py()*GetjerSF());
+    SetPz(Pz()*GetjerSF());
+    SetE(E()*GetjerSF());  */
+    /*SetPx(Px()*GetjesSF());
+    SetPy(Py()*GetjesSF());
+    SetPz(Pz()*GetjesSF());
+    SetE(E()*GetjesSF());  */
+
+  }
 
   _jesShifts.clear();
-  _jesShifts = GetJESShifts(evtr,iE);
+  _jesShifts = GetJESShifts(evtr,iE,Eta(),resSFs,resolution,resFormula);
+
+  double smearFactor = 1.;
+
+  if (isMC){ //Here is where we smear the jet if it's MC
+    //If there is a gen jet use the genpt
+    smearFactor = GetSmearFactor(Pt(),genPt(),Eta(),evtr->EVENT_rhopog,GetjerSF(),resolution,resFormula);
+    //    std::cout << Pt() << " " << genPt() << " " << Eta() << " " << GetjerSF() << " "<< smearFactor << std::endl;
+    //    double jer_sf = evtr->Jet_JerSF->operator[](iE);
+    if (smearFactor == 0) smearFactor = 1.;
+    SetPx(Px()*smearFactor);
+    SetPy(Py()*smearFactor);
+    SetPz(Pz()*smearFactor);
+    SetE(E()*smearFactor);
+
+
+  }
+
+  SetsmearFactor(smearFactor);
 
   SetNominalPx(Px());
   SetNominalPy(Py());
@@ -624,10 +681,11 @@ void Jet::SystematicPtShift(EventTree * evtr, Int_t iE, TLorentzVector * met){
 
 }
 
-std::vector<Double_t> Jet::GetJESShifts(EventTree * evtr, Int_t iE){
+std::vector<Double_t> Jet::GetJESShifts(EventTree * evtr, Int_t iE, float jetEta, std::vector<std::vector<std::string> > * resSFs, std::vector<std::vector<std::string> > * resolution, TString * resFormula){
   std::vector<Double_t> jesShifts;
   Double_t nominalJES = evtr -> Jet_JesSF->operator[](iE);
   //Now get all of the correction factors
+  //  std::cout << "preStatCheck" << std::endl;
   if (NULL == evtr->Jet_JesSF_AbsoluteStat_up) return jesShifts;
   jesShifts.push_back(evtr->Jet_JesSF_AbsoluteStat_up->operator[](iE)/nominalJES);
   jesShifts.push_back(evtr->Jet_JesSF_AbsoluteStat_down->operator[](iE)/nominalJES);
@@ -677,12 +735,51 @@ std::vector<Double_t> Jet::GetJESShifts(EventTree * evtr, Int_t iE){
   jesShifts.push_back(evtr->Jet_JesSF_PileUpPtEC2_down->operator[](iE)/nominalJES);
   jesShifts.push_back(evtr->Jet_JesSF_PileUpPtHF_up->operator[](iE)/nominalJES);
   jesShifts.push_back(evtr->Jet_JesSF_PileUpPtHF_down->operator[](iE)/nominalJES);
-  nominalJES = evtr->Jet_JerSF->operator[](iE);
-  jesShifts.push_back(evtr->Jet_JerSFup->operator[](iE)/nominalJES);
-  jesShifts.push_back(evtr->Jet_JerSFdown->operator[](iE)/nominalJES);
+  //New version of the JEr systematics that does it properly
+  //  std::cout << nominalJES << " " << evtr->Jet_JesSF_AbsoluteStat_up->operator[](iE) << " " << evtr->Jet_JesSF_AbsoluteStat_down->operator[](iE) << std::endl;
+  nominalJES = GetSmearFactor(Pt(),genPt(),Eta(),evtr->EVENT_rhopog,GetjerSF(),resolution,resFormula);
+  if (nominalJES <= 0.) nominalJES = 1.;
+  float downJERStat = GetSmearFactor(Pt(),genPt(),Eta(),evtr->EVENT_rhopog,GetJerFromFile(jetEta,resSFs,3),resolution,resFormula);
+  float upJERStat = GetSmearFactor(Pt(),genPt(),Eta(),evtr->EVENT_rhopog,GetJerFromFile(jetEta,resSFs,4),resolution,resFormula);
+  float downJERSyst = GetSmearFactor(Pt(),genPt(),Eta(),evtr->EVENT_rhopog,GetJerFromFile(jetEta,resSFs,5),resolution,resFormula);
+  float upJERSyst = GetSmearFactor(Pt(),genPt(),Eta(),evtr->EVENT_rhopog,GetJerFromFile(jetEta,resSFs,6),resolution,resFormula);
+  if (!(genPt() > 0.)){
+    //std::cout << "no gen jet" << std::endl;
+    //if its a randomised jet change it so that its not.
+    nominalJES = GetJerFromFile(jetEta,resSFs,0); 
+    downJERStat = GetJerFromFile(jetEta,resSFs,3);
+    upJERStat = GetJerFromFile(jetEta,resSFs,4); 
+    downJERSyst = GetJerFromFile(jetEta,resSFs,5); 
+    upJERSyst = GetJerFromFile(jetEta,resSFs,6); 
+  }
+  /*  nominalJES = 1.;
+  downJERStat = 1;
+  upJERStat = 1;
+  downJERSyst = 1;
+  upJERSyst = 1;
+  */
+  //  if ( nominalJES > upJERStat || nominalJES < downJERStat || nominalJES > upJERSyst || nominalJES < downJERSyst){
+  //  std::cout << "Weird thing here" << Pt() << " " << Eta() << " " << genPt() << " " << nominalJES << " " << downJERStat << " " << upJERStat << " " << downJERSyst << " " << upJERSyst  << std::endl;
+
+  //}
+  jesShifts.push_back(upJERStat/nominalJES);
+  jesShifts.push_back(downJERStat/nominalJES);
+  jesShifts.push_back(upJERSyst/nominalJES);
+  jesShifts.push_back(downJERSyst/nominalJES);  
+  /*  nominalJES = evtr->Jet_JerSF->operator[](iE);
+  float upJER = evtr->Jet_JerSFup->operator[](iE);
+  float downJER = evtr->Jet_JerSFdown->operator[](iE);
+  if (nominalJES == 1){
+    nominalJES = GetJerFromFile(jetEta,resSFs,0);
+    downJER = GetJerFromFile(jetEta,resSFs,1);
+    upJER = GetJerFromFile(jetEta,resSFs,2);
+  }
+  jesShifts.push_back(upJER/nominalJES);
+  jesShifts.push_back(downJER/nominalJES);
+  std::cout << " pre syst check" << std::endl;
   if (NULL == evtr->Jet_JerSFup_syst) return jesShifts;
   jesShifts.push_back(evtr->Jet_JerSFup_syst->operator[](iE)/nominalJES);
-  jesShifts.push_back(evtr->Jet_JerSFdown_syst->operator[](iE)/nominalJES);
+  jesShifts.push_back(evtr->Jet_JerSFdown_syst->operator[](iE)/nominalJES); */ //We're changing this so that 
   return jesShifts;
 
 }
@@ -691,6 +788,11 @@ Bool_t Jet::ShiftPtWithJESCorr(Int_t jesShiftInd, TLorentzVector * met){
 
   //  met->SetPx(met->Px() + Px());                                               
   // met->SetPy(met->Py() + Py());                                     
+
+  //  if (jesShiftInd > 23){
+  //  std::cout << jesShiftInd << " " << _jesShifts[jesShiftInd] << std::endl;
+  //}
+
 
   Double_t ptSF = _jesShifts[jesShiftInd];
 
@@ -714,4 +816,52 @@ Bool_t Jet::ShiftPtWithJESCorr(Int_t jesShiftInd, TLorentzVector * met){
   if (passPt && passEta && passesIDs()) return kTRUE;
   else return kFALSE;
 
+}
+
+float Jet::GetStochasticFactor(float pt, float eta, float rho, std::vector<std::vector<std::string> > * resolution, TString * resFormula){
+  
+  TFormula resForm("",*resFormula);
+
+  for (auto res : *resolution){
+    //ski;p if not in the right bin
+    if (eta < std::stof(res[0]) || eta > std::stof(res[1]) || rho < std::stof(res[2]) || rho > std::stof(res[3])) continue;
+    resForm.SetParameter(0,std::stof(res[7]));
+    resForm.SetParameter(1,std::stof(res[8]));
+    resForm.SetParameter(2,std::stof(res[9]));
+    resForm.SetParameter(3,std::stof(res[10]));
+  }
+  return resForm.Eval(pt);
+
+}
+
+float Jet::GetJerFromFile(float eta, std::vector<std::vector<std::string> > * resSFs, int central){
+  for (auto res: *resSFs){
+    if (eta < std::stof(res[0]) || eta > std::stof(res[1])) continue;
+    return std::stof(res[central+3]);
+  }
+  return 1.;
+}
+
+float Jet::GetSmearFactor(float pt, float genPt, float eta, float rho, float jer_sf, std::vector<std::vector<std::string> > * resolution, TString * resFormula){
+  float smearFactor = 1.;
+  float relpterr = GetStochasticFactor(pt,eta,rho,resolution,resFormula);
+  if (genPt > 0. && (abs(pt-genPt)<3*relpterr*pt)) {
+    double dPt = pt - genPt;
+    smearFactor = 1 + (jer_sf - 1.) * dPt / pt;
+    //std::cout << "non stoch " << pt << " " << genPt << " " << relpterr << " " << jer_sf << " " << smearFactor << std::endl;
+  }
+  else { //stochastic smearing method when we don't have a gen jet
+    //jer_sf = GetJerFromFile(Eta(),resSFs,0);
+    //    float relpterr = GetStochasticFactor(pt,eta,rho,resolution,resFormula);
+    smearFactor = 1 + jet_jer_myran.Gaus(0,relpterr)*std::sqrt(std::max(0.,(jer_sf*jer_sf)-1.));
+    //    std::cout << "Stochastic! "<<pt << " " << smearFactor << std::endl;
+    if (smearFactor <= 0.) smearFactor = 1.;
+    //    double sigma = relpterr * std::sqrt(jer_sf*jer_sf-1);
+    //smearFactor = (std::max(0.,1.+jet_jer_myran.Gaus(0,sigma)));
+    
+    //    std::cout << "jstoch term: " << pt << " " << relpterr << " " << jer_sf << " " << smearFactor << std::endl;
+
+    //      std::cout << relpterr <<" "<<sigma<< " " << jet_jer_myran.Gaus(0,sigma)<<" " << jer_sf*jer_sf-1 << std::endl;
+  }
+  return smearFactor;
 }
