@@ -41,7 +41,7 @@ ClassImp(Electron)
  * Input:  None                                                               *
  * Output: None                                                               *
  ******************************************************************************/
-Electron::Electron() : Particle::Particle(),_passVetoId(0), _passLooseId(0), _passMediumId(0), _passTightId(0), _passHEEPId(0), _passConversionVeto(0), _expectedMissingInnerHits(0), _patElectron_d0(0.0),  _patElectron_dz(0.0),  _isoChargedHadrons(0.0),  _isoNeutralHadrons(0.0), _isoPhotons(0.0),  _isoPU(0.0), _charge(0.0), _scEta(0.0), _inCrack(0), _sigmaEtaEta(0.), _dEtaInSeed(0.), _dPhiIn(0.), _hOverE(0.), _ooEmooP(0.), _relIsoPFRhoEA(0.), _missingHits(0.)
+Electron::Electron() : Particle::Particle(),_passVetoId(0), _passLooseId(0), _passMediumId(0), _passTightId(0), _passHEEPId(0), _passConversionVeto(0), _expectedMissingInnerHits(0), _patElectron_d0(0.0),  _patElectron_dz(0.0),  _isoChargedHadrons(0.0),  _isoNeutralHadrons(0.0), _isoPhotons(0.0),  _isoPU(0.0), _charge(0.0), _scEta(0.0), _inCrack(0), _sigmaEtaEta(0.), _dEtaInSeed(0.), _dPhiIn(0.), _hOverE(0.), _ooEmooP(0.), _relIsoPFRhoEA(0.), _relIsoPFBeta(0.), _missingHits(0.)
 {
 } //Electron()
 
@@ -90,6 +90,7 @@ _isoPhotons(other.GetisoPhotons()),
 					   _hOverE(other.hOverE()), 
 					   _ooEmooP(other.ooEmooP()), 
 					   _relIsoPFRhoEA(other.relIsoPFRhoEA()), 
+  _relIsoPFBeta(other.relIsoPFBeta()),
 					   _missingHits(other.missingHits())
 {
 } //Electron()
@@ -102,7 +103,7 @@ _isoPhotons(other.GetisoPhotons()),
  * Input:  Particle                                                           *
  * Output: None                                                               *
  ******************************************************************************/
-Electron::Electron(const Particle& other) : Particle(other),_passVetoId(0), _passLooseId(0), _passMediumId(0), _passTightId(0), _passHEEPId(0), _passConversionVeto(0), _expectedMissingInnerHits(0), _patElectron_d0(0.0),  _patElectron_dz(0.0),  _isoChargedHadrons(0.0),  _isoNeutralHadrons(0.0), _isoPhotons(0.0),  _isoPU(0.0), _charge(0.0), _scEta(0.0), _inCrack(0), _sigmaEtaEta(0.), _dEtaInSeed(0.), _dPhiIn(0.), _hOverE(0.), _ooEmooP(0.), _relIsoPFRhoEA(0.), _missingHits(0.)
+Electron::Electron(const Particle& other) : Particle(other),_passVetoId(0), _passLooseId(0), _passMediumId(0), _passTightId(0), _passHEEPId(0), _passConversionVeto(0), _expectedMissingInnerHits(0), _patElectron_d0(0.0),  _patElectron_dz(0.0),  _isoChargedHadrons(0.0),  _isoNeutralHadrons(0.0), _isoPhotons(0.0),  _isoPU(0.0), _charge(0.0), _scEta(0.0), _inCrack(0), _sigmaEtaEta(0.), _dEtaInSeed(0.), _dPhiIn(0.), _hOverE(0.), _ooEmooP(0.), _relIsoPFRhoEA(0.), _relIsoPFBeta(0.),_missingHits(0.)
 { 
 } //Electron()
 
@@ -173,6 +174,7 @@ Electron& Electron::operator=(const Particle& other)
   SetHOverE(0.);
   SetOoEmooP(0.);
   SetRelIsoPFRhoEA(0.);
+  SetRelIsoPFBeta(0.);
   SetMissingHits(0);
 
   return *this;
@@ -212,6 +214,7 @@ Electron& Electron::operator=(const Electron& other)
   SetHOverE(other.hOverE());
   SetOoEmooP(other.ooEmooP());
   SetRelIsoPFRhoEA(other.relIsoPFRhoEA());
+  SetRelIsoPFBeta(other.relIsoPFBeta());
   SetMissingHits(other.missingHits());
   return *this;
 } //= const Electron
@@ -250,6 +253,7 @@ Electron& Electron::operator=(Electron& other)
   SetHOverE(other.hOverE());
   SetOoEmooP(other.ooEmooP());
   SetRelIsoPFRhoEA(other.relIsoPFRhoEA());
+  SetRelIsoPFBeta(other.relIsoPFBeta());
   SetMissingHits(other.missingHits());
   return *this;
 } //= non-const Electron
@@ -306,11 +310,24 @@ Bool_t Electron::Fill(EventTree *evtr, Int_t iE, TString electronType, Bool_t is
   SetPtEtaPhiE(elPt, elEta, elPhi, elE);
 
   SetCharge             ( evtr -> patElectron_charge                   -> operator[](iE) );
-  SetpassVetoId         ( evtr -> patElectron_isPassVeto               -> operator[](iE) );
-  SetpassLooseId        ( evtr -> patElectron_isPassLoose              -> operator[](iE) );
-  SetpassMediumId       ( evtr -> patElectron_isPassMedium             -> operator[](iE) );
-  SetpassTightId        ( evtr -> patElectron_isPassTight              -> operator[](iE) );
-  SetpassHEEPId         ( evtr -> patElectron_isPassHEEPId             -> operator[](iE) );
+  if (NULL != evtr -> patElectron_isPassVeto){
+    SetpassVetoId         ( evtr -> patElectron_isPassVeto               -> operator[](iE) );
+    SetpassLooseId        ( evtr -> patElectron_isPassLoose              -> operator[](iE) );
+    SetpassMediumId       ( evtr -> patElectron_isPassMedium             -> operator[](iE) );
+    SetpassHEEPId         ( evtr -> patElectron_isPassHEEPId             -> operator[](iE) );
+  
+  }
+  else{
+    SetpassVetoId(true);
+    SetpassLooseId(true);
+    SetpassMediumId(true);
+    SetpassTightId(true);
+    SetpassHEEPId(true);
+  }
+  if (NULL != evtr -> patElectron_isPassTight) {     SetpassTightId        ( evtr -> patElectron_isPassTight              -> operator[](iE) );}
+  else SetpassTightId(true);
+
+
   SetpassConversionVeto ( evtr -> patElectron_passConversionVeto       -> operator[](iE) );
   SetisoChargedHadrons  ( evtr -> patElectron_isoChargedHadrons        -> operator[](iE) );
   SetisoNeutralHadrons  ( evtr -> patElectron_isoNeutralHadrons        -> operator[](iE) );
@@ -328,7 +345,14 @@ Bool_t Electron::Fill(EventTree *evtr, Int_t iE, TString electronType, Bool_t is
   SetHOverE		( evtr -> patElectron_hOverE		       -> operator[](iE) );
   SetOoEmooP		( evtr -> patElectron_ooEmooP		       -> operator[](iE) );
   SetRelIsoPFRhoEA	( evtr -> patElectron_relIsoRhoEA	       -> operator[](iE) );
+  SetRelIsoPFBeta	( evtr -> patElectron_relIsoDeltaBeta	       -> operator[](iE) );
   SetMissingHits	( evtr -> patElectron_expectedMissingInnerHits -> operator[](iE) );
+  
+  //Redefine reliso with corrected EA
+  float rho = evtr -> EVENT_rhopog;                                                                                 
+  float effArea = get_effarea(scEta());                                                                             
+  SetRelIsoPFRhoEA((isoChargedHadrons() + (std::max( 0.0, isoNeutralHadrons() + isoPhotons() - rho*effArea)))/elPt);
+
   // **************************************************************
   // **************************************************************
   // **************************************************************
@@ -383,6 +407,8 @@ Bool_t Electron::Fill(EventTree *evtr, Int_t iE, TString electronType, Bool_t is
   Bool_t passIDnoIso = kTRUE;
   Bool_t passd0dZ    = kTRUE;
   Bool_t passIso     = kTRUE;
+  Bool_t passInvIso  = kTRUE;
+
 
   // Test requirements
   if(elPt <= _minPtCuts[electronType])               passMinPt  = kFALSE;
@@ -402,6 +428,9 @@ Bool_t Electron::Fill(EventTree *evtr, Int_t iE, TString electronType, Bool_t is
     if (relIsoPFRhoEA() > 0.0588){
       passIso = kFALSE;
     }
+    if (relIsoPFRhoEA() < 0.06 || relIsoPFRhoEA() > 0.5){
+      passInvIso = kFALSE;
+    }
   }
   else { // Electron in endcap
     if (sigmaEtaEta() >= 0.0292 ||
@@ -414,6 +443,9 @@ Bool_t Electron::Fill(EventTree *evtr, Int_t iE, TString electronType, Bool_t is
       passIDnoIso = kFALSE;
     if (relIsoPFRhoEA() > 0.0571) {
       passIso = kFALSE;
+    }
+    if (relIsoPFRhoEA() < 0.06 || relIsoPFRhoEA() > 0.5){
+      passInvIso = kFALSE;
     }
   }
 
@@ -439,7 +471,49 @@ Bool_t Electron::Fill(EventTree *evtr, Int_t iE, TString electronType, Bool_t is
   //  if ( (     "Tight"      == electronType) && TMath::Abs(scEta()) <= 1.479 && ( passTight ^ (passIso && passIDnoIso))){
   // std::cout << "Electron passing one form if ID: " << passTight << " " << (passIso && passIDnoIso) << " is selected: " << (passMinPt && passMaxEta && passNoGapElectron && passd0dZ) <<  " pt: " << elPt << " eta: " << TMath::Abs(scEta()) << " " << sigmaEtaEta() << " (>= 0.00998) " << (dEtaInSeed()) << " (abs>= 0.00308) " << (dPhiIn()) << "  (abs>= 0.0816) " << hOverE() << " (>= 0.0414) " <<  (ooEmooP()) << " (abs>= 0.0129) "  << missingHits() << " (> 1) " << passConversionVeto() << " (kTrue) " << relIsoPFRhoEA() << " (> 0.0588) "<< std::endl;
   //}
-
+  if (false &&      "Tight"      == electronType){ //true for verbose debugging
+  if (passMinPt && passMaxEta && passNoGapElectron && passd0dZ){
+    if (passTight && ! (passIDnoIso)) {
+      std::cout << "Passes tight but not hand done" <<std::endl;
+      std::cout << "scEta: " << scEta()<<std::endl;
+      std::cout << "sigmaEtaEta: " << sigmaEtaEta() << std::endl;
+      std::cout << "dEtaInSeed: " << dEtaInSeed() << std::endl;
+      std::cout << "dPhiIn: " << (dPhiIn()) << std::endl;
+      std::cout << "hOverE: " << hOverE() << std::endl;
+      std::cout << "ooEmooP: " << ooEmooP() << std::endl;
+      std::cout << "missingHits: " << missingHits() << std::endl;
+      std::cout << "conversionVeto: " << passConversionVeto() << std::endl;
+      std::cout << "relIsoPFRhoEA: " << relIsoPFRhoEA()  << std::endl;
+    }
+    
+    //    if (!passTight && (passIDnoIso && passIso) && (relIsoPFRhoEA() > 0.) && (hOverE() > 0.)) {
+    if (!passTight && (passIDnoIso && passIso)) {
+      std::cout << "FAAAAILS tight but not hand done" <<std::endl;
+      std::cout << "Pt: " << elPt << std::endl;
+      std::cout << "elEta: " << elEta <<std::endl;
+      std::cout << "scEta: " << scEta()<<std::endl;
+      std::cout << "d0: " << GetpatElectron_d0() << std::endl;
+      std::cout << "dZ: " << GetpatElectron_dz() << std::endl;
+      std::cout << "sigmaEtaEta: " << sigmaEtaEta() << std::endl;
+      std::cout << "dEtaInSeed: " << dEtaInSeed() << std::endl;
+      std::cout << "dPhiIn: " << (dPhiIn()) << std::endl;
+      std::cout << "hOverE: " << hOverE() << std::endl;
+      std::cout << "ooEmooP: " << ooEmooP() << std::endl;
+      std::cout << "missingHits: " << missingHits() << std::endl;
+      std::cout << "conversionVeto: " << passConversionVeto() << std::endl;
+      std::cout << "relIsoPFRhoEA: " << relIsoPFRhoEA()  << std::endl;
+      std::cout << "relIsoPFBeta: " << relIsoPFBeta() << std::endl;
+      float rho = evtr -> EVENT_rhopog;
+      float neutSec = relIsoPFRhoEA() * elPt - isoChargedHadrons();
+      float effArea = get_effarea(scEta());
+      float betterIso = (isoChargedHadrons() + (std::max( 0.0, isoNeutralHadrons() + isoPhotons() - rho*effArea)))/elPt;
+      std::cout << "Recalc iso: " << betterIso << std::endl;
+      float isoNotRelBeta = isoChargedHadrons() + (std::max( 0.0, isoNeutralHadrons() + isoPhotons() - 0.5 * isoPU()));
+      std::cout << "nonRel Beta: " << isoNotRelBeta << std::endl;
+      std::cout << "pt from iso: " << isoNotRelBeta/relIsoPFBeta() << std::endl;
+    }
+  }
+  }
   
   
   // **************************************************************
@@ -453,7 +527,7 @@ Bool_t Electron::Fill(EventTree *evtr, Int_t iE, TString electronType, Bool_t is
   //if(     "PtEtaCut"   == electronType) return(passMinPt && passMaxEta && IsRobusterTight());
   else if("Veto"       == electronType) return( passMinPt && passMaxEta);//no tight or isolation req.
   //else if("Isolated"   == electronType) return(GetIsolation()  && GetNoGapElectron()&& OverlapUse());
-  else if(     "UnIsolated" == electronType) return( passMinPt && passMaxEta && passIDnoIso && !passIso && passNoGapElectron && passd0dZ);
+  else if(     "UnIsolated" == electronType) return( passMinPt && passMaxEta && passIDnoIso && passInvIso && passNoGapElectron && passd0dZ);
   //  else if("UnIsolated" == electronType) return(!GetIsolation() && GetIsRobusterTight() && passMinPt && passMaxEta && GetNoGapElectron());
   //else if("All"        == electronType) return(kTRUE);
   //else return kTRUE;
@@ -474,3 +548,14 @@ Bool_t Electron::FillFastSim(FastSimTree *tr, Int_t iE,TEnv* config,TString elec
 } //FillFastSim
 
 
+double Electron::get_effarea(double eta){
+  double effarea = -1;                              
+  if(abs(eta) < 1.0)        effarea = 0.1703;       
+  else if(abs(eta) < 1.479) effarea = 0.1715;       
+  else if(abs(eta) < 2.0)   effarea = 0.1213;       
+  else if(abs(eta) < 2.2)   effarea = 0.1230;       
+  else if(abs(eta) < 2.3)   effarea = 0.1635;       
+  else if(abs(eta) < 2.4)   effarea = 0.1937;       
+  else                      effarea = 0.2393;       
+  return effarea;                                   
+}                                                   
