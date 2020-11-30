@@ -1001,6 +1001,13 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
 
   // Loop over events in chain until (1) Out of events or (2) Have reached limit specified on command line
   //cout << "<AnalysisMain::Loop> " <<  "Beginning loop over events, _numEvent is "<<_eventLimit << ", eventInChain is "<<eventInChain<<endl;
+
+  cout << "<AnalysisMain::Loop> " << "Adding additional variables:" <<std::endl;
+  if (!AdditionalVarsProcessor::BookBranches(_skimEventTree,this)){             
+    std::cout << "Something has gone wrong in the branch booking!" << std::endl;
+    return;                                                                      
+  }                                                                             
+
   cout << "<AnalysisMain::Loop> " << endl;
 
   while( eventInChain != -1 && (!eventLimitFlag || eventInChain < _eventLimit) ) {  
@@ -1023,16 +1030,20 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
       std::cout << "Running on event: " << this->eventNumber << std::endl;
     }
 
+    //Reset and fill the additional variables
+    AdditionalVarsProcessor::ResetBranches();
+    AdditionalVarsProcessor::FillBranches(this);
+
     // Fill the histograms
     writeThisEvent = CutListProcessor::Apply(this);
     // Fill Trees for Skim Events
     if (writeThisEvent) { 
       if (!firstEventWritten) {
 	firstEventWritten = kTRUE;
-	if (!AdditionalVarsProcessor::BookBranches(_skimEventTree,this)){
+	/*	if (!AdditionalVarsProcessor::BookBranches(_skimEventTree,this)){
 	  std::cout << "Something has gone wrong in the branch booking!" << std::endl;
 	  break;
-	}
+	  }*/
 	if (DoSkim()){
 	  if( NULL != _skimEventTree) {
 	    _HFORb = -999;
@@ -1042,8 +1053,7 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
 	  }
 	}
       }
-      AdditionalVarsProcessor::ResetBranches();
-      AdditionalVarsProcessor::FillBranches(this);
+      //AdditionalVarsProcessor::OutputBranches();
       if(DoSkim()) {
 	if(NULL != _skimEventTree) {
 	  _EventNBeforePreselb   = _totalMCatNLOEvents;

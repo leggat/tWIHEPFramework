@@ -1,52 +1,187 @@
 #define mvaTool_cxx
 #include "mvaTool.h"
 
-mvaTool::mvaTool(Int_t channel, Bool_t useIterFit){
+mvaTool::mvaTool(Int_t channel, Bool_t useIterFit, Bool_t isEle){
   
   _useIterFit = useIterFit;
 
+  _isEle = isEle;
+
   _channel = channel;
 
-  regionNames = {"3j1t","3j2t","2j1t","4j1t","4j2t"};
-  //  regionNames = {""};
+  _nTrees = 400;
+  _depth = 2;
+  _nCuts = 22;
+
+  TString bdtType = "ada";
+
+  if (_isEle){
+    _nCuts = 23;
+    bdtType = "grad";
+  }
+
+  regionNames = {"3j1t","3j2t","2j1t","4j1t","4j2t","2j0t","3j0t","4j0t"};
+  //regionNames = {"3j1t"};
+
+  for (unsigned int reg = 0; reg < regionNames.size(); reg++){
+    if (reg == 1){
+      if (_isEle) _bdtName.push_back("grad_nTrees200_depth2_nCuts7_channel1");
+      else _bdtName.push_back("grad_nTrees200_depth2_nCuts11_channel1");
+    }
+    else if (reg == 2){
+      if (_isEle) _bdtName.push_back("grad_nTrees400_depth2_nCuts19_channel2");
+      else _bdtName.push_back("grad_nTrees400_depth2_nCuts19_channel2");
+    }
+    else _bdtName.push_back(bdtType+"_nTrees"+std::to_string(_nTrees)+"_depth"+std::to_string(_depth)+"_nCuts"+std::to_string(_nCuts));
+
+  }
   //Start by initialising the list of variables we will base the MVA on
-
-    //varList.push_back("M_Pt_Jet1_2040e24");
-
-   //    varList.push_back("largestCSV");varList.push_back("M_nJet2040");
-    //  varList.push_back("M_firstJetPt");
-  //I don't understand these guys' implementations, so I'm ignoring them for now.
-  //  varList.push_back("likelihood_BJet2040");
-  //varList.push_back("likelihood_BJet4000");    varList.push_back("M_HT");
-    //varList.push_back("M_nJet3040");
-    //  varList.push_back("M_nJet2040e24");
-    //    varList.push_back("M_hadronicWPt");
-    //    varList.push_back("M_hadronicWPhi");
   initialiseVarList();
   baseName = "";
 }
 
 void mvaTool::initialiseVarList(){
 
+  for (int reg = 0; reg < regionNames.size(); reg++){
+    varList.push_back({});
+    if (reg == 1){
+      varList[reg].push_back("M_Mass_Jet1Jet3");
+      varList[reg].push_back("M_HT");
+      varList[reg].push_back("M_DeltaRBJetLepton");
+      varList[reg].push_back("M_DeltaRBJethadronicW");
+      varList[reg].push_back("M_DeltaRWlvJet2");
+      varList[reg].push_back("M_Mass_AllJetsMET");
+      varList[reg].push_back("M_DeltaPhiJet1Jet2");
+      if (!_isEle){
+	varList[reg].push_back("M_Pt_Lepton");
+      }
+      varList[reg].push_back("M_Pt_Jet1LeptonMET");
+      varList[reg].push_back("M_Pt_BJet1_4000");
+    }
+    else if (reg == 2){
+      //    varList.push_back("M_nJet3040e24");
+      varList[reg].push_back("M_Mass_AllJets");
+      varList[reg].push_back("M_Pt_BJet1_4000");
+      varList[reg].push_back("M_DeltaRJet1Jet2");
+      //varList[reg].push_back("M_DeltaRWlvJet2");
+      if (!_isEle){
+	varList[reg].push_back("M_Pt_Lepton");
+      }
+      varList[reg].push_back("M_hadronicWmass");
+      varList[reg].push_back("M_DeltaRBJetLepton");
+      varList[reg].push_back("M_nJet2040");
+    }
+    else {
+      varList[reg].push_back("M_hadronicWmass");
+      varList[reg].push_back("M_DeltaRBJetLepton");
+      varList[reg].push_back("M_DeltaRWlvJet2");
+      varList[reg].push_back("M_Mass_Jet1Jet3");
+      varList[reg].push_back("M_nJet2040");
+      varList[reg].push_back("M_DeltaRlightjets");
+      if (_isEle){
+	varList[reg].push_back("M_Pt_AllJetsLeptonMET");
+      }  
+      else {
+	varList[reg].push_back("M_Pt_Lepton");
+      }
+      varList[reg].push_back("M_E_Jet2Jet3");
+    }
+  }
 
+  for (auto reg: varList){
+    for (auto var: reg){
+      _varsInBDTs[var] = 0;
+      _varsInBDT_JESShifts[var] = {};
+    }
+  }
+  //Because this screws some things up if it isn't included
+  //  _varsInBDTs["M_Pt_Lepton"] = 0;
 
-  varList.push_back("M_nJet2040");
-  //    varList.push_back("M_HT");
-    varList.push_back("M_DeltaRBJetLepton");
-    varList.push_back("M_DeltaRlightjets");
-    varList.push_back("M_topMass2_lep");
-        varList.push_back("M_Pt_Lepton");
-    varList.push_back("M_Pt_AllJetsLeptonMET");
-    varList.push_back("M_DeltaRLeptonJet1");
-    
-    varList.push_back("M_Mass_Jet1Jet2Jet3LeptonMET");
-    varList.push_back("M_hadronicWmass");
-
-    //    varList.push_back("M_TMass_Jet1Jet2Jet3"); 
+  /*
     varList.push_back("lightJet1CSV");
+    varList.push_back("M_Mass_AllJetsMET");
+    //    
+    varList.push_back("M_DeltaPhiJet1Jet2");
+    varList.push_back("M_DeltaRJet1Jet2");
+    varList.push_back("M_E_AllJets");
+    varList.push_back("M_Mass_AllJetsMET");
+    varList.push_back("M_Pt_Jet1LeptonMET");
+    varList.push_back("M_Pt_Jet1Jet2Lepton");
+    varList.push_back("M_Pt_LeptonJet1");
+    varList.push_back("M_Pt_Jet1_2030");
+ 
+    varList.push_back("M_E_Jet1MET");
+    // 
+    varList.push_back("M_Pt_Jet1_2040");
+
+    
+    varList.push_back("M_hadronicWEta");
+    varList.push_back("M_DeltaRBJethadronicW");
+    varList.push_back("M_Pt_sys");
+    varList.push_back("M_Pt_AllJets2040");
+    varList.push_back("M_Pt_BJet1_4000");
+    varList.push_back("M_hadronicWEta");
+    varList.push_back("M_DeltaRBJethadronicW");
+    varList.push_back("M_Pt_sys");
+
+    
+    varList.push_back("M_DeltaRBJetLepton");
+    varList.push_back("M_DeltaRWlvJet2");
+
+    }*/
+
+  /*
+  //og10 variables
+  varList.push_back("M_hadronicWmass");
+  varList.push_back("M_topMass2_lep");
+  varList.push_back("M_Pt_AllJetsLeptonMET");
+  varList.push_back("M_Mass_Jet1Jet2Jet3LeptonMET");
+  varList.push_back("M_Pt_Lepton");
+  varList.push_back("M_DeltaRlightjets");
+  varList.push_back("M_DeltaRLeptonJet1");
+  varList.push_back("M_DeltaRBJetLepton");
+  varList.push_back("lightJet1CSV");
+  varList.push_back("M_nJet2040");
+  */
+
+  //Variables definitely in both channels
+
+  //  varList.push_back("M_Pt_AllJets2040");
+  //varList.push_back("M_Mass_Jet1Jet2");
+  //  varList.push_back("M_topMass2_lep");
+
+  
+  //maybe use?
+
+    //    varList.push_back("M_HT");
+    
+    //  varList.push_back("M_DeltaRLeptonJet1");
+    
+    //varList.push_back("M_Mass_Jet1Jet2Jet3LeptonMET");
+    
+    //    varList.push_back("M_TMass_Jet1Jet2Jet3"); 
+    //    varList.push_back("lightJet1CSV");
 
 
-    std::cout << varList.size() << std::endl;
+    std::cout << varList[0].size() << std::endl;
+
+    //Ones I want to test real quick in 2019 for electron channel
+    //    varList.push_back("M_cosThetaStar");
+    //    varList.push_back("M_Mass_AllJetsMET");
+    //varList.push_back("M_cosThetaStar_hadOnly");
+    //    varList.push_back("M_DeltaPhiJet1Jet2");
+    //    varList.push_back("M_DeltaRJet1Jet2");
+    //varList.push_back("M_E_AllJets");
+    //    varList.push_back("M_E_Jet1Jet2Jet3MET");    
+    //    varList.push_back("M_HT");
+    //    varList.push_back("M_Mass_AllJets");
+    //varList.push_back("M_Mass_AllJetsMET");
+    
+    //    varList.push_back("M_Pt_Jet1LeptonMET");
+    //    varList.push_back("M_Pt_Jet1Jet2Lepton");
+    //    varList.push_back("M_Pt_LeptonJet1");
+    //    varList.push_back("M_Pt_Jet1_2030");
+    
     //varList.push_back("M_nJet3040e24");
     //    varList.push_back("M_E_Jet1MET");
     //varList.push_back("M_Jet1Jet2Jet3_Centrality");
@@ -65,6 +200,8 @@ void mvaTool::initialiseVarList(){
     //varList.push_back("M_DeltaRBJethadronicW");
     //varList.push_back("M_Pt_sys");
 
+
+    
 
   //The list of samples. this is used by the reading, not the training.
   samplelist.push_back("tW_top_nfh");
@@ -104,7 +241,8 @@ void mvaTool::doTraining(TString inDir, bool isttbar = true){
   //Create the output file that will store the training results
   std::string postfix1 = "_ttbar";
   if (!isttbar) postfix1 = "_wJets";
-  TString outfileName("training/tWLepJets_training_BDT"+postfix1+".root");
+  //  TString outfileName("training/tWLepJets_training_BDT"+postfix1+std::to_string(_nTrees)+"_channel"+std::to_string(_channel)+".root");
+  TString outfileName("training/trainingFornote.root");
   TFile* outFile = TFile::Open(outfileName, "RECREATE");
 
   //Create the factory
@@ -119,11 +257,32 @@ void mvaTool::doTraining(TString inDir, bool isttbar = true){
   TChain bkg_wJets("TNT/BOOM");
 
     //From the inDir, add all skim files to the trees
-  signal.Add(inDir+"tW_top_nfh/skims/tW_top*Skim.root");
-  signal.Add(inDir+"tW_antitop_nfh/skims/tW_antitop*Skim.root");
-  bkg_ttbar.Add(inDir+"ttbar/skims/ttbar*Skim.root");
+  for (unsigned int i = 0; i < 30; i++){
+    if (!_isEle){
+    signal.Add(inDir+"tW_top_nfh/skims/tW_top_nfh_tW_"+std::to_string(i)+"Skim.root");
+    signal.Add(inDir+"tW_antitop_nfh/skims/tW_antitop_nfh_tW_"+std::to_string(i)+"Skim.root");
+    }
+    else{
+    signal.Add(inDir+"tW_top_nfh/skims/tW_top_nfh_tWEle_"+std::to_string(i)+"Skim.root");
+    signal.Add(inDir+"tW_antitop_nfh/skims/tW_antitop_nfh_tWEle_"+std::to_string(i)+"Skim.root");
+    }
+  }
+  for (unsigned int i = 0; i < 100; i++){
+    if (!_isEle){
+    bkg_ttbar.Add(inDir+"ttbar/skims/ttbar_tW_"+std::to_string(i)+"Skim.root");
+    bkg_ttbar.Add(inDir+"ttbarBU/skims/ttbarBU_tW_"+std::to_string(i)+"Skim.root");
+    }
+    else {
+    bkg_ttbar.Add(inDir+"ttbar/skims/ttbar_tWEle_"+std::to_string(i)+"Skim.root");
+    bkg_ttbar.Add(inDir+"ttbarBU/skims/ttbarBU_tWEle_"+std::to_string(i)+"Skim.root");
+    }
+  }
   //  bkg_ttbar.Add(inDir+"ttbarBU/skims/ttbarBU*Skim.root");
-  bkg_wJets.Add(inDir+"wPlusJetsMCatNLO/skims/wPlusJetsMCatNLO*Skim.root");
+  //bkg_wJets.Add(inDir+"wPlusJetsMCatNLO/skims/wPlusJetsMCatNLO*Skim.root");
+  bkg_wJets.Add(inDir+"wPlus0Jets/skims/wPlus0Jets*Skim.root");
+  bkg_wJets.Add(inDir+"wPlus1Jets/skims/wPlus1Jets*Skim.root");
+  bkg_wJets.Add(inDir+"wPlus2Jets/skims/wPlus2Jets*Skim.root");
+  
   
   //Grab the input files now
   //  TFile * sigFile = TFile::Open("../condorStuff/skims20161129_bdtVariables/tW/tW_top/skims/tW_top0Skim.root"); //Not the final one, of course. Will probably need to sum the skims
@@ -138,20 +297,29 @@ void mvaTool::doTraining(TString inDir, bool isttbar = true){
 
   //Add the trees to the factory
   loader.AddSignalTree    (&signal,    1.);
-  if (isttbar){
+  if (isttbar && !(_channel == 2)){
     loader.AddBackgroundTree(&bkg_ttbar,1.);
   }
   else {
     loader.AddBackgroundTree(&bkg_wJets,1.);
   }
   
-  for (unsigned int i=0; i < varList.size(); i++) loader.AddVariable(varList[i].Data(),'F');
+  for (unsigned int i=0; i < varList[_channel].size(); i++) loader.AddVariable(varList[_channel][i].Data(),'F');
 
   loader.SetSignalWeightExpression("EventWeight");
   loader.SetBackgroundWeightExpression("EventWeight");
 
-  TCut mycutsSig = "channel == 0 && (M_nBJet3040 + M_nBJet4000) == 1 ";
-  TCut mycutsBkg = "channel == 0 && (M_nBJet3040 + M_nBJet4000) == 1 ";
+  TCut mycutsSig = "M_channel == 0 && (M_nBJet3040 + M_nBJet4000) == 1 ";
+  TCut mycutsBkg = "M_channel == 0 && (M_nBJet3040 + M_nBJet4000) == 1 ";
+
+  if (_channel == 1){
+    mycutsSig = "M_channel == 1";
+    mycutsBkg = "M_channel == 1";
+  }
+  if (_channel == 2){
+    mycutsSig = "M_channel == 2";
+    mycutsBkg = "M_channel == 2";
+  }
 
   loader.PrepareTrainingAndTestTree( mycutsSig, mycutsBkg,"nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=NumEvents:!V" );
 
@@ -160,12 +328,33 @@ void mvaTool::doTraining(TString inDir, bool isttbar = true){
 
   //  factory->BookMethod(&loader,TMVA::Types::kBDT, "BDT_200_10", "!H:!V:NTrees=200:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:SeparationType=GiniIndex:nCuts=10:PruneMethod=NoPruning" );
   //  factory->BookMethod(&loader,TMVA::Types::kBDT, "BDT_200_5", "!H:!V:NTrees=200:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:SeparationType=GiniIndex:nCuts=5:PruneMethod=NoPruning" );
-    factory->BookMethod(&loader,TMVA::Types::kBDT, "BDT_Grad_1000_20_0.1"+postfix, "!H:!V:NTrees=1000:MaxDepth=3:BoostType=Grad:SeparationType=GiniIndex:nCuts=20:PruneMethod=NoPruning:Shrinkage=0.1" );
   //  factory->BookMethod(&loader,TMVA::Types::kBDT, "BDT_Grad_400_10", "!H:!V:NTrees=400:MaxDepth=3:BoostType=Grad:SeparationType=GiniIndex:nCuts=10:PruneMethod=NoPruning" );
   //factory->BookMethod(&loader,TMVA::Types::kBDT, "BDT_Grad_400_5", "!H:!V:NTrees=400:MaxDepth=3:BoostType=Grad:SeparationType=GiniIndex:nCuts=5:PruneMethod=NoPruning" );
   //factory->BookMethod(&loader,TMVA::Types::kBDT, "BDT_Grad_200_10", "!H:!V:NTrees=200:MaxDepth=3:BoostType=Grad:SeparationType=GiniIndex:nCuts=10:PruneMethod=NoPruning" );
   //factory->BookMethod(&loader,TMVA::Types::kBDT, "BDT_Grad_200_5", "!H:!V:NTrees=200:MaxDepth=3:BoostType=Grad:SeparationType=GiniIndex:nCuts=5:PruneMethod=NoPruning" );
   //factory->BookMethod(&loader,TMVA::Types::kBDT, "BDT_400_10", "!H:!V:NTrees=400:MaxDepth=3:BoostType=AdaBoost:AdaBoostBeta=0.5:SeparationType=GiniIndex:nCuts=10:PruneMethod=NoPruning" );
+  //  for (int nTrees=400;nTrees<601;nTrees+=100){
+  //    for (int depth=2;depth<5;depth+=1){
+  for (_depth=2;_depth<3;_depth+=1){
+    for (_nCuts=22;_nCuts<23;_nCuts+=4){
+  //  for (int nCuts=22;nCuts<23;nCuts+=4){
+	/*  for (int nTrees=100;nTrees<201;nTrees+=100){ 
+    for (int depth=1;depth<2;depth+=1){
+    for (int nCuts=4;nCuts<5;nCuts+=2){*/
+	//	factory->BookMethod(&loader,TMVA::Types::kBDT, "paramScan_nTrees"+std::to_string(_nTrees)+"_depth"+std::to_string(depth)+"_nCuts"+std::to_string(nCuts),"!H:!V:NTrees="+std::to_string(_nTrees)+":MaxDepth="+std::to_string(depth)+":BoostType=AdaBoost:SeparationType=GiniIndex:nCuts="+std::to_string(nCuts)+":PruneMethod=NoPruning:Shrinkage=0.2" );
+	//	factory->BookMethod(&loader,TMVA::Types::kBDT, "grad_nTrees"+std::to_string(_nTrees)+"_depth"+std::to_string(depth)+"_nCuts"+std::to_string(nCuts),"!H:!V:NTrees="+std::to_string(_nTrees)+":MaxDepth="+std::to_string(depth)+":BoostType=AdaBoost:SeparationType=GiniIndex:nCuts="+std::to_string(nCuts)+":PruneMethod=NoPruning" );
+      factory->BookMethod(&loader,TMVA::Types::kBDT, "grad_nTrees"+std::to_string(_nTrees)+"_depth"+std::to_string(_depth)+"_nCuts"+std::to_string(_nCuts)+"_channel"+std::to_string(_channel),"!H:!V:NTrees="+std::to_string(_nTrees)+":MaxDepth="+std::to_string(_depth)+":BoostType=Grad:SeparationType=GiniIndex:nCuts="+std::to_string(_nCuts)+":PruneMethod=NoPruning" );
+      // }
+      //}
+	//	factory->BookMethod(&loader,TMVA::Types::kBDT, "baggin_nTrees"+std::to_string(_nTrees)+"_depth"+std::to_string(depth)+"_nCuts"+std::to_string(nCuts),"!H:!V:NTrees="+std::to_string(_nTrees)+":MaxDepth="+std::to_string(depth)+":BoostType=Bagging:SeparationType=GiniIndex:nCuts="+std::to_string(nCuts)+":PruneMethod=NoPruning" );
+	//      }
+    }
+  }
+  
+
+  //  factory->BookMethod(&loader,TMVA::Types::kBDT, "No_ptJets2040_BDT_Grad_1000_20_0.1"+postfix, "!H:!V:NTrees=1000:MaxDepth=3:BoostType=Grad:SeparationType=GiniIndex:nCuts=20:PruneMethod=NoPruning:Shrinkage=0.1" );
+  //  factory->BookMethod(&loader,TMVA::Types::kBDT, "BDT_Grad"+postfix, "!H:!V:NTrees=10:MaxDepth=2:BoostType=Grad:SeparationType=GiniIndex:PruneMethod=NoPruning:Shrinkage=0.1" );
+  
 
   // Train MVAs using the set of training events                  
   factory->TrainAllMethods();
@@ -182,31 +371,39 @@ void mvaTool::doTraining(TString inDir, bool isttbar = true){
 
 }
 
-void mvaTool::doReading(TString sampleName, TString inDir, TString outDir, bool isData){
+void mvaTool::doReading(TString sampleName, TString inDir, TString outDir, bool isData, int minFile, int maxFile){
   
   std::cout << "Entering reading routine" << std::endl;
   TMVA::Tools::Instance();
 
-  //Get the reader object
-  reader = new TMVA::Reader( "!Color:!Silent" );
-  unsigned int varsize = varList.size();
-  float treevars[varsize];
+  //Bare with me, this needs to be done for each channel individually because we want to be able to run different MVAs per channel now.
+  std::vector<std::vector<float > > proxyvars;
 
-  std::cout << "Entering variable adding with " << varList.size() << " variables" <<  std::endl;
-  for (unsigned int i=0; i<varsize;i++){
-    treevars[i] = 0;
-    std::cout << "[Variable loop] Adding variable: " << varList[i].Data() << std::endl;
-    reader->AddVariable( varList[i].Data(), &(treevars[i]) );
+  for (unsigned int reg = 0; reg < regionNames.size(); reg++){
+    std::cout << "Making BDT for " << regionNames[reg] << " region" << std::endl;
+    //    reader.push_back(new TMVA::Reader( "!Color:!Silent" ));
+    reader.push_back(new TMVA::Reader( "!Color:!Silent" ));
+    unsigned int varListRegSize = varList[reg].size();
+    proxyvars.push_back({});
+    for (unsigned int i=0; i<varListRegSize; i++){
+      std::cout << "[Variable loop] Adding variable: " << varList[reg][i].Data() << std::endl;
+      proxyvars[reg].push_back(0);
+      //      std::cout << "adding to reader" << std::endl;
+      reader[reg]->AddVariable (varList[reg][i].Data(), &(proxyvars[reg][i]) );
+    }
+    reader[reg]->BookMVA(_bdtName[reg], baseName+"loader/weights/tWLepJet_training_"+_bdtName[reg] + ".weights.xml" );
   }
 
-  reader->BookMVA( "BDT_ttbar", baseName+"loader/weights/tWLepJet_training_BDT_Grad_1000_20_0.1_ttbar.weights.xml" );
+  //  reader->BookMVA( "BDT_ttbar", baseName+"loader/weights/tWLepJet_training_No_ptJets2040_BDT_Grad_1000_20_0.1_ttbar.weights.xml" );
+  //.  else reader->BookMVA( _bdtName, baseName+"loader/weights/tWLepJet_training_ada_nTrees400_depth2_nCuts22.weights.xml" );
+
   //  reader->BookMVA( "BDT_wJets", baseName+"loader/weights/tWLepJet_training_BDT_Grad_1000_20_0.1_wJets.weights.xml" );
 
   std::cout << "Finished reading BDT training" << std::endl;
 
   std::cout << "Processing sample: " << sampleName << std::endl;
   
-  processMCSample(sampleName,inDir,outDir,treevars, isData);
+  processMCSample(sampleName,inDir,outDir,proxyvars,isData, true, minFile, maxFile);
   
   std::cout << "Finished processing " << sampleName << std::endl;
   
@@ -216,21 +413,24 @@ void mvaTool::doReadingNoMVA(TString sampleName, TString inDir, TString outDir, 
   
   std::cout << "Entering reading routine" << std::endl;
 
-  unsigned int varsize = varList.size();
-  float treevars[varsize];
+  unsigned int varsize = varList[0].size();
+  std::vector<float *> treevars[varsize];
+  //  std::vector<float> treevarsJetShifts[varsize];
+  std::vector<std::vector<std::vector<float> * > > treevarsJetShifts;
+  std::vector<float *> proxyvars[varsize];
 
   std::cout << "Entering variable adding" << std::endl;
-  for (unsigned int i=0; i<varsize;i++){
-    treevars[i] = 0;
-    std::cout << "[Variable loop] Adding variable: " << varList[i].Data() << std::endl;
-  }
+  //for (unsigned int i=0; i<varsize;i++){
+  // proxyvars[i] = 0;
+  //  std::cout << "[Variable loop] Adding variable: " << varList[i].Data() << std::endl;
+  //}
 
 
   std::cout << "Finished reading BDT training" << std::endl;
 
   std::cout << "Processing sample: " << sampleName << std::endl;
   
-  processMCSample(sampleName,inDir,outDir,treevars, isData, false);
+  //  processMCSample(sampleName,inDir,outDir,proxyvars, treevars, treevarsJetShifts, isData, false);
   
   std::cout << "Finished processing " << sampleName << std::endl;
   
@@ -238,14 +438,31 @@ void mvaTool::doReadingNoMVA(TString sampleName, TString inDir, TString outDir, 
 
 
 //Do the thing
-void mvaTool::processMCSample(TString sampleName, TString inDir, TString outDir, float * treevars,bool isData, bool doMVA){
+void mvaTool::processMCSample(TString sampleName, TString inDir, TString outDir, std::vector<std::vector<float > > proxyvars, bool isData, bool doMVA, int minFile, int maxFile){
 
-  TString dirWithTrees = inDir+sampleName+"/skims/"+sampleName+"*Skim.root";
+  TChain* theTree = new TChain("TNT/BOOM");
+  
+  std::cout << minFile << " " << maxFile;
+
+  TString dirWithTrees;
+  if (minFile < 0 && maxFile < 0){
+    theTree->Add(inDir+sampleName+"/skims/"+sampleName+"*Skim.root");
+    std::cout << "[loopInSample] Added "<< inDir+sampleName+"/skims/"+sampleName+"*Skim.root" << " to TChain" << std::endl;  
+  }
+  else {
+    for (int i = minFile; i <= maxFile; i++){
+      theTree->Add(inDir+sampleName+"/skims/"+sampleName+"_"+inDir(0,inDir.Length()-1)+"_"+std::to_string(i)+"Skim.root");
+      std::cout << "[loopInSample] Added "<< inDir+sampleName+"/skims/"+sampleName+"_"+inDir(0,inDir.Length()-1)+"_"+std::to_string(i)+"Skim.root" << " to TChain" << std::endl;  
+    }
+  }
 //  TFile *input = new TFile( (inDir+sampleName+"/hists/merged"+sampleName+".root").Data(), "READ");
   std::vector<TFile*> theoutputfiles;
+  string outNumber = "";
+  if (minFile >= 0 && maxFile >= 0)
+    outNumber = std::to_string((int)(minFile/(maxFile+1-minFile)));
   for (auto const regionName : regionNames){
-    std::cout << "Createing file " << outDir+regionName+"/output_"+sampleName+".root" <<std::endl;
-    TFile *theoutputfile = new TFile( (outDir+regionName+"/output_"+sampleName+".root").Data(), "RECREATE");
+    std::cout << "Createing file " << outDir+regionName+"/output_"+sampleName+outNumber+".root" <<std::endl;
+    TFile *theoutputfile = new TFile( (outDir+regionName+"/output_"+sampleName+outNumber+".root").Data(), "RECREATE");
     theoutputfiles.push_back(theoutputfile);
   }
 
@@ -264,7 +481,7 @@ void mvaTool::processMCSample(TString sampleName, TString inDir, TString outDir,
     createHists(sampleName+systlist[j]);
   }
 
-  loopInSample(dirWithTrees,sampleName,treevars,isData,doMVA);
+  loopInSample(theTree,sampleName,proxyvars,isData,doMVA);
   //makeStatVariationHists(sampleName,theoutputfiles); //We do this in processMCSample so that we have the output file to save the stat variations into.
   
   saveHists(theoutputfiles);
@@ -276,21 +493,26 @@ void mvaTool::processMCSample(TString sampleName, TString inDir, TString outDir,
 }
 
 //Loop over the events in the desired sample
-void mvaTool::loopInSample(TString dirWithTrees, TString sampleName, float* treevars, bool isData, bool doMVA){
+void mvaTool::loopInSample(TTree* theTree, TString sampleName, std::vector<std::vector<float> > proxyvars, bool isData, bool doMVA){
 
-  unsigned int varsize = varList.size();
+  //This makes sure the tree is initialised and finds the correct vectors. This hasnm't always been here, and for a long time it worked without it. Why has this changed now? I HAVE NO IDEA
+  theTree->GetEntry(0);
 
-  TChain* theTree = new TChain("TNT/BOOM");
-  theTree->Add(dirWithTrees);
-  std::cout << "[loopInSample] Added "<<dirWithTrees << " to TChain" << std::endl;
-  
-  for (unsigned int ivar=0; ivar<varsize; ivar++) theTree->SetBranchAddress( varList[ivar].Data(), &(treevars[ivar]));
-
-  
-
-  std::cout << "[loopInSample] Finished assigning variables" << std::endl;
+  //assign all the BDT variables for each region
+  for (auto vars: _varsInBDTs){
+    std::cout << vars.first << " " <<  vars.second << std::endl;
+    theTree->SetBranchAddress( vars.first.Data(), &(_varsInBDTs[vars.first]));
+    std::cout << vars.first << " " <<  vars.second << " " << _varsInBDTs[vars.first] <<  std::endl;
+    theTree->SetBranchAddress( (vars.first+"_JESShifts").Data(), &(_varsInBDT_JESShifts[vars.first]));
+    std::cout << vars.first+"_JESShifts" << " " << _varsInBDT_JESShifts[vars.first] << std::endl;
+  }
+   
   theweight=0.;
   theTree->SetBranchAddress( "EventWeight", &theweight );
+
+  //Debug vars
+  int eventNumber = 0;
+  theTree->SetBranchAddress ( "EVENT_event", &eventNumber);
 
   //Get the systematic weights here. We will then fill hists separately as a result of this.
   float puWeight=0., puWeightUp = 0., puWeightDown = 0.;
@@ -301,21 +523,45 @@ void mvaTool::loopInSample(TString dirWithTrees, TString sampleName, float* tree
   double pdfUp = 0., pdfDown = 0.;
   
   int nbJets3040 = 0., nbJets4000 = 0.;
+  int nJets3040 = 0.,nJets4000 = 0.;
 
   double met = -100.,metPhi = 100.;
   float lepPt = -100., lepPhi = 100.;
 
-  int theChannel = -1;
+  float theChannel = -1;
 
-  theTree->SetBranchAddress( "M_Pt_Lepton",&lepPt);
+  std::vector<float> jesChannelsVec;
+  for (unsigned int jesInd = 0; jesInd < 100; jesInd++){
+    jesChannelsVec.push_back(0.);
+  }
+
+  std::vector<float>*  jesChannels = &jesChannelsVec;
+  
+
+  std::cout << "[loopInSample] Finished assigning variables" << std::endl;
+
+  //  
+  ptrdiff_t pos1  = std::distance(varList[0].begin(), std::find(varList[0].begin(),varList[0].end(),"M_Pt_Lepton")); 
+  unsigned int pos = pos1; //This line prevents an annoying warning. Woo hack.
+  //if (pos > varList[reg].size()) theTree->SetBranchAddress( "M_Pt_Lepton",&lepPt);
+  //  theTree->SetBranchAddress( "M_Pt_Lepton",&lepPt);
   theTree->SetBranchAddress( "M_Phi_Lepton",&lepPhi);
   theTree->SetBranchAddress( "Met_type1PFxy_pt",&met);
   theTree->SetBranchAddress( "Met_type1PFxy_phi",&metPhi);
   
+  theTree->SetBranchAddress("M_channel_JESShifts",&jesChannels);
+
+  theTree->SetBranchAddress("M_Pt_Lepton",&_varsInBDTs["M_Pt_Lepton"]);
+
+  std::cout << "Var addresses"  << lepPhi << " " << _varsInBDTs["M_Pt_Lepton"] << " " << _varsInBDT_JESShifts["M_Pt_Lepton"] << " " << met << std::endl;
+
   if (doMVA){
-    theTree->SetBranchAddress( "channel",&theChannel);
+    theTree->SetBranchAddress( "M_channel",&theChannel);
     theTree->SetBranchAddress( "M_nBJet3040",&nbJets3040);
     theTree->SetBranchAddress( "M_nBJet4000",&nbJets4000);
+    theTree->SetBranchAddress( "M_nJet3040e24",&nJets3040);
+    theTree->SetBranchAddress( "M_nJet4000e24",&nJets4000);
+    
   }
 
   if (!isData){
@@ -384,114 +630,233 @@ void mvaTool::loopInSample(TString dirWithTrees, TString sampleName, float* tree
   //  setbTagVars(theTree);
   
   if (theTree ==0) cout << "No TTree found for " << sampleName << "!" << std::endl;
-
+  
   std::tuple<float,float> bSysts (std::make_pair(1.,1.));
   std::tuple<float,float> mistagSysts (std::make_pair(1.,1.));
 
   //Loop over the events
   std::cout << theTree->GetEntries() << " events in loop for sample " << sampleName << std::endl; 
-  for (int i = 0; i < theTree->GetEntries(); i++){
-    
+  int loopMax = theTree->GetEntries();
+  
+  //debug mode
+  loopMax = 100;
+
+  for (int i = 0; i < loopMax; i++){
+  //  for (int i = 0; i < 50; i++){ //Temporary 'just do this a few times' loop
+
     //if (i > 20000) break;
     if (i%500 == 0){
+      //if (i%1 == 0){
       printf ("Processing event %i\r", i);
       fflush(stdout);
     }
     theTree->GetEntry(i);
+    //    if (! (pos > varList[reg].size())) lepPt = treevars[reg][pos];
+    //    std::cout << _varsInBDTs["M_Pt_Lepton"] <<  " " << (_varsInBDTs["M_Pt_Lepton"]) << std::endl;
+    lepPt = (_varsInBDTs["M_Pt_Lepton"]);
+
+    //make these before 
+    /*    for (unsigned int jesInd = 0; i <  treevarsJetS1hifts.size(); i++){
+      std::cout << "jet shifts length " <<i << " " << treevarsJetShifts[i]->size() << std::endl;
+      }*/
+    if (i == 0) { //This is the first event in the tree and we nede to generate the histograms. This apparently has to go here to avoid causing a massive crash.
+      for (unsigned int jesInd = 0; jesInd < _varsInBDT_JESShifts.begin()->second->size(); jesInd++){
+	createHists(sampleName+"_JetShifts_"+std::to_string(jesInd));
+      }
+    }
 
     //    if (theChannel != _channel) continue;
 
-    if (theChannel < 0 || theChannel > 4) continue;
+    bool runEvent = false;
+    
+    int nJets = nJets3040+nJets4000;
+    int nbJets = nbJets3040+nbJets4000;
 
-    if (theChannel == 0){ // A backup because I messed up the channel flag in the first reprocessing.
+    //Recalculate the channel
+    int tempChannel = -1;
+    if (nJets == 2 && nbJets == 1) tempChannel = 2;     
+    else if (nJets == 3 && nbJets == 1) tempChannel = 0;
+    else if (nJets == 4 && nbJets == 1) tempChannel = 3;
+    else if (nJets == 3 && nbJets == 2) tempChannel = 1;
+    else if (nJets == 4 && nbJets == 2) tempChannel = 4;
+    else if (nJets == 2 && nbJets == 0) tempChannel = 5;
+    else if (nJets == 3 && nbJets == 0) tempChannel = 6;
+    else if (nJets == 4 && nbJets == 0) tempChannel = 7;
+
+    theChannel = tempChannel;
+
+    if (theChannel >= 0 || theChannel <= 7) runEvent = true;
+    for (unsigned int chanInd = 0; chanInd < _varsInBDT_JESShifts.begin()->second->size(); chanInd++){
+      if (jesChannels->at(chanInd) >= 0 && jesChannels->at(chanInd) <= 7) runEvent = true;
+    }
+    if (!runEvent) continue;
+
+    /*    if (theChannel == 1){
+      std::cout << eventNumber << " weight: " << theweight << std::endl;
+      }*/
+
+
+    //if (theChannel == 0){ // A backup because I messed up the channel flag in the first reprocessing.
       //      std::cout << "Zero! njets are: " << nbJets4000 << " " << nbJets3040 <<std::endl;
-      if ((nbJets4000 + nbJets3040) != 1) continue;
-    }
+    //  if ((nbJets4000 + nbJets3040) != 1) continue;
+    //}
 
-    if (doMVA)  mvaValue = reader->EvaluateMVA("BDT_ttbar");
-    else {
-      mvaValue = 0.;
-      theChannel = 0;
+    for (unsigned int reg = 0; reg < regionNames.size(); reg++){
+      for (unsigned int ivar=0; ivar<varList[reg].size(); ivar++) {
+	proxyvars[reg][ivar] = _varsInBDTs[varList[reg][ivar]];
+	//	if (_varsInBDTs[varList[reg][ivar]] == 0) std::cout << reg << " " << ivar << std::endl;
+      }
     }
+    //    std::cout << std::endl;
     //    mvawJetsValue = reader->EvaluateMVA("BDT_wJets");
     mvawJetsValue = 0.;
 
     float mtw = std::sqrt(2*met*lepPt*(1-cos(metPhi-lepPhi)));
 
-    //    std::cout << met << " " << lepPt << " " << metPhi << " " << lepPhi << " " << mtw << std::endl;
+    float ogMVA = 0.;
 
-    fillHists(sampleName,treevars,mvaValue,mvawJetsValue,theweight,met,mtw,theChannel);
-    //Now fill the weight-based systematic histograms
+    if (theChannel > -1  && theChannel < 8){
+      
+      if (doMVA) {
+	//std::cout << theChannel << " " << reader[theChannel] << std::endl;
+	mvaValue = reader[theChannel]->EvaluateMVA(proxyvars[theChannel],_bdtName[theChannel]);
+	ogMVA = mvaValue;
+	//if (theChannel == 0 || theChannel == 2 || theChannel == 1) std::cout << std::endl << "Channel! " << theChannel << " " << mvaValue;
+      }
+      else {
+	mvaValue = 0.;
+	theChannel = 0;
+      }
+
+
+      fillHists(sampleName,proxyvars[theChannel],mvaValue,mvawJetsValue,theweight,met,mtw,theChannel);
+     
+      //Now fill the weight-based systematic histograms
+      if (!isData){
+	fillHists(sampleName+"_PU_up",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * (puWeightUp/puWeight),met,mtw,theChannel);
+	fillHists(sampleName+"_PU_down",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * (puWeightDown/puWeight),met,mtw,theChannel);
+	if (lepSFWeight > 0.){
+	  fillHists(sampleName+"_LSF_up",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * (lepSFWeightUp/lepSFWeight),met,mtw,theChannel);
+	  fillHists(sampleName+"_LSF_down",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * (lepSFWeightDown/lepSFWeight),met,mtw,theChannel);
+	}
+	fillHists(sampleName+"_Trig_up",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * (trigSFWeightUp/trigSFWeight),met,mtw,theChannel);
+	fillHists(sampleName+"_Trig_down",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * (trigSFWeightDown/trigSFWeight),met,mtw,theChannel);
+	if (_useIterFit){
+	  bSysts = calculatebTagSyst(bWeight,{bWeighthfs1Up,bWeighthfs1Down,bWeighthfs2Up,bWeighthfs2Down,bWeightcferr1Up,bWeightcferr1Down,bWeightcferr2Up,bWeightcferr2Down,bWeightjerUp,bWeightjerDown,bWeightlfUp,bWeightlfDown});
+	  //      std::cout << "btag systs: " << std::get<0>(bSysts) << " " << std::get<1>(bSysts) << std::endl;
+	  fillHists(sampleName+"_bTag_up",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * std::get<0>(bSysts),met,mtw,theChannel);
+	  fillHists(sampleName+"_bTag_down",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * std::get<1>(bSysts),met,mtw,theChannel);
+	  mistagSysts = calculatebTagSyst(mistagWeight,{mistagWeighthfs1Up,mistagWeighthfs1Down,mistagWeighthfs2Up,mistagWeighthfs2Down,mistagWeightcferr1Up,mistagWeightcferr1Down,mistagWeightcferr2Up,mistagWeightcferr2Down,mistagWeightjerUp,mistagWeightjerDown,mistagWeightlfUp,mistagWeightlfDown});
+	  //      std::cout << "mistag systs: " << std::get<0>(mistagSysts) << " " << std::get<1>(mistagSysts) << std::endl;
+	  fillHists(sampleName+"_mistag_up",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * std::get<0>(mistagSysts),met,mtw,theChannel);
+	  fillHists(sampleName+"_mistag_down",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * std::get<1>(mistagSysts),met,mtw,theChannel);
+	}
+	else{
+	  fillHists(sampleName+"_bTag_up",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * (bWeightUp/bWeight),met,mtw,theChannel);
+	  fillHists(sampleName+"_bTag_down",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * (bWeightDown/bWeight),met,mtw,theChannel);
+	  fillHists(sampleName+"_mistag_up",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * ( mistagWeightUp/mistagWeight),met,mtw,theChannel);
+	  fillHists(sampleName+"_mistag_down",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight * (mistagWeightDown/mistagWeight),met,mtw,theChannel);
+	}
+	fillHists(sampleName+"_PDF_up",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight*pdfUp,met,mtw,theChannel);
+	fillHists(sampleName+"_PDF_down",proxyvars[theChannel],mvaValue,mvawJetsValue,theweight*pdfDown,met,mtw,theChannel);
+      }
+    }
+	
+	
+	//Here we will need to do each of the JES uncertainties. This code is gonna be gross, I'm sure. Actually it doesn't look too bad?
+	//      for (unsigned int jesInd = 0; jesInd < treevarsJetShifts[0].size(); jesInd++){
+	//	std::cout << jesInd << std::endl;
+	//}
+    //    continue;
     if (!isData){
-      fillHists(sampleName+"_PU_up",treevars,mvaValue,mvawJetsValue,theweight * (puWeightUp/puWeight),met,mtw,theChannel);
-      fillHists(sampleName+"_PU_down",treevars,mvaValue,mvawJetsValue,theweight * (puWeightDown/puWeight),met,mtw,theChannel);
-      fillHists(sampleName+"_LSF_up",treevars,mvaValue,mvawJetsValue,theweight * (lepSFWeightUp/lepSFWeight),met,mtw,theChannel);
-      fillHists(sampleName+"_LSF_down",treevars,mvaValue,mvawJetsValue,theweight * (lepSFWeightDown/lepSFWeight),met,mtw,theChannel);
-      fillHists(sampleName+"_Trig_up",treevars,mvaValue,mvawJetsValue,theweight * (trigSFWeightUp/trigSFWeight),met,mtw,theChannel);
-      fillHists(sampleName+"_Trig_down",treevars,mvaValue,mvawJetsValue,theweight * (trigSFWeightDown/trigSFWeight),met,mtw,theChannel);
-      if (_useIterFit){
-	bSysts = calculatebTagSyst(bWeight,{bWeighthfs1Up,bWeighthfs1Down,bWeighthfs2Up,bWeighthfs2Down,bWeightcferr1Up,bWeightcferr1Down,bWeightcferr2Up,bWeightcferr2Down,bWeightjerUp,bWeightjerDown,bWeightlfUp,bWeightlfDown});
-	//      std::cout << "btag systs: " << std::get<0>(bSysts) << " " << std::get<1>(bSysts) << std::endl;
-	fillHists(sampleName+"_bTag_up",treevars,mvaValue,mvawJetsValue,theweight * std::get<0>(bSysts),met,mtw,theChannel);
-	fillHists(sampleName+"_bTag_down",treevars,mvaValue,mvawJetsValue,theweight * std::get<1>(bSysts),met,mtw,theChannel);
-	mistagSysts = calculatebTagSyst(mistagWeight,{mistagWeighthfs1Up,mistagWeighthfs1Down,mistagWeighthfs2Up,mistagWeighthfs2Down,mistagWeightcferr1Up,mistagWeightcferr1Down,mistagWeightcferr2Up,mistagWeightcferr2Down,mistagWeightjerUp,mistagWeightjerDown,mistagWeightlfUp,mistagWeightlfDown});
-	//      std::cout << "mistag systs: " << std::get<0>(mistagSysts) << " " << std::get<1>(mistagSysts) << std::endl;
-	fillHists(sampleName+"_mistag_up",treevars,mvaValue,mvawJetsValue,theweight * std::get<0>(mistagSysts),met,mtw,theChannel);
-	fillHists(sampleName+"_mistag_down",treevars,mvaValue,mvawJetsValue,theweight * std::get<1>(mistagSysts),met,mtw,theChannel);
+      //      std::cout << "Starts the jes l;oop" << std::endl;
+      for (unsigned int jesInd = 0; jesInd < _varsInBDT_JESShifts.begin()->second->size(); jesInd++){
+	if (jesChannels->at(jesInd) < 0 || jesChannels->at(jesInd) > 7 || jesChannels->at(jesInd) > reader.size()) continue;
+	for (unsigned int varInd = 0; varInd < varList[jesChannels->at(jesInd)].size(); varInd ++){
+	    proxyvars[jesChannels->at(jesInd)][varInd] = _varsInBDT_JESShifts[varList[jesChannels->at(jesInd)][varInd]]->at(jesChannels->at(jesInd));
+	    //	    if (isnan(proxyvars[jesChannels->at(jesInd)][varInd])) std::cout << jesInd << " " << varInd << std::endl;
+	    //treevarsJetShifts[jesChannels->at(jesInd)][varInd]->at(jesInd);
+	}
+	if (doMVA)  {
+	  mvaValue = reader[jesChannels->at(jesInd)]->EvaluateMVA(proxyvars[jesChannels->at(jesInd)],_bdtName[jesChannels->at(jesInd)]);
+	  if (jesInd == 0 && fabs(ogMVA - mvaValue) > 0.01){ 
+	    std::cout << jesInd << " " << theChannel << " " << jesChannels->at(jesInd) << " " << ogMVA << " " << mvaValue << std::endl;
+	    for (unsigned int varInd = 0; varInd < varList[jesChannels->at(jesInd)].size(); varInd ++){
+	      std::cout << varList[jesChannels->at(jesInd)][varInd] << ": " << _varsInBDTs[varList[jesChannels->at(jesInd)][varInd]] << " " << proxyvars[jesChannels->at(jesInd)][varInd] <<std::endl;
+	    }
+	  }
+	  //std::cout << " " << mvaValue;
+	} 
+	else {                                                  
+	  mvaValue = 0.;                                        
+	  theChannel = 0;                                       
+	}
+	fillHists(sampleName+"_JetShifts_"+std::to_string(jesInd),proxyvars[jesChannels->at(jesInd)],mvaValue,mvawJetsValue,theweight,met,mtw,jesChannels->at(jesInd));
       }
-      else{
-	fillHists(sampleName+"_bTag_up",treevars,mvaValue,mvawJetsValue,theweight * (bWeightUp/bWeight),met,mtw,theChannel);
-	fillHists(sampleName+"_bTag_down",treevars,mvaValue,mvawJetsValue,theweight * (bWeightDown/bWeight),met,mtw,theChannel);
-	fillHists(sampleName+"_mistag_up",treevars,mvaValue,mvawJetsValue,theweight * ( mistagWeightUp/mistagWeight),met,mtw,theChannel);
-	fillHists(sampleName+"_mistag_down",treevars,mvaValue,mvawJetsValue,theweight * (mistagWeightDown/mistagWeight),met,mtw,theChannel);
-      }
-      fillHists(sampleName+"_PDF_up",treevars,mvaValue,mvawJetsValue,theweight*pdfUp,met,mtw,theChannel);
-      fillHists(sampleName+"_PDF_down",treevars,mvaValue,mvawJetsValue,theweight*pdfDown,met,mtw,theChannel);
     }
   }
+}
 
-} 
+void mvaTool::createHists(TString sampleNameBase){
 
-void mvaTool::createHists(TString sampleName){
-
+  TString sampleName = sampleNameBase;
+  
   for (unsigned int region = 0; region < regionNames.size(); region++){
 
+    TString sampleName = sampleNameBase + regionNames[region];
 
     std::vector<TH1F*> histovect;
     std::vector<TH1F*> bdtVect;
 
     //Make a histogram per variable
-    for (unsigned int i = 0; i<varList.size(); i++){
+    std::vector<TString> varNames = varList[region];
+    for (unsigned int i = 0; i<varNames.size(); i++){
       int nbins = 1;
       double xmin = -1000;
       double xmax = 1000;
-      if (varList[i] ==  "M_DeltaRBJetLepton") {nbins = 20; xmin = 0; xmax = 6.;};
-      if (varList[i] ==  "M_DeltaRlightjets") {nbins = 20; xmin = 0; xmax = 6.;};
-      if (varList[i] == "M_topMass2_lep") {nbins = 20; xmin = 0.; xmax = 600.;};
-      if (varList[i] == "M_Pt_AllJets2040") {nbins = 20; xmin = 0; xmax = 160;};
-      if (varList[i] == "M_Pt_Lepton") {nbins = 20; xmin = 0.; xmax = 300.;};
-      if (varList[i] == "M_Pt_AllJetsLeptonMET") {nbins = 20; xmin = 0.; xmax = 300.;};
-      if (varList[i] == "M_E_Jet1MET") {nbins = 20; xmin = 0.; xmax = 300.;};
-      if (varList[i] == "M_Jet1Jet2Jet3_Centrality") {nbins = 20; xmin = 0.; xmax = 1.;};
-      if (varList[i] == "M_DeltaRLeptonJet1") {nbins = 20; xmin = 0.; xmax = 6.;};
-      if (varList[i] == "M_nJet3040e24") {nbins = 10; xmin = 0.; xmax = 10.;};
-      if (varList[i] == "M_nJet2040") {nbins = 10; xmin = 0.; xmax = 10.;};
-      if (varList[i] == "M_Mass_Jet1Jet2Jet3LeptonMET") {nbins = 20; xmin = 0.; xmax = 1500.;};
-      if (varList[i] == "M_Pt_BJet1_4000") {nbins = 20; xmin = 40.; xmax = 200.;};
-      if (varList[i] == "M_Pt_Jet1_2040") {nbins = 20; xmin = 20.; xmax = 40.;};
-      if (varList[i] == "M_hadronicWmass") {nbins = 20; xmin = 0.; xmax = 500.;};
-      if (varList[i] == "M_hadronicWEta") {nbins = 20; xmin = -6.; xmax = 6.;};
-      if (varList[i] == "M_DeltaRBJethadronicW") {nbins = 20; xmin = 0.; xmax = 6.;};
-      if (varList[i] == "M_Pt_sys") {nbins = 20; xmin = 0.; xmax = 300.;};
-      if (varList[i] == "M_HT") {nbins = 20; xmin = 0.; xmax = 900.;};
-      if (varList[i] == "M_TMass_Jet1Jet2Jet3") {nbins = 20; xmin = 0.; xmax = 1400.;};
-      if (varList[i] == "M_cosThetaStar") {nbins = 20; xmin = -1.; xmax = 1.;};
-      if (varList[i] == "M_cosThetaStar_lepOnly") {nbins = 20; xmin = -1.; xmax = 1.;};
-      if (varList[i] == "lightJet1CSV") {nbins = 20; xmin = 0.; xmax = 1.;};
-      if (varList[i] == "lightJet2CSV") {nbins = 20; xmin = 0.; xmax = 1.;};
+      if (varNames[i] ==  "M_DeltaRBJetLepton") {nbins = 20; xmin = 0; xmax = 6.;};
+      if (varNames[i] ==  "M_DeltaRlightjets") {nbins = 20; xmin = 0; xmax = 6.;};
+      if (varNames[i] == "M_topMass2_lep") {nbins = 20; xmin = 0.; xmax = 600.;};
+      if (varNames[i] == "M_Pt_AllJets2040") {nbins = 20; xmin = 0; xmax = 160;};
+      if (varNames[i] == "M_Pt_Lepton") {nbins = 20; xmin = 0.; xmax = 300.;};
+      if (varNames[i] == "M_Pt_AllJetsLeptonMET") {nbins = 20; xmin = 0.; xmax = 300.;};
+      if (varNames[i] == "M_E_Jet1MET") {nbins = 20; xmin = 0.; xmax = 300.;};
+      if (varNames[i] == "M_Jet1Jet2Jet3_Centrality") {nbins = 20; xmin = 0.; xmax = 1.;};
+      if (varNames[i] == "M_DeltaRLeptonJet1") {nbins = 20; xmin = 0.; xmax = 6.;};
+      if (varNames[i] == "M_nJet3040e24") {nbins = 10; xmin = 0.; xmax = 10.;};
+      if (varNames[i] == "M_nJet2040") {nbins = 10; xmin = 0.; xmax = 10.;};
+      if (varNames[i] == "M_Mass_Jet1Jet2Jet3LeptonMET") {nbins = 20; xmin = 0.; xmax = 1500.;};
+      if (varNames[i] == "M_Pt_BJet1_4000") {nbins = 20; xmin = 40.; xmax = 200.;};
+      if (varNames[i] == "M_Pt_Jet1_2040") {nbins = 20; xmin = 20.; xmax = 40.;};
+      if (varNames[i] == "M_hadronicWmass") {nbins = 20; xmin = 0.; xmax = 500.;};
+      if (varNames[i] == "M_hadronicWEta") {nbins = 20; xmin = -6.; xmax = 6.;};
+      if (varNames[i] == "M_DeltaRBJethadronicW") {nbins = 20; xmin = 0.; xmax = 6.;};
+      if (varNames[i] == "M_Pt_sys") {nbins = 20; xmin = 0.; xmax = 300.;};
+      if (varNames[i] == "M_HT") {nbins = 20; xmin = 0.; xmax = 900.;};
+      if (varNames[i] == "M_TMass_Jet1Jet2Jet3") {nbins = 20; xmin = 0.; xmax = 1400.;};
+      if (varNames[i] == "M_cosThetaStar") {nbins = 20; xmin = -1.; xmax = 1.;};
+      if (varNames[i] == "M_cosThetaStar_lepOnly") {nbins = 20; xmin = -1.; xmax = 1.;};
+      if (varNames[i] == "lightJet1CSV") {nbins = 20; xmin = 0.; xmax = 1.;};
+      if (varNames[i] == "lightJet2CSV") {nbins = 20; xmin = 0.; xmax = 1.;};
+      if (varNames[i] == "M_DeltaPhiJet1Jet2") {nbins = 20; xmin = 0.; xmax = 3.3;};
+      if (varNames[i] == "M_DeltaRJet1Jet2") {nbins = 20; xmin = 0.; xmax = 6.;};
+      if (varNames[i] == "M_DeltaRWlvJet2") {nbins = 20; xmin = 0.; xmax = 6.;};
+      if (varNames[i] == "M_E_AllJets") {nbins = 20; xmin = 0.; xmax = 700.;};
+      if (varNames[i] == "M_E_Jet1Jet2Jet3MET") {nbins = 20; xmin = 0.; xmax = 1000.;};
+      if (varNames[i] == "M_E_Jet2Jet3") {nbins = 20; xmin = 0.; xmax = 400.;};
+      if (varNames[i] == "M_HT") {nbins = 20; xmin = 0.; xmax = 600.;};
+      if (varNames[i] == "M_Mass_AllJets") {nbins = 20; xmin = 0.; xmax = 1000.;};
+      if (varNames[i] == "M_Mass_AllJetsMET") {nbins = 20; xmin = 0.; xmax = 1000.;};
+      if (varNames[i] == "M_Mass_Jet1Jet2") {nbins = 20; xmin = 0.; xmax = 700.;};
+      if (varNames[i] == "M_Mass_Jet1Jet3") {nbins = 20; xmin = 0.; xmax = 600.;};
+      if (varNames[i] == "M_Pt_AllJets2040") {nbins = 20; xmin = 0.; xmax = 100.;};
+      if (varNames[i] == "M_Pt_Jet1LeptonMET") {nbins = 20; xmin = 0.; xmax = 200.;};
+      if (varNames[i] == "M_Pt_Jet1Jet2Lepton") {nbins = 20; xmin = 0.; xmax = 300.;};
+      if (varNames[i] == "M_Pt_LeptonJet1") {nbins = 20; xmin = 0.; xmax = 300.;};
+      if (varNames[i] == "M_Pt_Jet1_2030") {nbins = 20; xmin = 20.; xmax = 30.;};
 
 
-      TH1F* histo = new TH1F((varList[i] + "_" + sampleName).Data(), (varList[i] + "_" + sampleName).Data(),nbins,xmin,xmax);
+      TH1F* histo = new TH1F((varNames[i] + "_" + sampleName).Data(), (varNames[i] + "_" + sampleName).Data(),nbins,xmin,xmax);
       histo->Sumw2();
       histovect.push_back(histo);
     }
@@ -517,21 +882,20 @@ void mvaTool::createHists(TString sampleName){
 
     TH2F* bdt2D = new TH2F(("MVA_2D_"+sampleName).Data(),("MVA_2D_"+sampleName).Data(),20,-0.8,0.8,20,-0.3,0.3);
     bdt2D->Sumw2();
-    the2DHistoMap[sampleName].push_back(bdt2D);
+    the2DHistoMap[sampleNameBase].push_back(bdt2D);
 
-    theHistoMap[sampleName].push_back(histovect);
-    bdtHistoMap[sampleName].push_back(bdtVect);
+    theHistoMap[sampleNameBase].push_back(histovect);
+    bdtHistoMap[sampleNameBase].push_back(bdtVect);
   }
-  std::cout << "hist maps are this long: " << the2DHistoMap[sampleName].size() << " " << theHistoMap[sampleName].size() << " " << bdtHistoMap[sampleName].size() << std::endl;
+  //  std::cout << "hist maps are this long: " << the2DHistoMap[sampleNameBase].size() << " " << theHistoMap[sampleNameBase].size() << " " << bdtHistoMap[sampleNameBase].size() << std::endl;
 }
 
-void mvaTool::fillHists(TString sampleName, float* treevars, double mvaValue, double mvawJetsValue, double theweight, float met, float mtw, int theChannel){
+void mvaTool::fillHists(TString sampleName, std::vector<float> treevars, double mvaValue, double mvawJetsValue, double theweight, float met, float mtw, int theChannel){
 
   std::vector<std::vector<TH1F*> > histovect = theHistoMap[sampleName];
   std::vector<std::vector<TH1F*> > bdtVector = bdtHistoMap[sampleName];
 
-
-  for (unsigned int i=0; i < varList.size(); i++) histovect[theChannel][i]->Fill(treevars[i],theweight);
+  for (unsigned int i=0; i < varList[theChannel].size(); i++) histovect[theChannel][i]->Fill(treevars[i],theweight);
   for (unsigned int j = 0; j < bdtVector[theChannel].size(); j++) bdtVector[theChannel][j]->Fill(mvaValue,theweight);
    
   histovect[theChannel][histovect[theChannel].size() - 3]->Fill(mtw,theweight);
@@ -548,16 +912,27 @@ void mvaTool::fillHists(TString sampleName, float* treevars, double mvaValue, do
 void mvaTool::saveHists(std::vector<TFile*> outFile){
   for (unsigned int i = 0; i < regionNames.size(); i++){
     outFile[i]->cd();
+    string tmpName;
     for (auto histoMapElement: theHistoMap){
-      for (auto hist: (histoMapElement.second)[i]) hist->Write();
+      for (auto hist: (histoMapElement.second)[i]) {
+	tmpName = hist->GetName();
+	int pos = tmpName.find(regionNames[i]);
+	hist->SetTitle(tmpName.substr(0,pos).c_str());
+	hist->Write(tmpName.substr(0,pos).c_str());
+      }
     }
     for (auto histoMapElement: bdtHistoMap){
-      for (auto hist: (histoMapElement.second)[i]) hist->Write();
+      for (auto hist: (histoMapElement.second)[i]) {
+	tmpName = hist->GetName();
+	int pos = tmpName.find(regionNames[i]);
+	hist->Write(tmpName.substr(0,pos).c_str());
+	hist->SetTitle(tmpName.substr(0,pos).c_str());
+      }
     }
     
-    for (auto hist2D: the2DHistoMap){
-      (hist2D.second)[i]->Write();
-    }
+    //    for (auto hist2D: the2DHistoMap){
+    // (hist2D.second)[i]->Write();
+    //}
   }
 }
 
@@ -640,9 +1015,12 @@ void mvaTool::makeStatVariationHists(TString sampleName, std::vector<TFile *> ou
 }
 
 void mvaTool::printVarList(){
-  std::cout << "Var list is " << varList.size() << " variables long" << std::endl;
-  for (unsigned int i = 0; i < varList.size() ; i++){
-    std::cout << varList[i] << std::endl;
+
+  for (unsigned int reg = 0; reg < regionNames.size(); reg++){
+    std::cout << "Var list for region " << regionNames[reg] << " is " << varList[reg].size() << " variables long" << std::endl;
+    for (unsigned int i = 0; i < varList.size() ; i++){
+      std::cout << varList[reg][i] << std::endl;
+    }
   }
   std::cout << "Sys list is " << systlist.size() << " variables long" << std::endl;
   for (unsigned int i = 0; i < systlist.size() ; i++){
