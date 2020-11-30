@@ -167,15 +167,39 @@ Bool_t ChannelFlagCut::Apply()
   else if (nJets == 4 && nbJets == 1) channel = 3;
   else if (nJets == 3 && nbJets == 2) channel = 1;
   else if (nJets == 4 && nbJets == 2) channel = 4;
-      
+  // Adding in additional channels for 0 tags and also no tag information ofr plotting purpose
+  else if (nJets == 2 && nbJets == 0) channel = 5;
+  else if (nJets == 3 && nbJets == 0) channel = 6;
+  else if (nJets == 4 && nbJets == 0) channel = 7;
+  else if (nJets == 2) channel = 8;
+  else if (nJets == 3) channel = 9;
+  else if (nJets == 4) channel = 10;
+
+
+  //  if (EventContainerObj->eventNumber == 951498 ) std::cout << "nJets: " << nJets << " nbJets: " << nbJets << " channel: " << channel << " tree_channel: "  << channel_tree << std::endl;
+  //  if (channel == 1) std::cout << EventContainerObj->eventNumber << " weight: " << EventContainerObj->GetEventWeight() << " outputWeight: " <<EventContainerObj->GetOutputEventWeight() <<  std::endl;
+
   if (channel == _channel){
     passesMETCut = kTRUE;
+  }
+  else{
+    if (_channel == 8 && (channel == 2 || channel == 5)) passesMETCut = kTRUE;
+    if (_channel == 9 && (channel == 0 || channel == 1 || channel == 6)) passesMETCut = kTRUE;
+    if (_channel == 10 && (channel == 3 || channel == 4 || channel == 7)) passesMETCut = kTRUE;
+  }
+
+  if (_channel == 11) passesMETCut = kTRUE; //Special flag to check everything
+  
+  if (passesMETCut){
     GetCutFlowTable()->PassCut(cutFlowName);
     _hChannelFlagAfter->Fill(channel);
   }
-  else{
+  else {
     GetCutFlowTable()->FailCut(cutFlowName);
   }
+
+  
+  
 
   return passesMETCut;
 

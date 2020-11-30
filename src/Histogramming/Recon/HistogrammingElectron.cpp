@@ -48,6 +48,8 @@ HistogrammingElectron::HistogrammingElectron(EventContainer *obj, TString electr
   } //if
   electronType = electronTypePassed;
 
+  _nTimesRun = 0;
+
   SetEventContainer(obj);
 } //HistogrammingElectron()
 
@@ -89,6 +91,12 @@ void HistogrammingElectron::BookHistogram(){
   Double_t phiMin = -1.0 * TMath::Pi();
   Double_t phiMax = TMath::Pi();
 
+  Int_t isoBin    = 50;
+  Double_t isoMin = 0.;
+  Double_t isoMax = 0.06;
+  Double_t isoHiMin = 0.06;
+  Double_t isoHiMax = 1.;
+
   ////////////////////////////////////////////////////////////////
   // Number of Objects
   ////////////////////////////////////////////////////////////////
@@ -104,7 +112,7 @@ void HistogrammingElectron::BookHistogram(){
   _hPtObj1->SetXAxisTitle("P_{T} (Ele 1) [GeV]");
   _hPtObj1->SetYAxisTitle("Events");
   // 1 Pt - Blown up
-  _hPtBlowupObj1 = DeclareTH1F("Ele1PtBlowup","Electron 1 P_{T}",200,0.,100.);
+  _hPtBlowupObj1 = DeclareTH1F("Ele1PtBlowup","Electron 1 P_{T}",200,0.,250.);
   _hPtBlowupObj1->SetXAxisTitle("p_{T} (Ele 1) [GeV]");
   _hPtBlowupObj1->SetYAxisTitle("Events");
   // 1 Eta
@@ -115,6 +123,14 @@ void HistogrammingElectron::BookHistogram(){
   _hPhiObj1 = DeclareTH1F("Ele1Phi", "Electron 1 phi", phiBin, phiMin, phiMax);
   _hPhiObj1->SetXAxisTitle("#phi (Ele 1)");
   _hPhiObj1->SetYAxisTitle("Events");
+  // 1 Iso
+  _hIsoHiObj1 = DeclareTH1F("Ele1Iso", "Electron 1 isolation", isoBin, isoMin, isoMax);
+  _hIsoHiObj1->SetXAxisTitle("RelIso");
+  _hIsoHiObj1->SetYAxisTitle("Events");
+  // 1 Iso High
+  _hIsoObj1 = DeclareTH1F("Ele1IsoHi", "Electron 1 isolation high", isoBin, isoHiMin, isoHiMax);
+  _hIsoObj1->SetXAxisTitle("RelIso");
+  _hIsoObj1->SetYAxisTitle("Events");
   // 1 Pt-Eta
   _hPtEtaObj1 = DeclareTH2F("Ele1PtEta", "Electron 1 pt-eta", ptBin2D, ptMin, ptMax, etaBin2D, etaMin, etaMax);
   _hPtEtaObj1->SetXAxisTitle("P_{T} [GeV]");
@@ -140,6 +156,14 @@ void HistogrammingElectron::BookHistogram(){
   _hPhiObj2 = DeclareTH1F("Ele2Phi", "Electron 2 phi", phiBin, phiMin, phiMax);
   _hPhiObj2->SetXAxisTitle("#phi (Ele 2)");
   _hPhiObj2->SetYAxisTitle("Events");
+  // 2 Iso
+  _hIsoObj2 = DeclareTH1F("Ele2Iso", "Electron 2 isolation", isoBin, isoMin, isoMax);
+  _hIsoObj2->SetXAxisTitle("RelIso");
+  _hIsoObj2->SetYAxisTitle("Events");
+  // 2 Iso High
+  _hIsoHiObj2 = DeclareTH1F("Ele2IsoHi", "Electron 2 isolation high", isoBin, isoHiMin, isoHiMax);
+  _hIsoHiObj2->SetXAxisTitle("RelIso");
+  _hIsoHiObj2->SetYAxisTitle("Events");
   // 2 Pt-Eta
   _hPtEtaObj2 = DeclareTH2F("Ele2PtEta", "Electron 2 pt-eta", ptBin2D, ptMin, ptMax, etaBin2D, etaMin, etaMax);
   _hPtEtaObj2->SetXAxisTitle("P_{T} [GeV]");
@@ -272,6 +296,8 @@ Bool_t HistogrammingElectron::Apply()
     _hPtObj1  -> Fill(electronVector[0].Pt());
     _hEtaObj1 -> Fill(electronVector[0].Eta());
     _hPhiObj1 -> Fill(electronVector[0].Phi());
+    _hIsoObj1 -> Fill(electronVector[0].relIsoPFRhoEA());
+    _hIsoHiObj1 -> Fill(electronVector[0].relIsoPFRhoEA());
     _hPtBlowupObj1  -> Fill(electronVector[0].Pt());
     
     _hPtEtaObj1  -> Fill(electronVector[0].Pt(),  electronVector[0].Eta());
@@ -283,12 +309,15 @@ Bool_t HistogrammingElectron::Apply()
       _hJetDeltaPhi-> Fill(fabs(evc->jets[0].DeltaPhi(electronVector[0])));
     }
 
+
     //      } //if DeltaR
   } // if size < 0
   if(electronVector.size()>1) {
     _hPtObj2  -> Fill(electronVector[1].Pt());
     _hEtaObj2 -> Fill(electronVector[1].Eta());
     _hPhiObj2 -> Fill(electronVector[1].Phi());
+    _hIsoObj2 -> Fill(electronVector[1].relIsoPFRhoEA());
+    _hIsoHiObj2 -> Fill(electronVector[1].relIsoPFRhoEA());
 
     _hPtEtaObj2  -> Fill(electronVector[1].Pt(),  electronVector[1].Eta());
     _hPtPhiObj2  -> Fill(electronVector[1].Pt(),  electronVector[1].Phi());
@@ -312,7 +341,12 @@ Bool_t HistogrammingElectron::Apply()
     //_hPtCone30OverPt->Fill(electronVector[io].GetPtCone30()/electronVector[io].Pt());
   }    
 
+  _nTimesRun ++;
+  _integral+=evc->GetEventWeight();
+
   //cout<<"End of HistogrammingElectron::Apply()"<<endl;
+  //  cout << "Integral electronPt: " << _hNObj->Integral() << " n times run: " << _nTimesRun << " integral: " << _integral << std::endl;
+
   return kTRUE;  
   
 } //Apply

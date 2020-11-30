@@ -23,6 +23,13 @@ public:
     j2t1=2,
     j4t1=3,
     j4t2=4,
+    j2t0=5,
+    j3t0=6,
+    j4t0=7,
+    j2=8,
+    j3=9,
+    j4=10,
+    all=11
   };
 
   ChannelFlag();

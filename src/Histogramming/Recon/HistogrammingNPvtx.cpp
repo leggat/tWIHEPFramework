@@ -68,6 +68,11 @@ void HistogrammingNPvtx::BookHistogram(){
   _hNPvtx->SetXAxisTitle("nPvtx");
   _hNPvtx->SetYAxisTitle("Events");
 
+  // Histogram of MET
+  _hNPvtx_pre = DeclareTH1F("nPvtx_pre","Number of primary vertex",50,0.,50.);
+  _hNPvtx_pre->SetXAxisTitle("nPvtx_pre");
+  _hNPvtx_pre->SetYAxisTitle("Events");
+
   // Histogram of MEX 
   _hNPvtx_nJet = DeclareTH2F("nPvtx_nJet","Number of primary vertex vs number of Jets",50,0.,50., 50,0,50);
   _hNPvtx_nJet->SetXAxisTitle("nPvtx");
@@ -88,6 +93,11 @@ void HistogrammingNPvtx::BookHistogram(){
   _hNTrueInteractions->SetXAxisTitle("nTrueInteractions");
   _hNTrueInteractions->SetYAxisTitle("Events");
 
+  // Histogram of NTrue interactions before reweighting
+  _hNTrueInteractions_pre = DeclareTH1F("nTrueInteractions_pre","Number of true vertices",50,0.,50.);
+  _hNTrueInteractions_pre->SetXAxisTitle("nTrueInteractions_pre");
+  _hNTrueInteractions_pre->SetYAxisTitle("Events");
+
   // Histogram of MEX 
   _hNTrueInteractions_nJet = DeclareTH2F("nTrueInteractions_nJet","Number of true vertices vs number of Jets",50,0.,50., 50,0,50);
   _hNTrueInteractions_nJet->SetXAxisTitle("nTrueInteractions");
@@ -107,6 +117,11 @@ void HistogrammingNPvtx::BookHistogram(){
   _hNPUVertices = DeclareTH1F("nPUVertices","Number of PU vertices",50,0.,50.);
   _hNPUVertices->SetXAxisTitle("nPUVertices");
   _hNPUVertices->SetYAxisTitle("Events");
+
+  // Histogram of MET
+  _hNPUVertices_pre = DeclareTH1F("nPUVertices_pre","Number of PU vertices",50,0.,50.);
+  _hNPUVertices_pre->SetXAxisTitle("nPUVertices_pre");
+  _hNPUVertices_pre->SetYAxisTitle("Events");
 
   // Histogram of MEX 
   _hNPUVertices_nJet = DeclareTH2F("nPUVertices_nJet","Number of PU vertices vs number of Jets",50,0.,50., 50,0,50);
@@ -163,6 +178,21 @@ Bool_t HistogrammingNPvtx::Apply()
   _hNPUVertices_nMuon -> Fill(evc->npuVertices,evc->tightMuons.size()); // tight muon only
   
 
+  // Now we reweight the event to fill the before reweighting plots
+  Float_t fullEventWeight = evc->GetEventWeight();
+  if (evc->GetEventPileupWeight() > 0.){
+    evc->SetOutputEventWeight(fullEventWeight/evc->GetEventPileupWeight());
+  }
+
+  //  std::cout << fullEventWeight << " " << evc->GetEventPileupWeight() << " " << evc->GetEventWeight() << std::endl;
+  // fill them
+  _hNPvtx_pre -> Fill(evc->nPvtx); 
+  _hNTrueInteractions_pre -> Fill(evc->trueInteractions);
+  _hNPUVertices_pre -> Fill(evc->npuVertices);
+
+  //Now we want to REWEIGHT THE EVENT BCK
+  evc->SetOutputEventWeight(fullEventWeight);
+  
   //  }
   //cout<<"End of HistogrammingNPvtx::Apply()"<<endl;
   return kTRUE;  

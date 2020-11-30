@@ -335,6 +335,36 @@ void EventContainer::Initialize( EventTree* eventTree, TruthTree* truthTree)
   // Check for any systematic uncertainties we may be calculating
   _metShift = _config.GetValue("Systs.metShift",0);
   _channelName = _config.GetValue("ChannelName","");
+  TString jerFile =GetConfig()->GetValue("Include.jerFile","config/weights/Spring16_25nsV6_MC_PtResolution_AK4PFchs.txt");
+  std::ifstream file(jerFile);
+  std::string lineStr;
+  bool firstLine = true;
+  while (std::getline(file,lineStr)){
+    std::stringstream ss(lineStr);
+    std::istream_iterator<std::string> begin(ss);
+    std::istream_iterator<std::string> end;
+    std::vector<std::string> vstrings(begin, end);
+    if (firstLine){
+      _resFormula = vstrings[5];
+      firstLine = false;
+      continue;
+    }
+    _resolution.push_back(vstrings);
+  }
+  TString sfFile =GetConfig()->GetValue("Include.jerSFFile","config/weights/Spring16_25nsV6_MC_SF_AK4PFchs.txt");
+  std::ifstream sfile(sfFile);                                                                                            
+  firstLine = true;                                                                                                  
+  while (std::getline(sfile,lineStr)){                                                                                     
+    std::stringstream ss(lineStr);                                                                                        
+    std::istream_iterator<std::string> begin(ss);                                                                         
+    std::istream_iterator<std::string> end;                                                                               
+    std::vector<std::string> vstrings(begin, end);                                                                        
+    if (firstLine){                                                                                                       
+      firstLine = false;                                                                                                  
+      continue;                                                                                                           
+    }                                                                                                                     
+    _resSFs.push_back(vstrings);                                                                                      
+  }                                                                                                                       
 
   return;
 } //Initialize()
@@ -649,8 +679,9 @@ Int_t EventContainer::ReadEvent()
       closeindex = 999;
       ejordr = 999;
       bestjetdr = 999;
-      //      missingEt = -888; 
-      useObj = newJet.Fill(1.0,1.0, *muonsToUsePtr, *electronsToUsePtr, _eventTree, io, &missingEtVec_xy, isSimulation);
+      //      missingEt = -888;
+      //      std::cout << _resolution;
+      useObj = newJet.Fill(1.0,1.0, *muonsToUsePtr, *electronsToUsePtr, _eventTree, io, &missingEtVec_xy, isSimulation, &_resolution, &_resSFs, &_resFormula);
       //      useObj = newJet.Fill(1.0,1.0, _eventTree, io);
       
       missingEt = TMath::Sqrt(pow(missingEx,2) + pow(missingEy,2));//so MET gets JES adjustment toogEx=top_met.MET_ExMiss();

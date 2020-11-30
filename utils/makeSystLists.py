@@ -14,7 +14,8 @@ datasets = ["tW_top","tW_antitop","ttbar","ww","wz","zz","zPlusJetsHighMass","zP
 #datasets = ["singleMuon"]
 datasets = ["ttbar","ttbarBU"]
 datasets = ["tW_top_nfh","tW_antitop_nfh","SingMuH"]
-datasetID = {"tW_top":500000,"tW_antitop":500001,"ttbar":500024,"ww":500007,"wz":500008,"zz":500009,"zPlusJetsHighMass":500004,"zPlusJetsLowMass":500005,"tChan":500002,"sChan":500010,"wPlusJets":500006,"qcd100_200":500011,"qcd200_300":500012,"qcd300_500":500013,"qcd500_700":500014,"qcd700_1000":500015,"qcd1000_1500":500016,"qcd1500_2000":500017,"qcd2000_inf":500018,"wPlusJetsMCatNLO":500019,"tChan_antitop":500020,"tChan_top":500021,"SingMuB":400000,"SingMuB_1":400007,"SingMuC":400001,"SingMuD":400002,"SingMuE":400003,"SingMuF":400004,"SingMuG":400005,"SingMuG_1":400008,"SingMuH":400006,"ttbarBU":500025,"tW_top_nfh":500026,"tW_antitop_nfh":500027,
+datasets = ["tW_mcanlo"]
+datasetID = {"tW_top":500000,"tW_antitop":500001,"ttbar":500024,"ww":500007,"wz":500008,"zz":500009,"zPlusJetsHighMass":500004,"zPlusJetsLowMass":500005,"tChan":500002,"sChan":500010,"wPlusJets":500006,"qcd100_200":500011,"qcd200_300":500012,"qcd300_500":500013,"qcd500_700":500014,"qcd700_1000":500015,"qcd1000_1500":500016,"qcd1500_2000":500017,"qcd2000_inf":500018,"wPlusJetsMCatNLO":500019,"tChan_antitop":500020,"tChan_top":500021,"SingMuB":400000,"SingMuB_1":400007,"SingMuC":400001,"SingMuD":400002,"SingMuE":400003,"SingMuF":400004,"SingMuG":400005,"SingMuG_1":400008,"SingMuH":400006,"ttbarBU":500025,"tW_top_nfh":500026,"tW_antitop_nfh":500027,"tW_mcanlo":700034,
 "tW_antitop_DS":700000,
 "tW_antitop_isrup":700001,
 "tW_antitop_isrdown":700002,
@@ -110,8 +111,8 @@ datasetDirs = {"tW_top":["/acfs/cms/data/TopQuark/cms13TeV/tWlJetSamples/moriond
 "ttbar_herwig":["/publicfs/cms/data/TopQuark/cms13TeV/tWlJetSamples/systematicSamples/TT_TuneEE5C_13TeV-powheg-herwigpp/crab_tt_herwig/170626_124038/0000/"],
 "ttbar_amcatnlo":["/publicfs/cms/data/TopQuark/cms13TeV/tWlJetSamples/systematicSamples/TTJets_TuneCUETP8M2T4_13TeV-amcatnloFXFX-pythia8/crab_ttbar_amcatnlo/170626_144520/0000/"],
 "ttbar_tuneup":["/publicfs/cms/data/TopQuark/cms13TeV/tWlJetSamples/systematicSamples/TT_TuneCUETP8M2T4up_13TeV-powheg-pythia8/crab_tt_tuneUp/170626_123632/0000/"],
-"ttbar_tunedown":["/publicfs/cms/data/TopQuark/cms13TeV/tWlJetSamples/systematicSamples/TT_TuneCUETP8M2T4down_13TeV-powheg-pythia8/crab_tt_tuneDown/170626_123757/0000/"]
-
+"ttbar_tunedown":["/publicfs/cms/data/TopQuark/cms13TeV/tWlJetSamples/systematicSamples/TT_TuneCUETP8M2T4down_13TeV-powheg-pythia8/crab_tt_tuneDown/170626_123757/0000/"],
+"tW_mcanlo":["/publicfs/cms/data/TopQuark/cms13TeV/tWlJetSamples/mc/updatedEleJetsSysts/ST_tW_DR_lept_13TeV_MG5_aMCatNLO_pythia8/crab_tW_amcatnloupdatedEleJets/181213_142908/0000/"]
 
 }
 
@@ -147,6 +148,8 @@ datasets = [
 "ttbar_hdampup",
 "ttbar_hdampdown"
 ]
+
+datasets = ["tW_mcanlo"]
 
 import sys, math, mmap, subprocess
 

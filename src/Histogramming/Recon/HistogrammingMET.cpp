@@ -35,9 +35,12 @@ using namespace std;
  * Input:  Particle class                                                     *
  * Output: None                                                               *
  ******************************************************************************/
-HistogrammingMET::HistogrammingMET(EventContainer *obj)
+HistogrammingMET::HistogrammingMET(EventContainer *obj, bool unisolated)
 {
   SetEventContainer(obj);
+  _unisolated = unisolated;
+  _nTimesRun = 0;
+  _integral = 0.;
 } //HistogrammingMET()
 
 /******************************************************************************
@@ -107,7 +110,17 @@ void HistogrammingMET::BookHistogram(){
   _hSumEt = DeclareTH1F("SumEt","Summed transverse energy",200,0.,2000.);
   _hSumEt->SetXAxisTitle("SumEt [GeV]");
   _hSumEt->SetYAxisTitle("Events");
+ 
+  // Histogram of MET corrected for xy if the lepton is in the barrel
+  _hMET_xy_barrel = DeclareTH1F("MET_xy_barrel","Missing transverse energy xy corrected (barrel lepton)",200,0.,200.);
+  _hMET_xy_barrel->SetXAxisTitle("MET [GeV]");
+  _hMET_xy_barrel->SetYAxisTitle("Events");
 
+  // Histogram of MET corrected for xy if the lepton is in the endcap
+  _hMET_xy_endcap = DeclareTH1F("MET_xy_endcap","Missing transverse energy xy corrected (endcap lepton)",200,0.,200.);
+  _hMET_xy_endcap->SetXAxisTitle("MET [GeV]");
+  _hMET_xy_endcap->SetYAxisTitle("Events");
+ 
 
   //cout<<"end of HistogrammingMET::BookHistogram"<<endl;
 
@@ -124,11 +137,29 @@ void HistogrammingMET::BookHistogram(){
 Bool_t HistogrammingMET::Apply()
 {
   //cout<<"Begin of HistogrammingMET::Apply()"<<endl;
-  
+
   EventContainer *evc = GetEventContainer();
   
   // Fill the histogram before the cut
   //cout<<"missing et is "<<MissingEt<<endl;
+
+  bool isBarrel = true;
+  if (!_unisolated){
+    if (evc->tightMuons.size() > 0){
+      if (fabs(evc->tightMuons[0].Eta()) > 1.2) isBarrel = false;
+    }
+    else {
+      if (evc->tightElectrons.size() > 0) if (fabs(evc->tightElectrons[0].Eta()) > 1.479) isBarrel = false;
+    }
+  }
+  else{
+    if (evc->unIsolatedMuons.size() > 0){
+      if (fabs(evc->unIsolatedMuons[0].Eta()) > 1.2) isBarrel = false;
+    }
+    else {
+      if (evc->unIsolatedElectrons.size() > 0) if (fabs(evc->unIsolatedElectrons[0].Eta()) > 1.479) isBarrel = false;
+    }
+  }
 
   // Fill Histograms
   //  if((evc->tightElectrons.size() >0)||(evc->tightMuons.size() >0)){
@@ -142,9 +173,16 @@ Bool_t HistogrammingMET::Apply()
   _hMEY_xy    -> Fill(evc->missingEy_xy);
   _hMETPhi_xy -> Fill(evc->missingPhi_xy);
 
+  //Fill the barrel or endcap met distributions
+  if (isBarrel) _hMET_xy_barrel->Fill(evc->missingEt_xy);
+  else _hMET_xy_endcap->Fill(evc->missingEt_xy);
+
   _hSumEt  -> Fill(evc -> sumEt);
   //  }
+  _nTimesRun++;                    
+  _integral+=evc->GetEventWeight();
   //cout<<"End of HistogrammingMET::Apply()"<<endl;
+  //  std::cout << "Integral SumEt: " << _hSumEt->Integral() << " n times run: " << _nTimesRun << " integral: " << _integral << std::endl;
   return kTRUE;  
   
 } //Apply

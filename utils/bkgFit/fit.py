@@ -4,6 +4,8 @@ gSystem.Load('libRooFit')
 
 from ROOT import *
 
+gROOT.SetBatch()
+
 import sys
 
 def getHists(inputFile):
@@ -37,7 +39,7 @@ def getHists(inputFile):
 
     return dataH,qcdH,wJetsH,mcH
 
-def doFit(data,qcd,wJets,mc):
+def doFit(data,qcd,wJets,mc,savePostfix,fixWJets = False):
     
     print "Entering fit routine"
 
@@ -47,7 +49,7 @@ def doFit(data,qcd,wJets,mc):
         return
 
     #The variable we will be using/
-    fitVar = RooRealVar("fitVar","fitVar",data.GetXaxis().GetXmin(),data.GetXaxis().GetXmax())
+    fitVar = RooRealVar("mTW","mTW",data.GetXaxis().GetXmin(),data.GetXaxis().GetXmax())
 
     #Make the pdfs we will be fitting
     mcRooHist = RooDataHist("mcRooHist","mcRooHist",RooArgList(fitVar),mc)
@@ -61,8 +63,9 @@ def doFit(data,qcd,wJets,mc):
     qcd_template_pdf = RooHistPdf("qcd_template_pdf","qcd_template_pdf",RooArgSet(fitVar), qcdRooHist)
 
     #Define the coefficients of the model
-    wJCoeff = RooRealVar("wJCoeff","wJCoeff",wJets.Integral(),0.,5*wJets.Integral())
-    qcdCoeff = RooRealVar("qcdCoeff","qcdCoeff",qcd.Integral(),0.,2*qcd.Integral())
+    wJCoeff = RooRealVar("wJCoeff","wJCoeff",wJets.Integral(),0.5*wJets.Integral(),1.5*wJets.Integral())
+    if fixWJets: wJCoeff = RooRealVar("wJCoeff","wJCoeff",wJets.Integral(),wJets.Integral(),wJets.Integral())
+    qcdCoeff = RooRealVar("qcdCoeff","qcdCoeff",qcd.Integral(),0.,5*qcd.Integral())
     mcCoeff = RooRealVar("mcCoeff","mcCoeff",mc.Integral(),mc.Integral(),mc.Integral())
 
     modelCoeff = RooRealVar("modelCoeff","modelCoeff",0.5,0.,1.)
@@ -81,59 +84,115 @@ def doFit(data,qcd,wJets,mc):
     print "Nevents of Data        = ", data.Integral()
     print "Nevents total MC	  = ", qcd.Integral() + wJets.Integral() + mc.Integral()
     print "Nevents of QCD         = ", qcd.Integral()
-    print "Nevents of WZ          = ", wJets.Integral() 
+    print "Nevents of WJets       = ", wJets.Integral() 
     print "Nevents of Other       = ", mc.Integral()
     print 
 
     print "-----------------------------------------------------------------------" 
     print "                              Fit results"
     print "-----------------------------------------------------------------------"     
-    print "wJets Coeff         = ", wJCoeff.getVal()
-    print "QCD Coeff           = ", qcdCoeff.getVal()
-    print "MC Coeff            = ", mcCoeff.getVal()
+    print "wJets Coeff         = ", wJCoeff.getVal(),"+-",wJCoeff.getError()
+    print "QCD Coeff           = ", qcdCoeff.getVal(),"+-",qcdCoeff.getError()
+    print "MC Coeff            = ", mcCoeff.getVal(),"+-",mcCoeff.getError()
     print "Total MC after fit  = ", wJCoeff.getVal() + qcdCoeff.getVal() + mcCoeff.getVal()
     print "Total Data	       = ", data.Integral()
-    print "Model Coeff         = ", modelCoeff.getVal()
+    print "Model Coeff         = ", modelCoeff.getVal(),"+-",modelCoeff.getError()
 
     print "-----------------------------------------------------------------------"
     print "                             Scale factors"
     print "-----------------------------------------------------------------------"
-    print "wJet SF	       = ", wJCoeff.getVal()/wJets.Integral()
+    print "wJet SF	       = ", wJCoeff.getVal()/wJets.Integral() 
     print "QCD SF	       = ", qcdCoeff.getVal()/qcd.Integral()
     print
     print "Done!"
 
 
-    canvy = TCanvas("c1","plots",400,400,800,600)
+    canvy = TCanvas("c1","plots",400,400,800,400)
+    gStyle.SetPadTopMargin(0.13)
     gStyle.SetPadRightMargin(0.13)
     gStyle.SetPadLeftMargin(0.13)
 
     data.Draw("ep")
     
+    leg = TLegend(0.7,0.6,0.87,0.85)
+    #leggy.SetFillStyle(1001)
+    leg.SetBorderSize(1)
+    leg.SetFillColor(0)
+    leg.SetLineColor(0)
+    leg.SetShadowColor(0)
+    leg.SetFillColor(kWhite)
+#0.6,0.75,0.8,0.85)
+    
     frame = fitVar.frame()
-    fitVar.plotOn(frame)
+#    fitVar.plotOn(frame)
+    dataRooHist.plotOn(frame)
+#    pdf_sum.plotOn(frame)
 
-    pdf_sum.plotOn(frame,RooFit.Components("qcd_template_pdf"),RooFit.VisualizeError(fitResult),RooFit.FillColor(kGreen),RooFit.LineWidth(2))
-    pdf_sum.plotOn(frame,RooFit.Components("wJ_template_pdf"),RooFit.VisualizeError(fitResult),RooFit.FillColor(kRed),RooFit.LineWidth(2))
-    pdf_sum.plotOn(frame,RooFit.Components("mc_template_pdf"),RooFit.VisualizeError(fitResult),RooFit.FillColor(kBlue),RooFit.LineWidth(2))
-    pdf_sum.plotOn(frame,RooFit.LineStyle(kDashed),RooFit.VisualizeError(fitResult),RooFit.FillColor(kBlack))
+
+#    pdf_sum.plotOn(frame)
+#    qcd_template_pdf.plotOn(frame,RooFit.FillColor(kGreen),RooFit.LineWidth(2))
+#    pdf_sum.plotOn(frame,RooFit.Components("qcd_template_pdf"),RooFit.FillColor(kGreen),RooFit.LineWidth(2))
+#    pdf_sum.plotOn(frame,RooFit.Components("wJ_template_pdf"),RooFit.VisualizeError(fitResult),RooFit.FillColor(kRed),RooFit.LineWidth(2))
+#    pdf_sum.plotOn(frame,RooFit.Components("mc_template_pdf"),RooFit.VisualizeError(fitResult),RooFit.FillColor(kBlue),RooFit.LineWidth(2))
+#    pdf_sum.plotOn(frame,RooFit.LineStyle(kDashed),RooFit.VisualizeError(fitResult),RooFit.FillColor(kBlack))
 #    pdf_sum_reduced.plotOn(frame,(wJ_template_pdf),(fitResult),FillColor =kRed, LineWidth = 2 )
 #    pdf_sum_reduced.plotOn(frame,LineStyle(kDashed),(fitResult),(kBlue), LineWidth(2) )
 
-    fitVar.plotOn(frame)
-    frame.Draw("hsame")
 
-    canvy.SaveAs("fit.png")
-    canvy.SaveAs("fit.pdf")
+    lepton = "ele"
+
+    leg.AddEntry("","{1} {0}".format(savePostfix,lepton),"")
+    
+
+    pdf_sum.plotOn(frame,RooFit.LineColor(kYellow))
+    totalHist = TH1F("total","total",10,0,10)
+    totalHist.SetLineColor(kYellow)
+    totalHist.SetLineWidth(2)
+    leg.AddEntry(totalHist,"Total Fit","l")
+
+    pdf_sum.plotOn(frame,RooFit.Components("qcd_template_pdf"),RooFit.LineColor(kGreen))
+    qcdHist = TH1F("qcd","qcd",10,0,10)
+    qcdHist.SetLineColor(kGreen)
+    qcdHist.SetLineWidth(2)
+    leg.AddEntry(qcdHist,"QCD","l")
+    pdf_sum.plotOn(frame,RooFit.Components("wJ_template_pdf"),RooFit.LineColor(kBlue))
+    wH = TH1F("w","w",10,0,10)
+    wH.SetLineColor(kBlue)
+    wH.SetLineWidth(2)
+    leg.AddEntry(wH,"W+jets","l")
+
+    pdf_sum.plotOn(frame,RooFit.Components("mc_template_pdf"),RooFit.LineColor(kRed))
+    mH = TH1F("w","w",10,0,10)
+    mH.SetLineColor(kRed)
+    mH.SetLineWidth(2)
+    leg.AddEntry(mH,"Other","l")
+
+    frame.SetTitle("")
+    frame.SetName("") 
+#    fitVar.plotOn(frame)
+#    frame.Draw("hsame")
+    frame.Draw()
+    leg.Draw()
+    
+    canvy.SetTitle("")
+    canvy.SetName("")
+
+    canvy.SaveAs("fit{0}.png".format(savePostfix))
+    canvy.SaveAs("fit{0}.pdf".format(savePostfix))
 
 def main():
     print "Entering main"
     data, qcd, wJets, mc = getHists(sys.argv[1])
 
+    savePostfix = ""
+    if len(sys.argv) > 2 and "--" not in sys.argv[2]: savePostfix = sys.argv[2]
+    fixWJets = False
+    if "--fixWJets" in sys.argv: fixWJets = True
+
 #    mc.Scale(-1.)
 #    data.Add(mc)
 
-    doFit(data,qcd,wJets,mc)
+    doFit(data,qcd,wJets,mc,savePostfix,fixWJets)
 
 
 if __name__ == "__main__":

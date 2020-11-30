@@ -19,7 +19,7 @@ BDTVars::BDTVars(bool makeHistos){
   _intVars["M_nJet2030"] = 10;
   _intVars["M_nJet3040"] = 10;
   _intVars["M_nJet4000"] = 10;
-  _intVars["M_nJet2040"] = 10;
+  _floatVars["M_nJet2040"] = 10;
   _intVars["M_nBJet2030"] = 10;
   _intVars["M_nBJet3040"] = 10;
   _intVars["M_nBJet4000"] = 10;
@@ -33,7 +33,7 @@ BDTVars::BDTVars(bool makeHistos){
   _intVars["M_nJet30"] = 10;
   _intVars["M_nJet35"] = 10;
   _intVars["M_nJet40"] = 10;
-  _intVars["M_nBJet20"] = 10;
+  //  _intVars["M_nBJet20"] = 10;
   _intVars["M_nBJet25"] = 10;
   _intVars["M_nBJet30"] = 10;
   _intVars["M_nBJet35"] = 10;
@@ -46,6 +46,16 @@ BDTVars::BDTVars(bool makeHistos){
   _intVars["M_nBLJet35"] = 10;
   _intVars["M_nBLJet40"] = 10;
   _intVars["M_nJet3500e24"] = 10;
+
+  _floatVars["M_lep_jet2040_1_DelR"] = 6.;
+  _floatVars["M_lep_jet2040_2_DelR"] = 6.;
+  _floatVars["M_lep_jet2040_3_DelR"] = 6.;
+  _floatVars["M_lep_jet2040_min_DelR"] = 6.;
+
+  _floatVars["M_lep_jet2030_1_DelR"] = 6.;
+  _floatVars["M_lep_jet2030_2_DelR"] = 6.;
+  _floatVars["M_lep_jet2030_3_DelR"] = 6.;
+  _floatVars["M_lep_jet2030_min_DelR"] = 6.;
 
   _floatVars["M_likelihood_BJet4000"] = 1.;
   _floatVars["M_likelihood_BJet2030"] = 1.;
@@ -139,6 +149,24 @@ BDTVars::BDTVars(bool makeHistos){
   _floatVars["M_Pt_sys_LeptonJet1"] = 250;
   _floatVars["M_eta_sys_LeptonJet1"] = -6.;
   
+  _floatVars["M_Mass_Jet1"] = 100.;
+  _floatVars["M_E_Jet1"] = 200.;
+  _floatVars["M_Pt_Jet1"] = 300.;
+  _floatVars["M_Eta_Jet1"] = -6.;
+  _floatVars["M_Phi_Jet1"] = -3.2;
+
+  _floatVars["M_Mass_Jet2"] = 100.;
+  _floatVars["M_E_Jet2"] = 200.;
+  _floatVars["M_Pt_Jet2"] = 300.;
+  _floatVars["M_Eta_Jet2"] = -6.;
+  _floatVars["M_Phi_Jet2"] = -3.2;
+
+  _floatVars["M_Mass_Jet3"] = 100.;
+  _floatVars["M_E_Jet3"] = 200.;
+  _floatVars["M_Pt_Jet3"] = 300.;
+  _floatVars["M_Eta_Jet3"] = -6.;
+  _floatVars["M_Phi_Jet3"] = -3.2;
+
   _floatVars["M_Mass_AllJetsLepton"] = 1200;
   _floatVars["M_E_AllJetsLepton"] = 300;
   _floatVars["M_Pt_AllJetsLepton"] = 300;
@@ -510,21 +538,56 @@ void BDTVars::FillBranches(EventContainer * evtObj){
   _floatVars["M_Eta_Lepton"]        = (Lepton).Eta();
   _floatVars["M_Phi_Lepton"]        = (Lepton).Phi();
   
+  if (Jet.size() > 0){
+  _floatVars["M_Mass_Jet1"]       = (Jet[0]).M();
+  _floatVars["M_E_Jet1"]          = (Jet[0]).E();
+  _floatVars["M_Pt_Jet1"]         = (Jet[0]).Pt();
+  _floatVars["M_Eta_Jet1"]        = (Jet[0]).Eta();
+  _floatVars["M_Phi_Jet1"]        = (Jet[0]).Phi();
+  }
+  
+  if (Jet.size() > 1){
+  _floatVars["M_Mass_Jet2"]       = (Jet[1]).M();
+  _floatVars["M_E_Jet2"]          = (Jet[1]).E();
+  _floatVars["M_Pt_Jet2"]         = (Jet[1]).Pt();
+  _floatVars["M_Eta_Jet2"]        = (Jet[1]).Eta();
+  _floatVars["M_Phi_Jet2"]        = (Jet[1]).Phi();
+  }
+
+  if (Jet.size()>2){
+  _floatVars["M_Mass_Jet3"]       = (Jet[2]).M();
+  _floatVars["M_E_Jet3"]          = (Jet[2]).E();
+  _floatVars["M_Pt_Jet3"]         = (Jet[2]).Pt();
+  _floatVars["M_Eta_Jet3"]        = (Jet[2]).Eta();
+  _floatVars["M_Phi_Jet3"]        = (Jet[2]).Phi();
+  }
 
   _floatVars["M_DeltaEtaLeptonMET"] =  fabs(Lepton.Eta()-Miss.Eta());
   _floatVars["M_DeltaPhiLeptonMET"] =  fabs(Miss.DeltaPhi(Lepton));
   _floatVars["M_DeltaRLeptonMET"] =  fabs(Miss.DeltaR(Lepton));
 
-
   _intVars["M_nJet2030"]   = Jet2030.size();
-  for(int i=0;i<_intVars["M_nJet2030"];i++)
-    {sumJets2030 += Jet2030.at(i);}
-
-
-  _intVars["M_nJet2040"]   = Jet2040.size();
-  for(int i=0;i<_intVars["M_nJet2040"];i++)
-    {sumJets2040 += Jet2040.at(i);}
-
+  float minRLepJet2030;
+  float minRLepton = 100.;
+  for(int i=0;i<Jet2030.size();i++){
+      sumJets2030 += Jet2030.at(i);
+      if (Lepton.DeltaR(Jet2030.at(i)) < minRLepton) minRLepton = Lepton.DeltaR(Jet2030.at(i));
+      if (i == 0) _floatVars["M_lep_jet2030_1_DelR"] = Lepton.DeltaR(Jet2030.at(i));
+      if (i == 1) _floatVars["M_lep_jet2030_2_DelR"] = Lepton.DeltaR(Jet2030.at(i));
+      if (i == 2) _floatVars["M_lep_jet2030_3_DelR"] = Lepton.DeltaR(Jet2030.at(i));
+  }
+  _floatVars["M_lep_jet2030_min_DelR"] = minRLepton;
+  
+  _floatVars["M_nJet2040"]   = (float)Jet2040.size();
+  minRLepton = 100.;
+  for(int i=0;i<Jet2040.size();i++){
+    sumJets2040 += Jet2040.at(i);
+    if (Lepton.DeltaR(Jet2040.at(i)) < minRLepton) minRLepton = Lepton.DeltaR(Jet2040.at(i));
+    if (i == 0) _floatVars["M_lep_jet2040_1_DelR"] = Lepton.DeltaR(Jet2040.at(i));
+    if (i == 1) _floatVars["M_lep_jet2040_2_DelR"] = Lepton.DeltaR(Jet2040.at(i));
+    if (i == 2) _floatVars["M_lep_jet2040_3_DelR"] = Lepton.DeltaR(Jet2040.at(i));
+  }
+  _floatVars["M_lep_jet2040_min_DelR"] = minRLepton;
 
   _intVars["M_nJet3040"]   = Jet3040.size();
   for(int i=0;i<_intVars["M_nJet3040"];i++)
@@ -544,7 +607,7 @@ void BDTVars::FillBranches(EventContainer * evtObj){
   _intVars["M_nJet3040e24"]   = Jet3040e24.size();
   _intVars["M_nJet4000e24"]   = Jet4000e24.size();
 
-  if(_intVars["M_nJet2040"]>=1){
+  if(Jet2040.size()>=1){
     _floatVars["M_Pt_Jet1_2040"]     = (Jet2040.at(0)).Pt();
     _floatVars["M_Eta_Jet1_2040"]     = (Jet2040.at(0)).Eta();
     _floatVars["M_Phi_Jet1_2040"]     = (Jet2040.at(0)).Phi();
@@ -636,6 +699,8 @@ void BDTVars::FillBranches(EventContainer * evtObj){
     _floatVars["M_Eta_Jet1_4000e24"]     = (Jet4000e24.at(0)).Eta();
     _floatVars["M_Phi_Jet1_4000e24"]     = (Jet4000e24.at(0)).Phi();
   }
+
+  _floatVars["M_Mass_Jet1Jet2Jet3LeptonMET"] = 0.;
 
   if(Jet.size()>=1){
     _floatVars["M_Mass_AllJets"]   = (totalJets).M();
@@ -923,56 +988,59 @@ void BDTVars::FillBranches(EventContainer * evtObj){
       }
   }
 
-  if (evtObj->jets.size() == 3){ //It really should always be 3 by this point, but just to make sure.
-    int selectedBJetIndex = -1;
-    _floatVars["largestCSV"] = -2.;
-    for (unsigned int i = 0; i < 3; i++){
-      if (evtObj->jets[i].GetbDiscriminator() > _floatVars["largestCSV"]){
-	_floatVars["largestCSV"] = evtObj->jets[i].GetbDiscriminator();
-	selectedBJetIndex = i;
-      }
-    } //end loop finding largest b-tag
-    _floatVars["firstJetCSV"] = evtObj->jets[0].GetbDiscriminator();
-    _floatVars["secondJetCSV"] = -1.;
-    _floatVars["thirdJetCSV"] = -1.;
-    if (evtObj->jets.size() > 1) _floatVars["secondJetCSV"] = evtObj->jets[1].GetbDiscriminator();
-    if (evtObj->jets.size() > 2) _floatVars["thirdJetCSV"] = evtObj->jets[2].GetbDiscriminator();
-    
-    _floatVars["taggedJetCSV"] = -1;
-    _floatVars["lightJet1CSV"] = -1;
-    _floatVars["lightJet2CSV"] = -1;
-    if (evtObj->taggedJets.size() > 0) _floatVars["taggedJetCSV"] = evtObj->taggedJets[0].GetbDiscriminator();
-    if (evtObj->unTaggedJets.size() > 0) _floatVars["lightJet1CSV"] = evtObj->unTaggedJets[0].GetbDiscriminator();
-    if (evtObj->unTaggedJets.size() > 0) _floatVars["lightJet2CSV"] = evtObj->unTaggedJets[1].GetbDiscriminator();
+  TLorentzVector W(0,0,0,0), Top(0,0,0,0);
+  int maxInd = 2;
+  if (evtObj->unTaggedJets.size() < maxInd) maxInd = evtObj->unTaggedJets.size();
+  for (int jetIn = 0; jetIn < maxInd; jetIn++){
+  	W = W + evtObj->unTaggedJets[jetIn];
+  }
 
-    std::vector<TLorentzVector> lightJets;
-    TLorentzVector W(0,0,0,0), Top(0,0,0,0);
-    for (unsigned int i = 0; i < 3; i++){
-      if (i == selectedBJetIndex) continue; //this is the b jet
-      else {
-	W = W + Jet.at(i);
-	TLorentzVector lighttemp(0,0,0,0);
-	lighttemp.SetPtEtaPhiE(Jet.at(i).Pt(),Jet.at(i).Eta(),Jet.at(i).Phi(),Jet.at(i).E());
-	lightJets.push_back(lighttemp);
-      }
-    } //end second loop over jets to add up lightjets
+  _floatVars["M_hadronicWmass"] = W.M();
+  _floatVars["M_hadronicWPt"] = W.Pt();
+  _floatVars["M_hadronicWEta"] = W.Eta();
+  _floatVars["M_hadronicWPhi"] = W.Phi();
+  
+  _floatVars["taggedJetCSV"] = -1;
+  _floatVars["lightJet1CSV"] = -1;
+  _floatVars["lightJet2CSV"] = -1;
+  if (evtObj->taggedJets.size() > 0) _floatVars["taggedJetCSV"] = evtObj->taggedJets[0].GetbDiscriminator();
+  if (evtObj->unTaggedJets.size() > 0) _floatVars["lightJet1CSV"] = evtObj->unTaggedJets[0].GetbDiscriminator();
+  if (evtObj->unTaggedJets.size() > 1) _floatVars["lightJet2CSV"] = evtObj->unTaggedJets[1].GetbDiscriminator();
+
+  _floatVars["firstJetCSV"] = evtObj->jets[0].GetbDiscriminator();
+  _floatVars["secondJetCSV"] = -1.;
+  _floatVars["thirdJetCSV"] = -1.;
+  if (evtObj->jets.size() > 1) _floatVars["secondJetCSV"] = evtObj->jets[1].GetbDiscriminator();
+  if (evtObj->jets.size() > 2) _floatVars["thirdJetCSV"] = evtObj->jets[2].GetbDiscriminator();
     
-    for(int ilightjet=0; ilightjet<lightJets.size();ilightjet++){
-      if(fabs(Jet.at(selectedBJetIndex).DeltaR(lightJets.at(ilightjet)))>_floatVars["M_maxDeltaRBJetLightJet"]){
-	_floatVars["M_maxDeltaRBJetLightJet"]=fabs(Jet.at(selectedBJetIndex).DeltaR(lightJets.at(ilightjet)));
-      }
+  int selectedBJetIndex = -1;
+  _floatVars["largestCSV"] = -2.;
+  for (unsigned int i = 0; i < evtObj->jets.size(); i++){
+    if (evtObj->jets[i].GetbDiscriminator() > _floatVars["largestCSV"]){
+      _floatVars["largestCSV"] = evtObj->jets[i].GetbDiscriminator();
+      selectedBJetIndex = i;
     }
+  } //end loop finding largest b-tag
 
-    _floatVars["M_hadronicWmass"] = W.M();
-    _floatVars["M_hadronicWPt"] = W.Pt();
-    _floatVars["M_hadronicWEta"] = W.Eta();
-    _floatVars["M_hadronicWPhi"] = W.Phi();
+  std::vector<TLorentzVector> lightJets;
+
+  for (unsigned int i = 0; i < evtObj->jets.size(); i++){
+    if (i == selectedBJetIndex) continue; //this is the b jet
+    else {
+      TLorentzVector lighttemp(0,0,0,0);
+      lighttemp.SetPtEtaPhiE(Jet.at(i).Pt(),Jet.at(i).Eta(),Jet.at(i).Phi(),Jet.at(i).E());
+      lightJets.push_back(lighttemp);
+    }
+  } //end second loop over jets to add up lightjets
+  
+  _floatVars["M_DeltaRlightjets"] = 0.;
+  if (evtObj->unTaggedJets.size() > 1){
+    _floatVars["M_DeltaRlightjets"] = fabs(evtObj->unTaggedJets.at(0).DeltaR(evtObj->unTaggedJets.at(1)));
+  }
+  if (selectedBJetIndex !=  -1){
     _floatVars["M_DeltaRBJethadronicW"] = fabs(Jet.at(selectedBJetIndex).DeltaR(W));
     _floatVars["M_DeltaRBJetLepton"] = fabs(Jet.at(selectedBJetIndex).DeltaR(Lepton));
-    _floatVars["M_DeltaRlightjets"] = fabs(lightJets.at(0).DeltaR(lightJets.at(1)));
-
-    _floatVars["M_cosThetaStar_lepOnly"] = -5.;
-    _floatVars["M_cosThetaStar_hadOnly"] = -5.;
+  
 
     if(Jet.at(selectedBJetIndex).DeltaR(Lepton)>Jet.at(selectedBJetIndex).DeltaR(W)) {
       //Top is hadronic
@@ -996,17 +1064,34 @@ void BDTVars::FillBranches(EventContainer * evtObj){
       _floatVars["M_topMass2"] = -1;
       _floatVars["M_topMassLep"] = Top.M();
     }
-    TLorentzVector W_topRF = W;
-    TLorentzVector lep_wRF = Lepton;
+  
+    if (evtObj->jets.size() >= 3){ //It really should always be 3 by this point, but just to make sure.
+   
+  
     
-    W_topRF.Boost( TVector3(-1.0*Top.BoostVector().Px(), -1.0*Top.BoostVector().Py(), -1.0*Top.BoostVector().Pz()));
-    lep_wRF.Boost( TVector3(-1.0*W.BoostVector().Px(), -1.0*W.BoostVector().Py(), -1.0*W.BoostVector().Pz()));
-    _floatVars["M_cosThetaStar"] = cos(lep_wRF.Vect().Angle(W_topRF.Vect()));
-    if(Jet.at(selectedBJetIndex).DeltaR(Lepton)>Jet.at(selectedBJetIndex).DeltaR(W)) _floatVars["M_cosThetaStar_hadOnly"] = cos(lep_wRF.Vect().Angle(W_topRF.Vect()));
-    else _floatVars["M_cosThetaStar_lepOnly"] = cos(lep_wRF.Vect().Angle(W_topRF.Vect()));
+      for(int ilightjet=0; ilightjet<lightJets.size();ilightjet++){
+	if(fabs(Jet.at(selectedBJetIndex).DeltaR(lightJets.at(ilightjet)))>_floatVars["M_maxDeltaRBJetLightJet"]){
+	  _floatVars["M_maxDeltaRBJetLightJet"]=fabs(Jet.at(selectedBJetIndex).DeltaR(lightJets.at(ilightjet)));
+	}
+      }
+
+  
+      _floatVars["M_cosThetaStar_lepOnly"] = -5.;
+      _floatVars["M_cosThetaStar_hadOnly"] = -5.;
+
+
+
+      TLorentzVector W_topRF = W;
+      TLorentzVector lep_wRF = Lepton;
+    
+      W_topRF.Boost( TVector3(-1.0*Top.BoostVector().Px(), -1.0*Top.BoostVector().Py(), -1.0*Top.BoostVector().Pz()));
+      lep_wRF.Boost( TVector3(-1.0*W.BoostVector().Px(), -1.0*W.BoostVector().Py(), -1.0*W.BoostVector().Pz()));
+      _floatVars["M_cosThetaStar"] = cos(lep_wRF.Vect().Angle(W_topRF.Vect()));
+      if(Jet.at(selectedBJetIndex).DeltaR(Lepton)>Jet.at(selectedBJetIndex).DeltaR(W)) _floatVars["M_cosThetaStar_hadOnly"] = cos(lep_wRF.Vect().Angle(W_topRF.Vect()));
+      else _floatVars["M_cosThetaStar_lepOnly"] = cos(lep_wRF.Vect().Angle(W_topRF.Vect()));
     
   } //end 3 jet loop
-
+  }
   if (DoHists()) FillHistograms(evtObj->GetEventWeight());
 
 }

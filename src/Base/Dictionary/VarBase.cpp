@@ -68,7 +68,9 @@ void VarBase::BookBranches(TTree * skimTree){
     string tempString = intVar.first;
     if (skimTree != NULL) _branchVec[tempString.c_str()] = skimTree->Branch(tempString.c_str(),&(_intVars[tempString.c_str()]),(tempString+"/I").c_str());
     if (DoHists()) {
+      //      std::cout << intVar.first << std::endl;
       _histograms[tempString] = BookTH1FHistogram(tempString,tempString,10,0.,intVar.second);
+      //      std::cout << tempString << " " << _histograms[tempString]->GetName() << " " << GetEventContainer() << std::endl;
     }
   }
 
@@ -79,6 +81,7 @@ void VarBase::BookBranches(TTree * skimTree){
       float startVar = 0.;
       if (floatVar.second < 0.) startVar = floatVar.second;
       _histograms[tempString] = BookTH1FHistogram(tempString,tempString,100,startVar,std::fabs(floatVar.second));
+      //      std::cout << tempString << " " << _histograms[tempString]->GetName() << std::endl;
     }
   }
 
@@ -105,19 +108,19 @@ void VarBase::BookBranches(TTree * skimTree){
  ******************************************************************************/
 void VarBase::ResetBranches(){
   for (auto intVar : _intVars){
-    intVar.second = -999;
+    _intVars[intVar.first] = -999;
   }
   for (auto floatVar : _floatVars){
-    floatVar.second = -999.;
+    _floatVars[floatVar.first] = -999.;
   }
   for (auto intVecVar : _intVecVars){
-    for (auto intVecItem : intVecVar.second){
-      intVecItem = -999;
+    for (int i = 0; i < _intVecVars[intVecVar.first].size(); i++){
+      _intVecVars[intVecVar.first][i] = -999;
     }
   }
   for (auto floatVecVar : _floatVecVars){
-    for (auto floatVecItem : floatVecVar.second){
-      floatVecItem = -999.;
+    for (int i = 0; i < _floatVecVars[floatVecVar.first].size(); i++){
+      _floatVecVars[floatVecVar.first][i] = -999;
     }
   }
 }
@@ -133,11 +136,15 @@ void VarBase::ResetBranches(){
 void VarBase::OutputBranches(){
   for (auto floatVar : _floatVars){
     std::cout << floatVar.first << " " << floatVar.second << std::endl;
+    if (DoHists()) std::cout << _histograms[floatVar.first] << std::endl;
   }
 
   for (auto intVar : _intVars){
     std::cout << intVar.first << " " << intVar.second << std::endl;
+    if (DoHists()) std::cout << _histograms[intVar.first] << std::endl;
   }
+
+  return;
 
   for (auto floatVec : _floatVecVars){
     std::cout << floatVec.first << std::endl;

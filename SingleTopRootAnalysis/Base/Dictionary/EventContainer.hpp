@@ -105,6 +105,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <sstream>
 
 // MakeClass output:
 #include "SingleTopRootAnalysis/Trees/EventTree.hpp"
@@ -135,7 +136,6 @@
 
 #include "SingleTopRootAnalysis/Base/Dictionary/Top_MET.hpp"
 #include "SingleTopRootAnalysis/Base/Dictionary/MET_Cleaning_Utils.hpp"
-
 
 #include <TObjArray.h>
 #include <TLorentzVector.h>
@@ -429,6 +429,8 @@ class EventContainer
   inline Double_t GetMETShiftUp(){return missingEtUpSF;};
   inline Double_t GetMETShiftDown(){return missingEtDownSF;};
 
+  inline std::vector<std::vector<std::string> > GetJetResObj(){return _resolution;};
+
    // Get the configuration 
   TEnv * GetConfig() {return &_config; };
 
@@ -648,6 +650,7 @@ class EventContainer
   Jet *forwardJetPtr;  
   Jet *leadingJetPtr;
 
+
   Int_t iBestJet; 
   int useElecEnergyScale;
   int useElecEnergySmear;
@@ -726,6 +729,10 @@ private:
   Muon newMuon;
   Electron newElectron;
   Jet newJet;
+
+  std::vector<std::vector<std::string> > _resolution;
+  std::vector<std::vector<std::string> > _resSFs;
+  TString _resFormula;
 
   ////////////////////////////////////////////////////////////////////////////////
   // Integrate classes into the Root system

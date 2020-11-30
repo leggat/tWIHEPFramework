@@ -45,6 +45,7 @@
 //#include "SingleTopRootAnalysis/Cuts/Lepton/CutLeptonOppositeCharge.hpp"
 //#include "SingleTopRootAnalysis/Cuts/Other/CutLarBurst.hpp"
 #include "SingleTopRootAnalysis/Cuts/Other/CutPrimaryVertex.hpp"
+#include "SingleTopRootAnalysis/Cuts/Other/ChannelFlagCut.hpp"
 //
 //#include "SingleTopRootAnalysis/Cuts/Other/CutZveto.hpp"
 #include "SingleTopRootAnalysis/Cuts/Other/CutTriggerSelection.hpp"
@@ -57,6 +58,7 @@
 #include "SingleTopRootAnalysis/Vars/JESBDTVars.hpp"
 #include "SingleTopRootAnalysis/Vars/WeightVars.hpp"
 #include "SingleTopRootAnalysis/Vars/ChannelFlag.hpp"
+#include "SingleTopRootAnalysis/Vars/TopChargeFlag.hpp"
 #include "SingleTopRootAnalysis/Vars/Bootstrap.hpp"
 
 using std::cout;
@@ -260,7 +262,7 @@ int main(int argc, char **argv)
   //mystudy.AddCut(new CutJetPt1(particlesObj));
   mystudy.AddCut(new CutJetN(particlesObj,nJets));
   
-  mystudy.AddCut(new CutTaggedJetN(particlesObj,nbJets));
+  //  mystudy.AddCut(new CutTaggedJetN(particlesObj,nbJets));
 
   //  mystudy.AddCut(new EventWeight(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight));
 
@@ -284,11 +286,16 @@ int main(int argc, char **argv)
   //Add in any variables to the skim tree that you want here
   //  mystudy.AddVars(new TestVar());
   //if (whichtrig) mystudy.AddVars(new BDTVars(true));
-  mystudy.AddVars(new BDTVars(true));
   mystudy.AddVars(new JESBDTVars());
   mystudy.AddVars(new WeightVars(useIterFitbTag));
   mystudy.AddVars(new ChannelFlag());
-  mystudy.AddVars(new Bootstrap());
+  //  mystudy.AddVars(new TopChargeFlag());
+  //  mystudy.AddCut(new ChannelFlagCut(particlesObj,4));
+
+  //  mystudy.AddVars(new Bootstrap());
+
+  mystudy.AddVars(new BDTVars(false));
+
 
   TFile *_skimBDTFile;
   TString NNname = mystudy.GetHistogramFileName() + "skimBDT.root" ;

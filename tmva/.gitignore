@@ -5,3 +5,9 @@ mvaTool_h_ACLiC_dict_rdict.pcm
 runMVAReading.C
 tmvaglob.C
 weights/
+analysisComponents.py
+weightProcesses.py
+setTDRStyle.py
+collateOvertaining.py
+compareInputVars.py
+compareOutputs.py

@@ -37,6 +37,7 @@ HistogrammingMtW::HistogrammingMtW(EventContainer *obj, bool unisolated)
 {
   _unisolated = unisolated;
   SetEventContainer(obj);
+  _nTimesRun = 0;
 } //HistogrammingMtW()
 
 /******************************************************************************
@@ -68,6 +69,16 @@ void HistogrammingMtW::BookHistogram(){
   _hMtW->SetYAxisTitle("Events");
   //cout<<"end of HistogrammingMtW::BookHistogram"<<endl;
 
+  //Histogram of mTW if lepton in barrel
+  _hMtW_barrel = DeclareTH1F("mTW_barrel", "Transverse W mass if the lepton is in the barrel",40,0.,200.);
+  _hMtW_barrel->SetXAxisTitle("m_{T,W} [GeV]");
+  _hMtW_barrel->SetYAxisTitle("Events");
+
+  //Histogram of mTW if lepton in endcap
+  _hMtW_endcap = DeclareTH1F("mTW_endcap", "Transverse W mass if the lepton is in the endcap",40,0.,200.);
+  _hMtW_endcap->SetXAxisTitle("m_{T,W} [GeV]");
+  _hMtW_endcap->SetYAxisTitle("Events");
+
 } //BookHistogram
 
 /******************************************************************************
@@ -84,27 +95,42 @@ Bool_t HistogrammingMtW::Apply()
   
   EventContainer *evc = GetEventContainer();
 
+  bool isBarrel = true;
+
   if (!_unisolated){
     if (evc->tightMuons.size() > 0){
       lepton = evc->tightMuons[0];
+      isBarrel = fabs(lepton.Eta()) < 1.2;
     }
     else {
       lepton = evc->tightElectrons[0];
+      isBarrel = fabs(lepton.Eta()) < 1.479;
     }
   }
   else {
     if (evc->unIsolatedMuons.size() > 0){
       lepton = evc->unIsolatedMuons[0];
+      isBarrel = fabs(lepton.Eta()) < 1.2;
     }
     else {
       lepton = evc->unIsolatedElectrons[0];
+      isBarrel = fabs(lepton.Eta()) < 1.479;
     }
   }
   
   _hMtW -> Fill(std::sqrt(2*evc->missingEt*lepton.Pt()*(1-cos(evc->missingPhi - lepton.Phi()))));
 
+  if (isBarrel) _hMtW_barrel -> Fill(std::sqrt(2*evc->missingEt*lepton.Pt()*(1-cos(evc->missingPhi - lepton.Phi()))));
+  else _hMtW_endcap -> Fill(std::sqrt(2*evc->missingEt*lepton.Pt()*(1-cos(evc->missingPhi - lepton.Phi()))));
+
   //  }
   //cout<<"End of HistogrammingMtW::Apply()"<<endl;
+
+  _nTimesRun++;
+  _integral+=evc->GetEventWeight();
+
+  //cout << "Integral mtw: " << _hMtW->Integral() << " n times run: " << _nTimesRun << " integral: " << _integral << std::endl;
+
   return kTRUE;  
   
 } //Apply

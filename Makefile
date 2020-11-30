@@ -96,6 +96,7 @@ endif
 
 ifeq ($(VERSION-4),true)
         CFLAGS = $(SPECIALFLAGS) -iquote- -iquote. -iquote${DIR_INC} -iquote${DIR_SRC}
+#        CFLAGS = --=gnu++11 -DSTANDALONE $(SPECIALFLAGS) -iquote- -iquote. -iquote${DIR_INC} -iquote${DIR_SRC}
 else
         CFLAGS = $(SPECIALFLAGS) -I. -I${DIR_INC} -I${DIR_SRC}
 endif
@@ -162,8 +163,12 @@ BINS_Example= bin/example/test_analysis.x bin/example/test_analysis2.x
 BINS_Matching= bin/Matching/MatchQuality.x
 BINS_ParticleStudies= bin/ParticleStudies/electron_study.x bin/ParticleStudies/jet_study.x bin/ParticleStudies/MCParticle_study.x bin/ParticleStudies/muon_study.x
 BINS_Wt= bin/Wt/Wt_generic.x
+BINS_Dilepton= bin/Wt/Wt_dilepton.x
 BINS_Vertex= bin/Wt/Wt_nVertOnly.x
 BINS_Synch= bin/Wt/Wt_synch.x
+BINS_Efficiencies= bin/Wt/Wt_efficiencies.x
+BINS_ChannelSkim= bin/Wt/Wt_channelSkimHists.x
+BINS_BDTSkim= bin/Wt/Wt_bdtSkim.x
 #BINS_Wt= bin/Wt/Wt.x bin/Wt/Wt_mumu.x bin/Wt/Wteu.x bin/Wt/Wt_Tree.x bin/Wt/Wt_generic.x
 BINS_Skimming= bin/Skimming/Skimming.x 
 BINS_St= bin/St/St_subtractQCD.x
@@ -235,9 +240,17 @@ St: lib $(BINS_St)
 
 Wt: lib $(BINS_Wt)
 
+Dilepton: lib $(BINS_Dilepton)
+
 Synch: lib $(BINS_Synch)
 
 nVert: lib $(BINS_Vertex)
+
+Efficiencies: lib $(BINS_Efficiencies)
+
+ChannelSkim: lib $(BINS_ChannelSkim)
+
+BDTSkim: lib $(BINS_BDTSkim)
 
 Skimming: lib $(BINS_Skimming)
 
@@ -389,6 +402,8 @@ cleanBTag:
 	rm -f $(BINS_BTag)
 cleanWt:
 	rm -f $(BINS_Wt)
+cleanDilepton:
+	rm -f $(BINS_Dilepton)
 cleanSynch:
 	rm -f $(BINS_Synch)
 cleanSkimming:
@@ -396,11 +411,11 @@ cleanSkimming:
 cleanSt:
 	rm -f $(BINS_St)
 
-cleanExe: cleanSt cleanWt cleanSynch cleanSkimming cleanEventComparison cleanExample cleanParticleStudies cleanMCStudies
+cleanExe: cleanSt cleanWt cleanDilepton cleanSynch cleanSkimming cleanEventComparison cleanExample cleanParticleStudies cleanMCStudies
 
 cleanall: clean
 
-clean:  cleanSt cleanWt cleanSynch cleanSkimming cleanEventComparison cleanExample cleanParticleStudies cleanMCStudies
+clean:  cleanSt cleanWt cleanDilepton cleanSynch cleanSkimming cleanEventComparison cleanExample cleanParticleStudies cleanMCStudies
 	rm -rf ti_files
 	rm -rf $(DIR_OBJ)/*
 	rm -rf $(DIR_TMP)/*

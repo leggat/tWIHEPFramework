@@ -52,10 +52,15 @@ public:
 private:
   // Histograms declarations 
   myTH1F* _hMtW;  // Histogram of MtW
+  myTH1F* _hMtW_endcap;  // Histogram of MtW
+  myTH1F* _hMtW_barrel;  // Histogram of MtW
 
   Particle lepton; // Assign the TLorentzVector of the primary lepton to this lepton in order to correctly calculate the mtw in case of unisolated leptons.
 
   bool _unisolated; //Whether we are using unisolated leptons
+
+  Int_t _nTimesRun;
+  Float_t _integral;
 
 };
 

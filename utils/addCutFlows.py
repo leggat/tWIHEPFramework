@@ -1,6 +1,6 @@
 #A script that will add together the cut flows from the different datasets
 
-import sys,os,math
+import sys,os,math,weightProcesses
 
 samplesMC=[
 #"qcd1000_1500",
@@ -15,6 +15,7 @@ samplesMC=[
 "tChan_top",
 "tChan_antitop",
 "ttbar",
+"ttbarBU",
 "tW_top_nfh",
 "tW_antitop_nfh",
 #"wPlusJets",
@@ -23,10 +24,13 @@ samplesMC=[
 "zz",
 "zPlusJetsLowMass",
 "zPlusJetsHighMass",
-"wPlusJetsMCatNLO",
+#"wPlusJetsMadgraph",
+"wPlus0Jets",
+"wPlus1Jets",
+"wPlus2Jets"
 ]
 
-histoGramPerSample = {"tW_top":"tW","tW_antitop":"tW","sChan":"singleTop","tChan":"singleTop","zz":"VV","zPlusJetsLowMass":"zPlusJets","zPlusJetsHighMass":"zPlusJets","wz":"VV","ww":"VV","wPlusJets":"wPlusJets","ttbar":"ttbar","qcd700_1000":"qcd","qcd500_700":"qcd","qcd300_500":"qcd","qcd200_300":"qcd","qcd2000_inf":"qcd","qcd1500_2000":"qcd","qcd100_200":"qcd","qcd1000_1500":"qcd","wPlusJetsMCatNLO":"wPlusJets","singleMuon":"Data","tChan_top":"tChan","tChan_antitop":"tChan","tW_top_nfh":"tW","tW_antitop_nfh":"tW"}
+histoGramPerSample = {"tW_top":"tW","tW_antitop":"tW","sChan":"singleTop","tChan":"singleTop","zz":"VV","zPlusJetsLowMass":"zPlusJets","zPlusJetsHighMass":"zPlusJets","wz":"VV","ww":"VV","wPlusJets":"wPlusJets","ttbar":"ttbar","ttbarBU":"ttbar","qcd700_1000":"qcd","qcd500_700":"qcd","qcd300_500":"qcd","qcd200_300":"qcd","qcd2000_inf":"qcd","qcd1500_2000":"qcd","qcd100_200":"qcd","qcd1000_1500":"qcd","wPlusJetsMCatNLO":"wPlusJets","singleMuon":"Data","tChan_top":"singleTop","tChan_antitop":"singleTop","tW_top_nfh":"tW","tW_antitop_nfh":"tW","wPlusJetsMadgraph":"wPlusJets","wPlus0Jets":"wPlusJets","wPlus1Jets":"wPlusJets","wPlus2Jets":"wPlusJets"}
 
 #samplesMC = ["tW_top","tW_antitop","ttbar","singleMuon"]
 #samplesMC = ["tW_top"]
@@ -48,6 +52,15 @@ inDirData = ""
 if len(sys.argv) > 2:
     inDirData = sys.argv[2]
 
+region = inDirMC[-5:-1]
+isEle = False
+if "Ele" in inDirData:
+    isEle = True
+
+weights = weightProcesses.ReweightObject(False,isEle)
+
+
+
 if "Ele" in inDirMC:
     sampleData = sampleDataEle
     perMCSFs["qcd"] *= 0.575639172238
@@ -57,8 +70,15 @@ if "Ele" in inDirMC:
 else:
     perMCSFs["qcd"] = 5227921/8899239.0 #This will be the muon channel once I've re-run all of the files.
     perMCSFs["qcd"] *= 1.10329115653
-    perMCSFs["ttbar"] *= 0.937952128327
+    perMCSFs["ttbar"] = 1.
     perMCSFs["wPlusJets"] = 3.48537322128
+    perMCSFs["qcd"] = 0.703806774077
+    perMCSFs["wPlusJets"] = 3.50893764226
+
+perMCSFs["ttbar"] = 1.     
+perMCSFs["qcd"] = 1.
+perMCSFs["wPlusJets"] = 1.
+
 
 
 cutYield = {}
@@ -74,8 +94,7 @@ for sampleName in samplesMC:
     inDir = inDirMC
     sample = histoGramPerSample[sampleName]
     scaleFactor = 1. * masterScale
-    if sample in perMCSFs.keys():
-        scaleFactor = perMCSFs[sample] * masterScale
+    scaleFactor *= weights.getDatasetWeight(histoGramPerSample[sampleName],region)
     if sample == "Data":
         if inDirData == "":
             continue
@@ -161,7 +180,7 @@ for sampleName in sampleData:
     print sampleName
     if inDirData == "": continue
     logFiles = [f for f in os.listdir(inDirQCD+sampleName+"/logs/") if "log" in f and "#" not in f]
-    scaleFactor = perMCSFs["qcd"]
+    scaleFactor = weights.getDatasetWeight("qcd",region)
     for logFileName in logFiles:
         logFile = open(inDirQCD+sampleName+"/logs/"+logFileName,'r')
         for line in logFile:
@@ -199,7 +218,8 @@ tableDict = {"                             PV ":"Primary Vertex      ",
              "        VetoElectron.Number.All ":"Loose electron veto ",
              "                 Jet.Number.All ":"3 jets              ",
              "          Tagged.Jet.Number.All ":"1 tag               ",
-             "                                ":"                    "
+             "                                ":"                    ",
+             "                     ChannelCut ":"Channel cut         "
 }
 
 for cut in cutOrder:

@@ -101,6 +101,14 @@ void CutMissingEt::BookHistogram(){
   _hMissingEtAfter-> SetYAxisTitle("Events");
 
 
+  //First, get the config file
+  EventContainer *EventContainerObj = GetEventContainer();
+  TEnv * config = EventContainerObj->GetConfig();
+
+  //Then set the cuts here.
+  _missingEtMin = config -> GetValue("Cut.Event.MissingEt.Min",0.0);
+  _missingEtMax = config -> GetValue("Cut.Event.MissingEt.Max",999.0);
+
   // ***********************************************
   // Add these cuts to the cut flow table
   // ***********************************************
@@ -110,10 +118,34 @@ void CutMissingEt::BookHistogram(){
   TString cutFlowName;
 
   // Min cut
-  cutFlowTitleStream << "Missing Et Cut";
+  cutFlowTitleStream.str("");
+  cutFlowTitleStream << "MET > " << _missingEtMin;
   cutFlowTitle = cutFlowTitleStream.str().c_str();
 
-  cutFlowNameStream << "MET";
+  cutFlowNameStream.str("");
+  cutFlowNameStream << "MET.Min";
+  cutFlowName = cutFlowNameStream.str().c_str();
+
+  GetCutFlowTable()->AddCutToFlow(cutFlowName.Data(), cutFlowTitle.Data());
+
+  // Max cut
+    cutFlowTitleStream.str("");
+  cutFlowTitleStream << "MET < " << _missingEtMax;
+  cutFlowTitle = cutFlowTitleStream.str().c_str();
+
+  cutFlowNameStream.str("");
+  cutFlowNameStream << "MET.Max";
+  cutFlowName = cutFlowNameStream.str().c_str();
+
+  GetCutFlowTable()->AddCutToFlow(cutFlowName.Data(), cutFlowTitle.Data());
+
+  //Min + Max
+  cutFlowTitleStream.str("");
+  cutFlowTitleStream << _missingEtMin << " < MET < " << _missingEtMax;
+  cutFlowTitle = cutFlowTitleStream.str().c_str();
+
+  cutFlowNameStream.str("");
+  cutFlowNameStream << "MET.All";
   cutFlowName = cutFlowNameStream.str().c_str();
 
   GetCutFlowTable()->AddCutToFlow(cutFlowName.Data(), cutFlowTitle.Data());
@@ -123,19 +155,12 @@ void CutMissingEt::BookHistogram(){
   // Get the PV IDs from the config file. Perhaps these should be included as an object
   // ***********************************************
 
-  //First, get the config file
-  EventContainer *EventContainerObj = GetEventContainer();
-  TEnv * config = EventContainerObj->GetConfig();
-
-  //Then set the cuts here.
-  _missingEtMin = config -> GetValue("Cut.Event.MissingEt.Min",0.0);
-  _missingEtMax = config -> GetValue("Cut.Event.MissingEt.Max",999.0);
 
 
 }//BookHistograms()
 
 /******************************************************************************
- * Bool_t CutMissingEt::Apply()                                               *
+ * Bool_t CutMissingEt::Apply()                                                *
  *                                                                            *
  * Apply cuts and fill histograms                                             *
  *                                                                            *
@@ -149,32 +174,55 @@ Bool_t CutMissingEt::Apply()
 
   EventContainer *EventContainerObj = GetEventContainer();
 
-  Bool_t passesMETCut = kFALSE;
+  Bool_t passesMETMinCut = kTRUE;
+  Bool_t passesMETMaxCut = kTRUE;
 
-  //  Float_t met = EventContainerObj->missingEt_xy;
-  Float_t met = EventContainerObj->missingEt;
+  Float_t met = EventContainerObj->missingEt_xy;
+  //Float_t met = EventContainerObj->missingEt;
 
   _hMissingEtBefore->Fill(met);
 
+  ostringstream cutFlowNameMinStream;
+  ostringstream cutFlowNameMaxStream;
+  ostringstream cutFlowNameAllStream;
+  
+  TString cutFlowNameMin;
+  TString cutFlowNameMax;
+  TString cutFlowNameAll;
 
+  cutFlowNameMinStream << "MET.Min";
+  cutFlowNameMin = cutFlowNameMinStream.str().c_str();
 
-  ostringstream cutFlowNameStream;
-                                
-  TString cutFlowName;            
+  cutFlowNameMaxStream << "MET.Max";
+  cutFlowNameMax = cutFlowNameMaxStream.str().c_str();
 
-  cutFlowNameStream << "MET";
-  cutFlowName = cutFlowNameStream.str().c_str();
+  cutFlowNameAllStream << "MET.All";
+  cutFlowNameAll = cutFlowNameAllStream.str().c_str();
+
 
   if (met > _missingEtMin){
-    passesMETCut = kTRUE;
-    GetCutFlowTable()->PassCut(cutFlowName);
+    GetCutFlowTable()->PassCut(cutFlowNameMin.Data());
+  }
+  else {
+    GetCutFlowTable()->FailCut(cutFlowNameMin.Data());
+    passesMETMinCut = kFALSE;
+  }
+  if (met < _missingEtMax){
+    GetCutFlowTable()->PassCut(cutFlowNameMax.Data());
+  }
+  else {
+    GetCutFlowTable()->FailCut(cutFlowNameMax.Data());
+    passesMETMaxCut = kFALSE;
+  }
+  if (passesMETMaxCut && passesMETMinCut){
+    GetCutFlowTable()->PassCut(cutFlowNameAll);
     _hMissingEtAfter->Fill(met);
   }
   else{
-    GetCutFlowTable()->FailCut(cutFlowName);
+    GetCutFlowTable()->FailCut(cutFlowNameAll);
   }
 
-  return passesMETCut;
+  return passesMETMaxCut && passesMETMinCut;
 
 } //Apply
 

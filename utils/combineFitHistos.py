@@ -36,7 +36,7 @@ combDataHist = TH1F("datacomb","datacomb",nBins1 + nBins2,0,nBins1 + nBins2)
 for i in range(1,nBins1+1):
     combDataHist.SetBinContent(i,dataH1.GetBinContent(i))
 for i in range(1,nBins2+1):                                                    
-    combDataHist.SetBinContent(i+nBins1+1,dataH2.GetBinContent(i))
+    combDataHist.SetBinContent(i+nBins1,dataH2.GetBinContent(i))
 
 sampleNames = ["tW","singleTop","VV","ttbar","wPlusJets","zPlusJets","qcd"]
 combinedHists = {}
@@ -56,7 +56,7 @@ for sample in sampleNames:
     for i in range(1,nBins1+1):
         combinedHists[sample].SetBinContent(i,mergeHist1.GetBinContent(i))
     for i in range(1,nBins2+1):
-        combinedHists[sample].SetBinContent(i+nBins1+1,mergeHist2.GetBinContent(i))
+        combinedHists[sample].SetBinContent(i+nBins1,mergeHist2.GetBinContent(i))
     combinedHists[sample].SetFillColor(mergeHist1.GetFillColor())
     newStack.Add(combinedHists[sample])
     

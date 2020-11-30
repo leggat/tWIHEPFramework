@@ -1,40 +1,46 @@
 #Make the job folders for all of the regions we want to study for the tW lepton+jets
 
-import subprocess
+import subprocess, sys
 
 baseDir = "/publicfs/cms/user/duncanleg/tW13TeV/framework/"
 
-for i in [""," data"]:
-#for i in [""]:
-#    continue
-#for i in [""]:
-    for k in [""," inv"]:
-        if k == " inv" and i == "":continue
-#    for k in [""]:
-#        for j in ["", " ttbarReg", " wJetsReg"," wJets2"]:
-#        for j in ["", " ttbarReg"," wJets2", " ttbar2"," sig2"]:
-#        for j in [" ttbar2"," sig2"]:
+if "-h" in sys.argv or "--help" in sys.argv:
+    print "ele makes it electron channel"
+    print "--onlyMCNom only runs MC nominal"
+    print "--onlyData only runs on data"
+    print "--onlyInvData only runs inverted data selection"
+    print "--onlyOneFile - only make one submission file per dataset"
+    sys.exit(0)
 
-#        for j in [" ttbarReg", " wJetsReg"," wJets2"]:
-#        for j in [" ttbarReg", " wJetsReg"]:
-#        for j in [" ttbarReg", " wJets2"]:
-#        for j in [" wJets2"]:
-#        for j in [" wJetsReg"]:
-        for j in [""]:
-#            for l in [""," electron"]:
-            for l in [""]:
-                for m in [""," jesUp"," jesDown"," jerUp"," jerDown"]:
-#                for m in [""]:
-                    for n in [""," systs"]:
-                        if n == " systs" and not m == "": continue
-#                    for n in [" systs"]:
-                        if i == " data" and not (m == "" and n == ""): continue
-                        print "makeHEPSubmit.py"+i+k+j+l+m+n
-                        subprocess.call( "python "+baseDir+"utils/makeHEPSubmit.py skims"+i+k+j+l+m+n,shell=True)
+postfix = ""
+if "--onlyOneFile" in sys.argv: postfix += " onlyOne"
+mcData = [""," data"]
+nomInv = [""," inv"]
+systsList = [""," systs"]
+if "--onlyMCNom" in sys.argv:
+    mcData = [""]
+    nomInv = [""]
+    systsList = [""]
+    
+if "--onlyData" in sys.argv:
+    mcData = [" data"]
+    systsList = [""]
 
-#for i in ["jesUp","jesDown","jerUp","jerDown"]:
-#    for j in [" electron"]:
-#        subprocess.call( "python "+baseDir+"utils/makeHEPSubmit.py skims "+i+j,shell=True)
+if "--onlyInvData" in sys.argv:
+    mcData = [" data"]
+    nomInv = [" inv"]
 
-#for j in ["", " ttbarReg"," wJets2", " ttbar2"," sig2"]:
-#    subprocess.call("python " +baseDir+"utils/makeHEPSubmit.py skims systs"+j,shell=True)
+lepton = [""]
+if "ele" in sys.argv:
+    lepton = [" electron"]
+
+for i in mcData:
+    for k in nomInv:
+        for l in lepton:
+            for n in systsList:
+                if n == " systs" and not k == "": continue
+                if i == " data" and not n == "": continue
+                print "python "+baseDir+"utils/makeHEPSubmit.py skims"+i+k+l+n+postfix
+                subprocess.call( "python "+baseDir+"utils/makeHEPSubmit.py skims"+i+k+l+n+postfix,shell=True)
+
+

@@ -169,9 +169,15 @@ class Electron: public Particle
   inline Double_t GetRelIsoPFRhoEA() const {return _relIsoPFRhoEA;};
   inline Double_t relIsoPFRhoEA() const {return _relIsoPFRhoEA;};
 
+  inline void SetRelIsoPFBeta(Double_t relIsoPFBeta){_relIsoPFBeta = relIsoPFBeta;};
+  inline Double_t GetRelIsoPFRBeta() const {return _relIsoPFBeta;};
+  inline Double_t relIsoPFBeta() const {return _relIsoPFBeta;};
+
   inline void SetMissingHits(Int_t missingHits){_missingHits = missingHits;};
   inline Int_t GetMissingHits() const {return _missingHits;};
   inline Int_t missingHits() const {return _missingHits;};
+
+  double get_effarea(double eta);
 
  private:
 
@@ -204,6 +210,7 @@ class Electron: public Particle
   
   //Isolation
   Double_t _relIsoPFRhoEA;
+  Double_t _relIsoPFBeta;
 
   ///////////////////////////////////////////
   // Maps containing the cut values to be placed on the different type of selected leptons

@@ -216,8 +216,10 @@ Bool_t CutLeptonCharge::Apply()
   else if (EventContainerObj->GetChannelName() == "ee") LeptonPairCharge = electronVector[0].charge() * electronVector[1].charge();
   else if (EventContainerObj->GetChannelName() == "emu") LeptonPairCharge = muonVector[0].charge() * electronVector[0].charge();
 
+  else if (muonVector.size() > 0 && electronVector.size() > 0) LeptonPairCharge = muonVector[0].charge() * electronVector[0].charge();
+
   // Fill the histograms before the cuts
-  _hLeptonChargeBefore    -> Fill(LeptonPairCharge);
+
   
   // ***********************************************
   // Fill cut flow table
