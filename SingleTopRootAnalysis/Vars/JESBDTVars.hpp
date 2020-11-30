@@ -17,7 +17,7 @@
 class JESBDTVars: public VarBase {
   
 public:
-  JESBDTVars();
+  JESBDTVars(bool makeHistos = false);
 
   bool AddAdditionalVariables(EventContainer * obj);
   
@@ -51,6 +51,8 @@ private:
   TLorentzVector sumJets2040;
   TLorentzVector sumJets3040;
   TLorentzVector sumJets4000;
+
+  void fillVectorBranches(TLorentzVector Lepton, TLorentzVector Miss, std::vector<Jet> BJet,   std::vector<Jet> selectedJet, std::vector<Jet> Jet2040, std::vector<Jet> UntaggedJet, int i); 
   
 };
 
