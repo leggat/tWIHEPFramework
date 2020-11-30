@@ -74,13 +74,14 @@ Int_t myTH1F::Fill(Double_t x, Double_t myWeight)
 {
 
   // Get Global Weight from EventContainer class.
-  Double_t weight = _eventContainerObj -> GetEventWeight();
+  Double_t weight = _eventContainerObj -> GetOutputEventWeight();
 
   // If the input weight is greater than 0, use that instead of global weight
   if( myWeight != -999.0) weight = myWeight;
 
   // Fill the histogram
   _histogram -> Fill(x, weight);
+
   return 0;
 } //Fill
 
