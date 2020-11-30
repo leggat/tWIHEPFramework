@@ -43,12 +43,19 @@ void ChannelFlag::FillBranches(EventContainer * evtObj){
   int nbJets = evtObj->taggedJets.size();
 
   _intVars["channel"] = -1;
-
+  /*
   if (nJets == 2 && nbJets == 1) _intVars["channel"] = ChannelFlag::j2t1;
   else if (nJets == 3 && nbJets == 1) _intVars["channel"] = ChannelFlag::j3t1;
   else if (nJets == 4 && nbJets == 1) _intVars["channel"] = ChannelFlag::j4t1;
   else if (nJets == 3 && nbJets == 2) _intVars["channel"] = ChannelFlag::j3t2;
   else if (nJets == 4 && nbJets == 2) _intVars["channel"] = ChannelFlag::j4t2;
+  */
+
+  if (nJets == 2 && nbJets == 1) _intVars["channel"] = 2;
+  else if (nJets == 3 && nbJets == 1) _intVars["channel"] = 0;
+  else if (nJets == 4 && nbJets == 1) _intVars["channel"] = 3;
+  else if (nJets == 3 && nbJets == 2) _intVars["channel"] = 1;
+  else if (nJets == 4 && nbJets == 2) _intVars["channel"] = 4;
 
   if (evtObj->jets.size() <1) return;
   for (int i = 0; i < evtObj->jets[0].GetNumberOfJESCorrections(); i++){
@@ -64,7 +71,12 @@ void ChannelFlag::FillBranches(EventContainer * evtObj){
     else if (nJets == 4 && nbJets == 1) tempChannel = ChannelFlag::j4t1;
     else if (nJets == 3 && nbJets == 2) tempChannel = ChannelFlag::j3t2;
     else if (nJets == 4 && nbJets == 2) tempChannel = ChannelFlag::j4t2;
-
+    else if (nJets == 2 && nbJets == 0) tempChannel = ChannelFlag::j2t0;
+    else if (nJets == 3 && nbJets == 0) tempChannel = ChannelFlag::j3t0;
+    else if (nJets == 4 && nbJets == 0) tempChannel = ChannelFlag::j4t0;
+    else if (nJets == 2) tempChannel = ChannelFlag::j2;
+    else if (nJets == 3) tempChannel = ChannelFlag::j3;
+    else if (nJets == 4) tempChannel = ChannelFlag::j4;
     _intVecVars["channel_JESShifts"][i] = tempChannel;
 
   }
