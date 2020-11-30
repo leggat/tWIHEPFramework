@@ -66,10 +66,19 @@ void HistogrammingJet::BookHistogram(){
   _hNObj->SetXAxisTitle("N^{Jet}");
   _hNObj->SetYAxisTitle("Events");
 
+  //Number of Tagged Jets
+  _hNBJets = DeclareTH1F("BJetN","Number of b-jets", 10,0.,10.);
+  _hNBJets->SetXAxisTitle("N^{b-Jet}");
+  _hNBJets->SetYAxisTitle("Events");
+
   // Jet 1 Pt
   _hPtObj1 = DeclareTH1F("Jet1Pt","Jet 1 p_{T}",100,0.,400.);
   _hPtObj1->SetXAxisTitle("p_{T}^{Jet 1} [GeV]");
   _hPtObj1->SetYAxisTitle("Events");
+  // Jet 1 Uncorr Pt
+  _hUncorrPtObj1 = DeclareTH1F("Jet1UncorrPt","Jet 1 uncorrected p_{T}",100,0.,400.);
+  _hUncorrPtObj1->SetXAxisTitle("p_{T}^{Jet 1, uncorrected} [GeV]");
+  _hUncorrPtObj1->SetYAxisTitle("Events");
   // Jet 1 Eta
   _hEtaObj1 = DeclareTH1F("Jet1Eta","Jet 1 Pseudorapidity",50,-5.,5.);
   _hEtaObj1->SetXAxisTitle("#eta^{Jet 1}");
@@ -86,11 +95,56 @@ void HistogrammingJet::BookHistogram(){
   _hFlavVTag1 = DeclareTH2F("Jet1FlavVTag","Jet 1 flavour vs tag",3,0,3,50,-1.,1.);
   _hFlavVTag1->SetXAxisTitle("Flavour_{Jet_{1}}");
   _hFlavVTag1->SetYAxisTitle("Tag_{Jet_{1}}");
+  // Jet 1 eta vs pt
+  _hPtEtaObj1 = DeclareTH2F("Jet1PtEta","Jet 1 p_{T} vs #eta",100,0.,400.,50,-5.,5.);
+  _hPtEtaObj1->SetXAxisTitle("p_{T}^{Jet 1} [GeV]");
+  _hPtEtaObj1->SetYAxisTitle("#eta_{Jet 1}");
+  // Jet 1 JER                                                
+  _hjerObj1 = DeclareTH1F("Jet1JER","Jet 1 JER",100,0.8,1.5);
+  _hjerObj1->SetXAxisTitle("JER^{Jet 1}");
+  _hjerObj1->SetYAxisTitle("Events");
+  // Jet 1 JES                                                
+  _hjesObj1 = DeclareTH1F("Jet1JES","Jet 1 JES",100,0.8,1.5);
+  _hjesObj1->SetXAxisTitle("JES^{Jet 1}");
+  _hjesObj1->SetYAxisTitle("Events");
+  // Jet 1 Pt no JER
+  _hPtNoJERObj1 = DeclareTH1F("Jet1PtNoJER","Jet 1 p_{T} without JER",100,0.,400.);
+  _hPtNoJERObj1->SetXAxisTitle("p_{T}^{Jet 1, no JER} [GeV]");
+  _hPtNoJERObj1->SetYAxisTitle("Events");
+  // Jet 1 Pt no JES
+  _hPtNoJESObj1 = DeclareTH1F("Jet1PtNoJES","Jet 1 p_{T} without JES",100,0.,400.);
+  _hPtNoJESObj1->SetXAxisTitle("p_{T}^{Jet 1, no JES} [GeV]");
+  _hPtNoJESObj1->SetYAxisTitle("Events");
+  // Jet 1 Pt no Smear
+  _hPtNoSmearObj1 = DeclareTH1F("Jet1PtNoSmear","Jet 1 p_{T} without Smear",100,0.,400.);
+  _hPtNoSmearObj1->SetXAxisTitle("p_{T}^{Jet 1, no Smear} [GeV]");
+  _hPtNoSmearObj1->SetYAxisTitle("Events");
+  // Jet 1 Pt no JES
+  _hPtNoJERJESObj1 = DeclareTH1F("Jet1PtNoJERJES","Jet 1 p_{T} without JES",100,0.,400.);
+  _hPtNoJERJESObj1->SetXAxisTitle("p_{T}^{Jet 1, no JES or JER} [GeV]");
+  _hPtNoJERJESObj1->SetYAxisTitle("Events");
+  // Jet 1 Pt with JES
+  _hPtWithJESObj1 = DeclareTH1F("Jet1PtWithJES","Jet 1 p_{T} with JES",100,0.,400.);
+  _hPtWithJESObj1->SetXAxisTitle("p_{T}^{Jet 1, with JES} [GeV]");
+  _hPtWithJESObj1->SetYAxisTitle("Events");
+  // Jet 1 Pt with JER
+  _hPtWithJERObj1 = DeclareTH1F("Jet1PtWithJER","Jet 1 p_{T} with JER",100,0.,400.);
+  _hPtWithJERObj1->SetXAxisTitle("p_{T}^{Jet 1, with JER} [GeV]");
+  _hPtWithJERObj1->SetYAxisTitle("Events");
+ // Jet 1 Pt with JERJES
+  _hPtWithJERJESObj1 = DeclareTH1F("Jet1PtWithJERJES","Jet 1 p_{T} with JERJES",100,0.,400.);
+  _hPtWithJERJESObj1->SetXAxisTitle("p_{T}^{Jet 1, with JERJES} [GeV]");
+  _hPtWithJERJESObj1->SetYAxisTitle("Events");
+
 
   // Jet 2 Pt
   _hPtObj2 = DeclareTH1F("Jet2Pt","Jet 2 p_{T}",100,0.,400.);
   _hPtObj2->SetXAxisTitle("p_{T}^{Jet 2} [GeV]");
   _hPtObj2->SetYAxisTitle("Events");
+  // Jet 2 Uncorr Pt
+  _hUncorrPtObj2 = DeclareTH1F("Jet2UncorrPt","Jet 2 uncorrected p_{T}",100,0.,400.);
+  _hUncorrPtObj2->SetXAxisTitle("p_{T}^{Jet 2, uncorrected} [GeV]");
+  _hUncorrPtObj2->SetYAxisTitle("Events");
   // Jet 2 Eta
   _hEtaObj2 = DeclareTH1F("Jet2Eta","Jet 2 Pseudorapidity",50,-5.,5.);
   _hEtaObj2->SetXAxisTitle("#eta^{Jet 2} ");
@@ -107,12 +161,55 @@ void HistogrammingJet::BookHistogram(){
   _hFlavVTag2 = DeclareTH2F("Jet2FlavVTag","Jet 2 flavour vs tag",3,0,3,50,-1.,1.);
   _hFlavVTag2->SetXAxisTitle("Flavour_{Jet_{2}}");
   _hFlavVTag2->SetYAxisTitle("Tag_{Jet_{2}}");
-
+  // Jet 2 eta vs pt
+  _hPtEtaObj2 = DeclareTH2F("Jet2PtEta","Jet 2 p_{T} vs #eta",100,0.,400.,50,-5.,5.);
+  _hPtEtaObj2->SetXAxisTitle("p_{T}^{Jet 2} [GeV]");
+  _hPtEtaObj2->SetYAxisTitle("#eta_{Jet 2}");
+  // Jet 2 JER                                                                           
+  _hjerObj2 = DeclareTH1F("Jet2JER","Jet 2 JER",100,0.8,1.5);
+  _hjerObj2->SetXAxisTitle("JER^{Jet 2}");
+  _hjerObj2->SetYAxisTitle("Events");
+  // Jet 2 JES                                                                           
+  _hjesObj2 = DeclareTH1F("Jet2JES","Jet 2 JES",100,0.8,1.5);
+  _hjesObj2->SetXAxisTitle("JES^{Jet 2}");
+  _hjesObj2->SetYAxisTitle("Events");
+  // Jet 2 Pt no JER                                                                     
+  _hPtNoJERObj2 = DeclareTH1F("Jet2PtNoJER","Jet 2 p_{T} without JER",100,0.,400.);
+  _hPtNoJERObj2->SetXAxisTitle("p_{T}^{Jet 2, no JER} [GeV]");
+  _hPtNoJERObj2->SetYAxisTitle("Events");
+  // Jet 2 Pt no JES                                                                     
+  _hPtNoJESObj2 = DeclareTH1F("Jet2PtNoJES","Jet 2 p_{T} without JES",100,0.,400.);
+  _hPtNoJESObj2->SetXAxisTitle("p_{T}^{Jet 2, no JES} [GeV]");
+  _hPtNoJESObj2->SetYAxisTitle("Events");
+  // Jet 2 Pt no Smear                                                                     
+  _hPtNoSmearObj2 = DeclareTH1F("Jet2PtNoSmear","Jet 2 p_{T} without Smear",100,0.,400.);
+  _hPtNoSmearObj2->SetXAxisTitle("p_{T}^{Jet 2, no Smear} [GeV]");
+  _hPtNoSmearObj2->SetYAxisTitle("Events");
+  // Jet 2 Pt no JES                                                                     
+  _hPtNoJERJESObj2 = DeclareTH1F("Jet2PtNoJERJES","Jet 2 p_{T} without JES",100,0.,400.);
+  _hPtNoJERJESObj2->SetXAxisTitle("p_{T}^{Jet 2, no JES or JER} [GeV]");
+  _hPtNoJERJESObj2->SetYAxisTitle("Events");
+  // Jet 2 Pt with JES
+  _hPtWithJESObj2 = DeclareTH1F("Jet2PtWithJES","Jet 2 p_{T} with JES",100,0.,400.);
+  _hPtWithJESObj2->SetXAxisTitle("p_{T}^{Jet 2, with JES} [GeV]");
+  _hPtWithJESObj2->SetYAxisTitle("Events");
+  // Jet 2 Pt with JER
+  _hPtWithJERObj2 = DeclareTH1F("Jet2PtWithJER","Jet 2 p_{T} with JER",100,0.,400.);
+  _hPtWithJERObj2->SetXAxisTitle("p_{T}^{Jet 2, with JER} [GeV]");
+  _hPtWithJERObj2->SetYAxisTitle("Events");
+  // Jet 2 Pt with JERJES
+  _hPtWithJERJESObj2 = DeclareTH1F("Jet2PtWithJERJES","Jet 2 p_{T} with JERJES",100,0.,400.);
+  _hPtWithJERJESObj2->SetXAxisTitle("p_{T}^{Jet 2, with JERJES} [GeV]");
+  _hPtWithJERJESObj2->SetYAxisTitle("Events");
 
   // Jet 3 Pt
   _hPtObj3 = DeclareTH1F("Jet3Pt","Jet 3 p_{T}",100,0.,400.);
   _hPtObj3->SetXAxisTitle("p_{T}^{Jet 3} [GeV]");
   _hPtObj3->SetYAxisTitle("Events");
+  // Jet 3 Uncorr Pt
+  _hUncorrPtObj3 = DeclareTH1F("Jet3UncorrPt","Jet 3 uncorrected p_{T}",100,0.,400.);
+  _hUncorrPtObj3->SetXAxisTitle("p_{T}^{Jet 3, uncorrected} [GeV]");
+  _hUncorrPtObj3->SetYAxisTitle("Events");
   // Jet 3 Eta
   _hEtaObj3 = DeclareTH1F("Jet3Eta","Jet 3 Pseudorapidity",50,-5.,5.);
   _hEtaObj3->SetXAxisTitle("#eta^{Jet 3}");
@@ -129,6 +226,46 @@ void HistogrammingJet::BookHistogram(){
   _hFlavVTag3 = DeclareTH2F("Jet3FlavVTag","Jet 3 flavour vs tag",3,0,3,50,-1.,1.);
   _hFlavVTag3->SetXAxisTitle("Flavour_{Jet_{3}}");
   _hFlavVTag3->SetYAxisTitle("Tag_{Jet_{3}}");
+  // Jet 3 eta vs pt
+  _hPtEtaObj3 = DeclareTH2F("Jet3PtEta","Jet 3 p_{T} vs #eta",100,0.,400.,50,-5.,5.);
+  _hPtEtaObj3->SetXAxisTitle("p_{T}^{Jet 3} [GeV]");
+  _hPtEtaObj3->SetYAxisTitle("#eta_{Jet 3}");
+  // Jet 3 JER                                                                           
+  _hjerObj3 = DeclareTH1F("Jet3JER","Jet 3 JER",100,0.8,1.5);
+  _hjerObj3->SetXAxisTitle("JER^{Jet 3}");
+  _hjerObj3->SetYAxisTitle("Events");
+  // Jet 3 JES                                                                           
+  _hjesObj3 = DeclareTH1F("Jet3JES","Jet 3 JES",100,0.8,1.5);
+  _hjesObj3->SetXAxisTitle("JES^{Jet 3}");
+  _hjesObj3->SetYAxisTitle("Events");
+  // Jet 3 Pt no JER                                                                     
+  _hPtNoJERObj3 = DeclareTH1F("Jet3PtNoJER","Jet 3 p_{T} without JER",100,0.,400.);
+  _hPtNoJERObj3->SetXAxisTitle("p_{T}^{Jet 3, no JER} [GeV]");
+  _hPtNoJERObj3->SetYAxisTitle("Events");
+  // Jet 3 Pt no JES                                                                     
+  _hPtNoJESObj3 = DeclareTH1F("Jet3PtNoJES","Jet 3 p_{T} without JES",100,0.,400.);
+  _hPtNoJESObj3->SetXAxisTitle("p_{T}^{Jet 3, no JES} [GeV]");
+  _hPtNoJESObj3->SetYAxisTitle("Events");
+  // Jet 3 Pt no Smear                                                                     
+  _hPtNoSmearObj3 = DeclareTH1F("Jet3PtNoSmear","Jet 3 p_{T} without Smear",100,0.,400.);
+  _hPtNoSmearObj3->SetXAxisTitle("p_{T}^{Jet 3, no Smear} [GeV]");
+  _hPtNoSmearObj3->SetYAxisTitle("Events");
+  // Jet 3 Pt no JES                                                                     
+  _hPtNoJERJESObj3 = DeclareTH1F("Jet3PtNoJERJES","Jet 3 p_{T} without JES",100,0.,400.);
+  _hPtNoJERJESObj3->SetXAxisTitle("p_{T}^{Jet 3, no JES or JER} [GeV]");
+  _hPtNoJERJESObj3->SetYAxisTitle("Events");
+  // Jet 3 Pt with JES
+  _hPtWithJESObj3 = DeclareTH1F("Jet3PtWithJES","Jet 3 p_{T} with JES",100,0.,400.);
+  _hPtWithJESObj3->SetXAxisTitle("p_{T}^{Jet 3, with JES} [GeV]");
+  _hPtWithJESObj3->SetYAxisTitle("Events");
+  // Jet 3 Pt with JER
+  _hPtWithJERObj3 = DeclareTH1F("Jet3PtWithJER","Jet 3 p_{T} with JER",100,0.,400.);
+  _hPtWithJERObj3->SetXAxisTitle("p_{T}^{Jet 3, with JER} [GeV]");
+  _hPtWithJERObj3->SetYAxisTitle("Events");
+  // Jet 3 Pt with JERJES
+  _hPtWithJERJESObj3 = DeclareTH1F("Jet3PtWithJERJES","Jet 3 p_{T} with JERJES",100,0.,400.);
+  _hPtWithJERJESObj3->SetXAxisTitle("p_{T}^{Jet 3, with JERJES} [GeV]");
+  _hPtWithJERJESObj3->SetYAxisTitle("Events");
 
   // Jet 4 Pt
   _hPtObj4 = DeclareTH1F("Jet4Pt","Jet 4 p_{T}",100,0.,400.);
@@ -254,6 +391,7 @@ Bool_t HistogrammingJet::Apply()
   // Jet 1
   if(evc->jets.size()>0) {
     _hPtObj1  -> Fill(evc->jets[0].Pt());
+    _hUncorrPtObj1  -> Fill(evc->jets[0].uncorrPt());
     _hEtaObj1 -> Fill(evc->jets[0].Eta());
     _hPhiObj1 -> Fill(evc->jets[0].Phi());
     _hTagObj1 -> Fill(evc->jets[0].bDiscriminator());
@@ -261,11 +399,24 @@ Bool_t HistogrammingJet::Apply()
     if (jetFlavour == 4) jetFlavour = 1;
     if (jetFlavour == 5) jetFlavour = 2;
     _hFlavVTag1->Fill(jetFlavour,evc->jets[0].bDiscriminator());
+    _hPtEtaObj1->Fill(evc->jets[0].Pt(),evc->jets[0].Eta());
+    _hjerObj1->Fill(evc->jets[0].GetjerSF());
+    _hjesObj1->Fill(evc->jets[0].GetjesSF());
+    _hPtWithJESObj1->Fill(evc->jets[0].Pt() * evc->jets[0].GetjesSF());
+    _hPtWithJERObj1->Fill(evc->jets[0].Pt() * evc->jets[0].GetjerSF());
+    _hPtWithJERJESObj1->Fill(evc->jets[0].Pt() * evc->jets[0].GetjerSF() * evc->jets[0].GetjesSF());
+    if (!evc->jets[0].GetjerSF() == 0.) _hPtNoJERObj1->Fill(evc->jets[0].Pt()/evc->jets[0].GetjerSF());
+    if (!evc->jets[0].GetjesSF() == 0.) _hPtNoJESObj1->Fill(evc->jets[0].Pt()/evc->jets[0].GetjesSF());
+    if (!evc->jets[0].GetjerSF() == 0. && !evc->jets[0].GetjesSF() == 0.) _hPtNoJERJESObj1->Fill(evc->jets[0].Pt()/(evc->jets[0].GetjerSF()*evc->jets[0].GetjesSF()));
+    if (!evc->jets[0].GetsmearFactor() == 0.) _hPtNoSmearObj1->Fill(evc->jets[0].Pt()/evc->jets[0].GetsmearFactor());
+    //jer/jes things
+    
   } //if
 
   // Jet 2
   if(evc->jets.size()>1) {
     _hPtObj2  -> Fill(evc->jets[1].Pt());
+    _hUncorrPtObj2  -> Fill(evc->jets[1].uncorrPt());
     _hEtaObj2 -> Fill(evc->jets[1].Eta());
     _hPhiObj2 -> Fill(evc->jets[1].Phi());
     _hTagObj2 -> Fill(evc->jets[1].bDiscriminator());
@@ -273,11 +424,23 @@ Bool_t HistogrammingJet::Apply()
     if (jetFlavour == 4) jetFlavour = 1;
     if (jetFlavour == 5) jetFlavour = 2;
     _hFlavVTag2->Fill(jetFlavour,evc->jets[1].bDiscriminator());
+    _hPtEtaObj2->Fill(evc->jets[1].Pt(),evc->jets[1].Eta());
+    _hjerObj2->Fill(evc->jets[1].GetjerSF());
+    _hjesObj2->Fill(evc->jets[1].GetjesSF());
+    _hPtWithJESObj2->Fill(evc->jets[1].Pt() * evc->jets[1].GetjesSF());
+    _hPtWithJERObj2->Fill(evc->jets[1].Pt() * evc->jets[1].GetjerSF());
+    _hPtWithJERJESObj2->Fill(evc->jets[1].Pt() * evc->jets[1].GetjerSF() * evc->jets[1].GetjesSF());
+    if (!evc->jets[1].GetjerSF() == 0.) _hPtNoJERObj2->Fill(evc->jets[1].Pt()/evc->jets[1].GetjerSF());
+    if (!evc->jets[1].GetjesSF() == 0.) _hPtNoJESObj2->Fill(evc->jets[1].Pt()/evc->jets[1].GetjesSF());
+    if (!evc->jets[1].GetjerSF() == 0. && !evc->jets[1].GetjesSF() == 0.) _hPtNoJERJESObj2->Fill(evc->jets[1].Pt()/(evc->jets[1].GetjerSF()*evc->jets[1].GetjesSF()));
+    if (!evc->jets[1].GetsmearFactor() == 0.) _hPtNoSmearObj2->Fill(evc->jets[1].Pt()/evc->jets[1].GetsmearFactor());
+
   } //if
   
   // Jet 3
   if(evc->jets.size()>2) {
     _hPtObj3  -> Fill(evc->jets[2].Pt());
+    _hUncorrPtObj3  -> Fill(evc->jets[2].uncorrPt());
     _hEtaObj3 -> Fill(evc->jets[2].Eta());
     _hPhiObj3 -> Fill(evc->jets[2].Phi());
     _hTagObj3 -> Fill(evc->jets[2].bDiscriminator());
@@ -285,6 +448,17 @@ Bool_t HistogrammingJet::Apply()
     if (jetFlavour == 4) jetFlavour = 1;
     if (jetFlavour == 5) jetFlavour = 2;
     _hFlavVTag3->Fill(jetFlavour,evc->jets[2].bDiscriminator());
+    _hPtEtaObj3->Fill(evc->jets[2].Pt(),evc->jets[2].Eta());
+    _hjerObj3->Fill(evc->jets[2].GetjerSF());
+    _hjesObj3->Fill(evc->jets[2].GetjesSF());
+    _hPtWithJESObj3->Fill(evc->jets[2].Pt() * evc->jets[2].GetjesSF());
+    _hPtWithJERObj3->Fill(evc->jets[2].Pt() * evc->jets[2].GetjerSF());
+    _hPtWithJERJESObj3->Fill(evc->jets[2].Pt() * evc->jets[2].GetjerSF()) * evc->jets[2].GetjesSF();
+    if (!evc->jets[2].GetjerSF() == 0.) _hPtNoJERObj3->Fill(evc->jets[2].Pt()/evc->jets[2].GetjerSF());
+    if (!evc->jets[2].GetjesSF() == 0.) _hPtNoJESObj3->Fill(evc->jets[2].Pt()/evc->jets[2].GetjesSF());
+    if (!evc->jets[2].GetjerSF() == 0. && !evc->jets[2].GetjesSF() == 0.) _hPtNoJERJESObj3->Fill(evc->jets[2].Pt()/(evc->jets[2].GetjerSF()*evc->jets[2].GetjesSF()));
+    if (!evc->jets[2].GetsmearFactor() == 0.) _hPtNoSmearObj3->Fill(evc->jets[2].Pt()/evc->jets[2].GetsmearFactor());
+
   } //if
 
   // Jet 4
@@ -320,6 +494,7 @@ Bool_t HistogrammingJet::Apply()
   } //if
 
   // Loop over all jets and histogram their properties
+  int nBJets = 0;
   for(int io = 0; io < evc -> jets.size(); io++) {
     _hPt     -> Fill(evc -> jets[io].Pt());
     _hEta    -> Fill(evc -> jets[io].Eta());
@@ -329,9 +504,12 @@ Bool_t HistogrammingJet::Apply()
     if (jetFlavour == 4) jetFlavour = 1;
     if (jetFlavour == 5) jetFlavour = 2;
     _hFlavVTag->Fill(jetFlavour,evc->jets[io].bDiscriminator());
+    if (evc->jets[io].IsTagged()) nBJets++;
     //_hEtEM0  -> Fill(evc -> jets[io].GetEtEM0());
     //_hTruthLabel  -> Fill(evc -> jets[io].GetPdgId());
   } //for 
+  
+  _hNBJets->Fill(nBJets);
 
   //cout<<"End of HistogrammingJet::Apply()"<<endl;
   return kTRUE;  

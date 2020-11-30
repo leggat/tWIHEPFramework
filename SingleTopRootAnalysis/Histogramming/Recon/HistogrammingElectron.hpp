@@ -58,6 +58,8 @@ private:
   myTH1F* _hPtBlowupObj1;    // Electron 1 PT, region 0-100GeV.
   myTH1F* _hEtaObj1;         // Electron 1 Eta
   myTH1F* _hPhiObj1;         // Electron 1 Phi
+  myTH1F* _hIsoObj1;         // Electron 1 rel Iso
+  myTH1F* _hIsoHiObj1;       // Electron 1 rel Iso high
   myTH2F* _hPtEtaObj1;       // Electron 1 Pt-Eta
   myTH2F* _hPtPhiObj1;       // Electron 1 Pt-Eta
   myTH2F* _hEtaPhiObj1;      // Electron 1 Pt-Eta
@@ -65,6 +67,8 @@ private:
   myTH1F* _hPtObj2;          // Electron 2 PT
   myTH1F* _hEtaObj2;         // Electron 2 Eta
   myTH1F* _hPhiObj2;         // Electron 2 Phi
+  myTH1F* _hIsoObj2;         // Electron 2 rel Iso
+  myTH1F* _hIsoHiObj2;       // Electron 2 rel Iso high
   myTH2F* _hPtEtaObj2;       // Electron 2 Pt-Eta
   myTH2F* _hPtPhiObj2;       // Electron 2 Pt-Eta
   myTH2F* _hEtaPhiObj2;      // Electron 2 Pt-Eta
@@ -87,6 +91,10 @@ private:
   TString electronType; // Type of electron being plotted
 
   Bool_t _unisolated;
+
+  Int_t _nTimesRun;
+  Float_t _integral;
+
 
 };
 

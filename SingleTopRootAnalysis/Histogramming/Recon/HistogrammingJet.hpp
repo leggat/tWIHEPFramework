@@ -50,24 +50,58 @@ public:
 private:
   // Histograms declarations 
   myTH1F* _hNObj;     // Histogram of number of jets
+  myTH1F* _hNBJets;     // Histogram of number of b jets
 
   myTH1F* _hPtObj1;   // Jet 1 PT
+  myTH1F* _hUncorrPtObj1;   // Jet 1 uncorrected PT
   myTH1F* _hEtaObj1;  // Jet 1 Eta
   myTH1F* _hPhiObj1;  // Jet 1 Phi
   myTH1F* _hTagObj1;  // Jet 1 Tag
+  myTH1F* _hjerObj1;  // Jet 1 JER
+  myTH1F* _hjesObj1;  // Jet 1 JES
+  myTH1F* _hPtNoJERObj1; // Jet 1 Pt without JER
+  myTH1F* _hPtNoJESObj1; // Jet 1 Pt without JES
+  myTH1F* _hPtNoJERJESObj1; // Jet 1 Pt without JER or JES
+  myTH1F* _hPtNoSmearObj1; // Jet 1 Pt without smear
+  myTH1F* _hPtWithJESObj1; // Jet 1 Pt with JES
+  myTH1F* _hPtWithJERObj1; // Jet 1 Pt with JES
+  myTH1F* _hPtWithJERJESObj1; // Jet 1 Pt with JER and JES
   myTH2F* _hFlavVTag1;// Jet 1 Tag vs flavour 
+  myTH2F* _hPtEtaObj1;// Jet 1 Pt vs Eta
 
   myTH1F* _hEtaObj2;  // Jet 2 Eta
   myTH1F* _hPtObj2;   // Jet 2 PT
+  myTH1F* _hUncorrPtObj2;   // Jet 2 uncorrected PT
   myTH1F* _hPhiObj2;  // Jet 2 Phi
   myTH1F* _hTagObj2;  // Jet 2 Tag
+  myTH1F* _hjerObj2;  // Jet 2 JER
+  myTH1F* _hjesObj2;  // Jet 2 JES
+  myTH1F* _hPtNoJERObj2; // Jet 2 Pt without JER
+  myTH1F* _hPtNoJESObj2; // Jet 2 Pt without JES
+  myTH1F* _hPtNoJERJESObj2; // Jet 2 Pt without JER or JES
+  myTH1F* _hPtNoSmearObj2; // Jet 2 Pt without smear
+  myTH1F* _hPtWithJESObj2; // Jet 2 Pt with JES
+  myTH1F* _hPtWithJERObj2; // Jet 2 Pt with JES            
+  myTH1F* _hPtWithJERJESObj2; // Jet 2 Pt with JER and JES 
   myTH2F* _hFlavVTag2;// Jet 2 Tag vs flavour 
+  myTH2F* _hPtEtaObj2;// Jet 2 Pt vs Eta
 
   myTH1F* _hPtObj3;   // Jet 3 PT
+  myTH1F* _hUncorrPtObj3;   // Jet 3 uncorrected PT 
   myTH1F* _hEtaObj3;  // Jet 3 Eta
   myTH1F* _hPhiObj3;  // Jet 3 Phi
   myTH1F* _hTagObj3;  // Jet 3 Tag
+  myTH1F* _hjerObj3;  // Jet 3 JER
+  myTH1F* _hjesObj3;  // Jet 3 JES
+  myTH1F* _hPtNoJERObj3; // Jet 3 Pt without JER
+  myTH1F* _hPtNoJESObj3; // Jet 3 Pt without JES
+  myTH1F* _hPtNoJERJESObj3; // Jet 3 Pt without JER or JES
+  myTH1F* _hPtNoSmearObj3; // Jet 3 Pt without smear
+  myTH1F* _hPtWithJESObj3; // Jet 3 Pt with JES
+  myTH1F* _hPtWithJERObj3; // Jet 3 Pt with JES            
+  myTH1F* _hPtWithJERJESObj3; // Jet 3 Pt with JER and JES 
   myTH2F* _hFlavVTag3;// Jet 3 Tag vs flavour 
+  myTH2F* _hPtEtaObj3;// Jet 3 Pt vs Eta
 
   myTH1F* _hPtObj4;   // Jet 4 PT
   myTH1F* _hEtaObj4;  // Jet 4 Eta

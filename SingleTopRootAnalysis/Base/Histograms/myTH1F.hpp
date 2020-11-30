@@ -74,6 +74,11 @@ public:
   // Get the number of bins.
   Int_t GetNbinsX() {return _histogram->GetNbinsX(); };
 
+  Float_t Integral() {return _histogram->Integral(); };
+
+  //Get the name of the histogram
+  TString GetName() {return _histogram->GetName(); };
+
   // Histogram which is operaton upon
   TH1F* _histogram;
 

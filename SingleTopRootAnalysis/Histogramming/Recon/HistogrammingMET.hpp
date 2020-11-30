@@ -35,7 +35,7 @@ class HistogrammingMET : public HistoCut
 public:
 
   // Parameterized Constructor
-  HistogrammingMET(EventContainer *obj);
+  HistogrammingMET(EventContainer *obj, bool unisolated = false);
   
   // Destructor
   ~HistogrammingMET();
@@ -62,7 +62,16 @@ private:
   myTH1F* _hMEY_xy; // Histogram of xy corrected MEY
   myTH1F* _hMETPhi_xy; // Histogram of xy corrected MET phi
 
+  //barrel/endcap
+  myTH1F* _hMET_xy_barrel; // Histogram of xy corrected MET phi  
+  myTH1F* _hMET_xy_endcap; // Histogram of xy corrected MET phi
+
   myTH1F* _hSumEt;  // Histogram of SumEt
+
+  Int_t _nTimesRun;
+  Float_t _integral;
+
+  bool _unisolated;
 
 };
 
