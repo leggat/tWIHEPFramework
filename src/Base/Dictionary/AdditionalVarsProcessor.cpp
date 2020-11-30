@@ -55,6 +55,7 @@ bool AdditionalVarsProcessor::BookBranches(TTree * skimTree, EventContainer * ev
     
     if (it->runAdditionalVariables()) it->AddAdditionalVariables(evtObj);
 
+    it->SetEventContainer(evtObj);
     it->BookBranches(skimTree);
 
 
