@@ -21,6 +21,7 @@
 
 // Include histogramming classes
 #include "SingleTopRootAnalysis/Cuts/Weights/EventWeight.hpp"
+#include "SingleTopRootAnalysis/Cuts/Weights/LeptonPtReweight.hpp"
 //#include "SingleTopRootAnalysis/Histogramming/Topological/HistogrammingWtDiLepTopology.hpp"
 #include "SingleTopRootAnalysis/Histogramming/Recon/HistogrammingMuon.hpp"
 #include "SingleTopRootAnalysis/Histogramming/Recon/HistogrammingElectron.hpp"
@@ -32,8 +33,12 @@
 // Include cuts classes
 //#include "SingleTopRootAnalysis/Cuts/Other/CutTriangularSumDeltaPhiLepMET.hpp"
 //#include "SingleTopRootAnalysis/Cuts/Other/CutEMuOverlap.hpp"
+#include "SingleTopRootAnalysis/Cuts/Other/ChannelFlagCut.hpp"
 #include "SingleTopRootAnalysis/Cuts/Jet/CutJetN.hpp"
+#include "SingleTopRootAnalysis/Cuts/Jet/VetoPrefireJets.hpp"
 #include "SingleTopRootAnalysis/Cuts/TaggedJet/CutTaggedJetN.hpp"
+#include "SingleTopRootAnalysis/Cuts/Other/CutMissingEt.hpp"
+#include "SingleTopRootAnalysis/Cuts/Other/CutMtW.hpp"
 //#include "SingleTopRootAnalysis/Cuts/Jet/CutJetPt1.hpp"
 
 //#include "SingleTopRootAnalysis/Cuts/Other/CutMissingEt.hpp"
@@ -45,21 +50,20 @@
 //#include "SingleTopRootAnalysis/Cuts/Lepton/CutLeptonOppositeCharge.hpp"
 //#include "SingleTopRootAnalysis/Cuts/Other/CutLarBurst.hpp"
 #include "SingleTopRootAnalysis/Cuts/Other/CutPrimaryVertex.hpp"
-#include "SingleTopRootAnalysis/Cuts/Other/ChannelFlagCut.hpp"
 //
 //#include "SingleTopRootAnalysis/Cuts/Other/CutZveto.hpp"
 #include "SingleTopRootAnalysis/Cuts/Other/CutTriggerSelection.hpp"
 //#include "SingleTopRootAnalysis/Cuts/Other/CutHFOR.hpp"
 //#include "SingleTopRootAnalysis/Cuts/Other/CutBadPileupEvent.hpp"
+#include "SingleTopRootAnalysis/Cuts/Other/CutBarrelEndcapLepton.hpp"
 
 //Include the additional variables that we would want in the skim tree
 #include "SingleTopRootAnalysis/Vars/TestVar.hpp"
 #include "SingleTopRootAnalysis/Vars/BDTVars.hpp"
-#include "SingleTopRootAnalysis/Vars/JESBDTVars.hpp"
 #include "SingleTopRootAnalysis/Vars/WeightVars.hpp"
 #include "SingleTopRootAnalysis/Vars/ChannelFlag.hpp"
-#include "SingleTopRootAnalysis/Vars/TopChargeFlag.hpp"
 #include "SingleTopRootAnalysis/Vars/Bootstrap.hpp"
+#include "SingleTopRootAnalysis/Vars/JESBDTVars.hpp"
 
 using std::cout;
 using std::endl;
@@ -100,19 +104,23 @@ int main(int argc, char **argv)
   string mcStr="";
   Bool_t doMC = kFALSE;
   Bool_t doPileup = kFALSE;
+  Bool_t doPrefireVeto = kFALSE;
   Bool_t dobWeight = kFALSE;
   Bool_t useInvertedIsolation = kFALSE;
   Bool_t useLeptonSFs = kFALSE;
   Bool_t usebTagReweight = kFALSE;
   Bool_t useIterFitbTag = kTRUE;
+  Bool_t reweightLeptonPt = kFALSE;
   TString leptonTypeToSelect = "Tight"; //This variable is altered to unisolated when running QCD estimation.
   string evtListFileName="";
-  Bool_t verbose = kFALSE;
   int whichtrig = -1;
   // A couple of jet selection overrides to limit the number of config faces.  
   // -1 means use the value from the config file
   Int_t nJets = -1;
   Int_t nbJets = -1;
+  Int_t region = -1;
+  Int_t detRegSelect = -1;
+
 
   //  cout << "<Driver> Reading arguments" << end;
   for (int i = 1; i < argc; ++i) {
@@ -122,10 +130,6 @@ int main(int argc, char **argv)
 	int b = ListName.find("SingleTop.");
 	//	evtListFileName="WtDiElectron_"+ListName.substr(b)+".lst.root";
 	//cout << "evtListFileName : " << evtListFileName << endl;
-    }
-    if (!strcmp(argv[i], "-verbose")){
-      verbose = kTRUE;
-      cout << "Driver: Running in verbose mode" << std::endl;
     }
     if (!strcmp(argv[i], "-lepSFs")){
       useLeptonSFs = kTRUE;
@@ -156,6 +160,11 @@ int main(int argc, char **argv)
       mcStr=mcStr+"PileUpWgt";
       doPileup = kTRUE;
       cout << "Driver: Use PileUpWgt " << endl;
+    }//if PileUpWgt
+    if (!strcmp(argv[i], "-VetoPrefire")) {
+      mcStr=mcStr+"PrefireVeto";
+      doPrefireVeto = kTRUE;
+      cout << "Driver: Use PrefireVeto " << endl;
     }//if PileUpWgt
     if (!strcmp(argv[i], "-BWgt")) {
       mcStr=mcStr+"BWgt";
@@ -199,7 +208,21 @@ int main(int argc, char **argv)
     if (!strcmp(argv[i],"-nbJets")){
       nbJets = atoi(argv[i+1]);
     }// if nbJets
+    if (!strcmp(argv[i],"-regionSelect")){
+      region = atoi(argv[i+1]);
+    }
+    if (!strcmp(argv[i],"-detRegSelect")){
+      detRegSelect = atoi(argv[i+1]);
+    }
+    if (!strcmp(argv[i],"-reweightLeptonPt")){
+      reweightLeptonPt = kTRUE;
+    }
   } // for
+
+  if (region == -1) {
+    std::cout << "The region must be set!" << std::endl;
+    return 1;
+  }
 
   TChain *chainBkgd = new TChain(mystudy.GetBkgdTreeName());//if nothing specified on commandline, this is just a "" string, which is ok if you don't want to use this chain (don't want a tree of multivariate variables).
 
@@ -227,31 +250,32 @@ int main(int argc, char **argv)
   /////////////////////////////////////////////////////////////////////////////////
   // ******** Cuts and Histograms applied to all studies ********
 
-  mystudy.AddCut(new EventWeight(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight, useIterFitbTag, verbose));
+  mystudy.AddCut(new EventWeight(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight, useIterFitbTag));
+  //
+  //mystudy.AddCut(new CutElectronN(particlesObj, leptonTypeToSelect)); //require that lepton to be isolated, central, high pt
+  //mystudy.AddCut(new CutElectronN(particlesObj, "Veto")); //require that lepton to be isolated, central, high pt
+
+  mystudy.AddCut(new ChannelFlagCut(particlesObj,region));
+
+  if (doPrefireVeto) mystudy.AddCut(new VetoPrefireJets(particlesObj));
+
+  if (reweightLeptonPt) mystudy.AddCut(new LeptonPtReweight(particlesObj,leptonTypeToSelect,region,whichtrig));
+
 
   mystudy.AddCut(new HistogrammingMuon(particlesObj,"All"));  // make the muon plots, hopefully.
   mystudy.AddCut(new HistogrammingMuon(particlesObj,"Tight",useInvertedIsolation));  // make the muon plots, hopefully.
   mystudy.AddCut(new HistogrammingMuon(particlesObj,"Veto"));  // make the muon plots, hopefully.
   mystudy.AddCut(new HistogrammingMuon(particlesObj,"UnIsolated"));  // make the muon plots, hopefully.
   mystudy.AddCut(new CutPrimaryVertex(particlesObj));
+  mystudy.AddCut(new CutMissingEt(particlesObj));
+  mystudy.AddCut(new CutMtW(particlesObj,useInvertedIsolation));
   mystudy.AddCut(new CutTriggerSelection(particlesObj, whichtrig));
 
-  mystudy.AddCut(new HistogrammingMET(particlesObj));
+  if (detRegSelect > -1) mystudy.AddCut(new CutBarrelEndcapLepton(particlesObj,detRegSelect,useInvertedIsolation));
   //mystudy.AddCut(new CutElectronTighterPt(particlesObj, "Tight")); 
-  mystudy.AddCut(new CutMuonN(particlesObj, leptonTypeToSelect));     //require that lepton to be isolated, central, high pt
-
-  mystudy.AddCut(new CutMuonN(particlesObj, "Veto"));     //require that lepton to be isolated, central, high pt
- 
-
-
-  mystudy.AddCut(new CutElectronN(particlesObj, leptonTypeToSelect)); //require that lepton to be isolated, central, high pt
-  mystudy.AddCut(new CutElectronN(particlesObj, "Veto")); //require that lepton to be isolated, central, high pt
 
   mystudy.AddCut(new HistogrammingElectron(particlesObj,leptonTypeToSelect,useInvertedIsolation));  // make the muon plots, hopefully.
   mystudy.AddCut(new HistogrammingElectron(particlesObj,"Veto"));  // make the muon plots, hopefully.
-
-  mystudy.AddCut(new HistogrammingMET(particlesObj));
-  mystudy.AddCut(new HistogrammingMtW(particlesObj,useInvertedIsolation));
 
   mystudy.AddCut(new HistogrammingMuon(particlesObj,leptonTypeToSelect));  // make the muon plots, hopefully.
 
@@ -260,15 +284,9 @@ int main(int argc, char **argv)
   //  mystudy.AddCut(new CutEMuOverlap(particlesObj));
   //}
   //mystudy.AddCut(new CutJetPt1(particlesObj));
-  mystudy.AddCut(new CutJetN(particlesObj,nJets));
-  
-  //  mystudy.AddCut(new CutTaggedJetN(particlesObj,nbJets));
-
-  //  mystudy.AddCut(new EventWeight(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight));
-
   mystudy.AddCut(new HistogrammingMuon(particlesObj,"Tight"));  // make the muon plots, hopefully.
 
-  mystudy.AddCut(new HistogrammingMET(particlesObj));
+  mystudy.AddCut(new HistogrammingMET(particlesObj,useInvertedIsolation));
   mystudy.AddCut(new HistogrammingMtW(particlesObj,useInvertedIsolation));
   mystudy.AddCut(new HistogrammingJetAngular(particlesObj,useInvertedIsolation));
   mystudy.AddCut(new HistogrammingJet(particlesObj));
@@ -286,15 +304,10 @@ int main(int argc, char **argv)
   //Add in any variables to the skim tree that you want here
   //  mystudy.AddVars(new TestVar());
   //if (whichtrig) mystudy.AddVars(new BDTVars(true));
-  mystudy.AddVars(new JESBDTVars());
+  mystudy.AddVars(new BDTVars(true));
   mystudy.AddVars(new WeightVars(useIterFitbTag));
-  mystudy.AddVars(new ChannelFlag());
-  //  mystudy.AddVars(new TopChargeFlag());
-  //  mystudy.AddCut(new ChannelFlagCut(particlesObj,4));
-
-  //  mystudy.AddVars(new Bootstrap());
-
-  mystudy.AddVars(new BDTVars(false));
+  mystudy.AddVars(new Bootstrap());
+  mystudy.AddVars(new JESBDTVars(true));
 
 
   TFile *_skimBDTFile;
@@ -314,6 +327,8 @@ int main(int argc, char **argv)
   
   _skimBDTFile->Write(); 
   _skimBDTFile->Close(); 
+
+  cout << "<driver> Written skims, preparing to Finish analysis" << std::endl; 
 
   mystudy.Finish();
   
