@@ -13,4 +13,11 @@ moreCopies.txt
 *#*
 *root
 log
+plots/
+tempMake
+more
 *.tar.*
+*png
+whatevs
+utils/bkgFit/logs/
+config/weights/jsonWeights/

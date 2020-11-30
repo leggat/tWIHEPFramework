@@ -1,1 +1,13 @@
 *JE*config
+dilepton.config
+electronSignal3j1t.config
+electronqcdEnriched.config
+electronqcdReject.config
+electronttbar3j2t.config
+electronwJets2j1t.config
+electronwJets3j0t.config
+qcdEnriched.config
+qcdReject.config
+signal4j1t.config
+ttbar4j2t.config
+
