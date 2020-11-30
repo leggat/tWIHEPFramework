@@ -28,7 +28,7 @@ for directory in directoriesToLoop:
     tempRootFile = TFile("{0}/{1}/hists/merged{1}.root".format(inDir,directory),"READ")
 
     hist = tempRootFile.Get(plotName)
-    print hist.GetBinContent(int(binNumber))
+    print " {0} ({1}), Integral: {2}".format(hist.GetBinContent(int(binNumber)),hist.GetBinError(int(binNumber)),hist.Integral())
     totalContent += hist.GetBinContent(int(binNumber))
     if not "qcd" in directory: totalWithoutQCD += hist.GetBinContent(int(binNumber))
 

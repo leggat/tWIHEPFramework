@@ -18,8 +18,13 @@ mcPostfix = " -MCatNLO -mc -bTagReshape -lepSFs -PileUpWgt"
 triggerName = "Muon "
 nJets = 3
 nbJets = 1
-fileListDirectory = "config/files/listsUpdated2018/"
-makeSkims = False
+isBDTSkim = False
+fileListSearchTerm = ""
+fileListDirectory = "config/files/updatedEleJets/"
+#fileListDirectory = "config/files/abbrevLists20180216/"
+useIterFitbTag = False
+makeSkims = True
+doHists = False
 samplesMC76=[
 "qcd1000_1500",
 "qcd100_200",
@@ -56,17 +61,21 @@ samplesMC=[
 "tChan_antitop",
 "ttbar",
 "ttbarBU",
-"tW_top",
-"tW_antitop",
+#"tW_top",
+#"tW_antitop",
 "ww",
 "wz",
 "zz",
 "zPlusJetsLowMass",
 "zPlusJetsHighMass",
-"wPlusJetsMCatNLO",
-"wPlusJetsMadgraph",
+#"wPlusJetsMCatNLO",
+#"wPlusJetsMadgraph",
 "tW_top_nfh",
-"tW_antitop_nfh"
+"tW_antitop_nfh",
+#"tW_mcanlo",
+"wPlus0Jets",
+"wPlus1Jets",
+"wPlus2Jets"
 ]
 samplesData2015=[
 "singleMuon"
@@ -96,7 +105,7 @@ samplesSyst = [
 "tW_antitop_isrdown",
 "tW_antitop_fsrup",
 "tW_antitop_fsrdown",
-"tW_antitop_herwig",
+#"tW_antitop_herwig",
 "tW_antitop_MEup",
 "tW_antitop_MEdown",
 "tW_antitop_PSup",
@@ -106,7 +115,7 @@ samplesSyst = [
 "tW_top_isrdown",
 "tW_top_fsrup",
 "tW_top_fsrdown",
-"tW_top_herwig",
+#"tW_top_herwig",
 "tW_top_MEup",
 "tW_top_MEdown",
 "tW_top_PSup",
@@ -118,11 +127,16 @@ samplesSyst = [
 "ttbar_tuneup",
 "ttbar_tunedown",
 "ttbar_herwig",
-"ttbar_amcatnlo",
+#"ttbar_amcatnlo",
 "ttbar_hdampup",
-"ttbar_hdampdown"
+"ttbar_hdampdown",
+"ttbar_erdOn",         
+"ttbar_erdONQCD",      
+"ttbar_gluonMove",     
+"ttbar_gluonMoveerdOn"
 ]
 jesTestSamples = ["JESTest"]
+tWmcAtNLOSamples = ["tW_mcanlo"]
 bTagSamples = ["tW_top_nfh",
 "tW_antitop_nfh",
 "ttbar",
@@ -132,9 +146,12 @@ bTagSamples = ["tW_top_nfh",
 #mcSamples = []
 #samplesData = []
 sample = samplesMC
+onlyOne= False
+if "onlyOne" in sys.argv: onlyOne = True
 if "inv" in sys.argv:
 	invPostfix = " -InvertIsolation"
 	analysis += "Inv"
+	fileListSearchTerm = "Inv"
 if "wJetsReg" in sys.argv:
 	nJets = 3
 	nbJets = 0
@@ -174,12 +191,15 @@ if "data" in sys.argv:
 	mcPostfix = ""
 	analysis += "Data"
 	sample = samplesData
+	fileListSearchTerm = "Data"
+	if "inv" in sys.argv: fileListSearchTerm = "InvData"
 	if "electron" in sys.argv:
 		sample = samplesDataElectron
 if "systs" in sys.argv:
 	analysis += "Systs"
 	sample = samplesSyst
-	fileListDirectory = "config/files/systSamples/"
+	#fileListDirectory = "config/files/systSamples/"
+	fileListSearchTerm = "Systs"
 if "skims" in sys.argv:
 	makeSkims = True 
 if "electron" in sys.argv:
@@ -187,15 +207,28 @@ if "electron" in sys.argv:
 	triggerName = "Electron "
 #	if not "data" in sys.argv:
 	analysis += "Ele"
+	fileListSearchTerm += "Ele"
 if "jesTest" in sys.argv:
 	sample = jesTestSamples
 	analysis += "JESTest"
+if "tWNLO" in sys.argv:
+	sample = tWmcAtNLOSamples
+	fileListSearchTerm = "Systs"
 if "bTag" in sys.argv:
 	sample = bTagSamples
 	analysis += "bTag"
 	executable = "bin/Wt/Wt_efficiencies.x"
+fileListPath = frameworkDir+fileListDirectory
+if "fileListDir" in sys.argv:
+	fileListPath = sys.argv[sys.argv.index("fileListDir") + 1]
+if "bdtSkim" in sys.argv:
+	print "Is bdt skim"
+	executable = "bin/Wt/Wt_bdtSkim.x"
+	doHists = False
+	makeSkims = True
 #executable = "Wt_generic.x"
 #for the queue
+if not useIterFitbTag: mcPostfix += " -noIterFitbTag"
 workpath    = os.getcwd()+"/"+analysis +"/"
 jobDir      = workpath+"/"+"Jobs"
 smallerJobs = True
@@ -373,7 +406,7 @@ def prepareSubmitJob(submitFileName,cshFileName, outPutFileName, errorFileName):
 	print >> cshFile, "Error        = ",errorFileName
 	print >> cshFile, "Queue"
 
-def prepareCshJob(sample,shFile,frameworkDir,workpath,samplePost=""):
+def prepareCshJob(sample,shFile,frameworkDir,workpath,samplePost="",fileListPost="",inListPostFix=""):
         subFile      = file(shFile,"w")
 	print >> subFile, "#!/bin/bash"
 	print >> subFile, "/bin/hostname"
@@ -385,13 +418,16 @@ def prepareCshJob(sample,shFile,frameworkDir,workpath,samplePost=""):
 	#print >> subFile, "setenv SCRAM_ARCH slc5_amd64_gcc462"
 	#print >> subFile, "source /cvmfs/cms.cern.ch/cmsset_default.csh"
 	print >> subFile, "source  /afs/ihep.ac.cn/soft/CMS/64bit/root/profile/rootenv-entry 5.34.18"
+        print >> subFile, "source /cvmfs/sft.cern.ch/lcg/views/LCG_93/x86_64-slc6-gcc62-opt/setup.sh"
         #print >> subFile, "eval \`scramv1 runtime -sh\`"
         print >> subFile, "cd "+frameworkDir
 	#print >> subFile, "cp ${jobDir}/getAhist.C ."
 #	print >> subFile, frameworkDir+"bin/Wt/Wt_generic.x -config "+frameworkDir+"SingleTop.Wt.LP.mm1+j.muonMSSmeardown.config -inlist "+frameworkDir+"config/files/"+fileListDirectory+sample+samplePost+".list -hfile "+workpath+"/"+sample+"/hists/"+sample+samplePost+"hists.root -skimfile "+workpath+"/"+sample+"/skims/"+sample+samplePost+"Skim.root -mc -BkgdTreeName DiElectronPreTagTree  -UseTotalEvtFromFile -MCatNLO -mc -SelectTrigger Muon -PileUpWgt -BWgt"
 	skimString = ""
+	histString = ""
 	if makeSkims: skimString = " -skimfile "+workpath+"/"+sample+"/skims/"+sample+samplePost+"Skim.root "
-	print >> subFile, frameworkDir+executable+" -config "+frameworkDir+configFile+" -inlist "+frameworkDir+fileListDirectory+sample+samplePost+".list -hfile "+workpath+"/"+sample+"/hists/"+sample+samplePost+"hists.root -BkgdTreeName DiElectronPreTagTree  -UseTotalEvtFromFile -SelectTrigger " + triggerName + invPostfix + mcPostfix + skimString #+ " -nJets {0} -nbJets {1}".format(nJets,nbJets) we don't do this anymore.
+	if doHists: histString = " -hfile "+workpath+"/"+sample+"/hists/"+sample+samplePost+"hists.root "
+	print >> subFile, frameworkDir+executable+" -config "+frameworkDir+configFile+" -inlist "+fileListPath+sample+inListPostFix+".list -BkgdTreeName DiElectronPreTagTree  -UseTotalEvtFromFile -SelectTrigger " + triggerName + invPostfix + mcPostfix + skimString + histString #+ " -nJets {0} -nbJets {1}".format(nJets,nbJets) we don't do this anymore.
         #print >> subFile, "root -b -q -l "+rootplizer+"'(\""+input+"\",\""+output+"\")'"
 	subprocess.call("chmod 777 "+shFile, shell=True)
 
@@ -424,20 +460,27 @@ for k in sample:
 		print >> allJobFile, "hep_sub "+ shFileName + " -o "+logFileName+ " -e "+errorFileName
 
 	else:
-		inputFiles  = [f for f in os.listdir(frameworkDir+fileListDirectory) if sampleName in f]
+		inputFiles = [f for f in os.listdir(fileListPath) if sampleName in f and f.split(sampleName)[-1][:1].isdigit()]
+		if isBDTSkim: inputFiles  = [f for f in os.listdir(fileListPath) if sampleName in f and f.split(sampleName)[-1][:1].isdigit() and fileListSearchTerm in f]
 		for j in range(len(inputFiles)):
+			submissionName = sampleName + "_" + analysis + "_" + str(j)
+			subPostfix = "_" + analysis + "_" + str(j)
+			fileListPostFix = str(j)
 #			submitFileName = workpath + sampleName + "/scripts/" + sampleName + str(j) + ".submit"
-			shFileName = workpath + sampleName + "/scripts/" + sampleName + str(j) + ".sh"
-			logFileName = workpath + sampleName + "/logs/" + sampleName + str(j) + ".log"
-			errorFileName = workpath + sampleName + "/logs/" + sampleName + str(j) + ".error"
+			shFileName = workpath + sampleName + "/scripts/" + submissionName + ".sh"
+			logFileName = workpath + sampleName + "/logs/" + submissionName + ".log"
+			errorFileName = workpath + sampleName + "/logs/" + submissionName + ".error"
 			
 #			prepareSubmitJob(submitFileName, shFileName, logFileName, errorFileName)
-			prepareCshJob(sampleName,shFileName,frameworkDir,workpath,str(j))
+			if isBDTSkim: prepareCshJob(sampleName,shFileName,frameworkDir,workpath,subPostfix,fileListSearchTerm,fileListPostFix)
+			else: prepareCshJob(sampleName,shFileName,frameworkDir,workpath,subPostfix,fileListSearchTerm,fileListPostFix)
 
-			submitPath = sampleName + "/scripts/" + sampleName + str(j) + ".submit"
+			submitPath = sampleName + "/scripts/" + submissionName + ".submit"
 			
 #			print >> allJobFile, "hep_sub "+ submitPath + " -name job@schedd01.ihep.ac.cn"
 			print >> allJobFile, "hep_sub "+ shFileName + " -o "+logFileName+ " -e "+errorFileName
+                        
+                        if onlyOne: break
 #			print >> allJobFile, "condor_submit "+ submitPath + " -group cms -name job@schedd01.ihep.ac.cn"
 
 	print >> MergeFile, "hadd -f "+analysis+"/"+sampleName + "/hists/merged"+sampleName+".root  "+analysis+"/"+sampleName + "/hists/"+sampleName+"*hists.root"
@@ -445,7 +488,7 @@ for k in sample:
 #print >> MergeFile, "cd",outputDirectory
 #print >> MergeFile, "hadd Merged_rootplas.root",MergeSourceFile
 
-if mcPostfix == "":
+if "data" in sys.argv:
 	lepton = "Mu"
 	if "electron" in sys.argv: lepton = "Ele"
 	print >> MergeFile, "mkdir -p "+analysis+"/single{0}/hists/".format(lepton)
