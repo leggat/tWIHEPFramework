@@ -195,11 +195,11 @@ Events.Source.500003: 9885256
 
 # 500004 - zPlusJetsHighMass
 Weight.Source.500004: 6025.2
-Events.Source.500004: 49144274
+Events.Source.500004: 49144274 #For when we have the new samples processed: 122055388
 
 # 500005 - zPlusJetsLowMass
 Weight.Source.500005: 18610.
-Events.Source.500005: 30920596
+Events.Source.500005: 30920596 # For when we have the new samples: 40381391 + 30920596
 
 # 500006 - wPlusJetsMadgraph
 Weight.Source.500006: 20508.9
@@ -301,6 +301,10 @@ Events.Source.500029: 132764347
 Weight.Source.500030: 2628.0
 Events.Source.500030: 258502250
 
+#500031 = ttbarDilepton
+Weight.Sourch.500031: 88.4
+Events.Source.500031: 61382166
+
 #700000 - systematic samples
 
 #700000 = tW_antitop_DS
@@ -385,27 +389,27 @@ Events.Source.700019: 3181663
 
 #700020 = ttbar_isrup
 Weight.Source.700020: 831.76
-Events.Source.700020: 59033604
+Events.Source.700020: 156469815 #59033604 old value
 
 #700021 = ttbar_isrdown
 Weight.Source.700021: 831.76
-Events.Source.700021: 29084029
+Events.Source.700021: 149762990 #29084029 + 29915551 + 90763410
 
 #700022 = ttbar_fsrup
 Weight.Source.700022: 831.76
-Events.Source.700022: 29777488
+Events.Source.700022: 152617579 # 29777488 + 29453411 + 93386680
 
 #700023 = ttbar_fsrdown
 Weight.Source.700023: 831.76
-Events.Source.700023: 29716580
+Events.Source.700023: 155991586 # 29716580 + 29590326 + 96684680
 
 #700024 = ttbar_tuneup
 Weight.Source.700024: 831.76
-Events.Source.700024: 29310620
+Events.Source.700024: 58953660
 
 #700025 = ttbar_tunedown
 Weight.Source.700025: 831.76
-Events.Source.700025: 28354188
+Events.Source.700025: 58338240
 
 #700026 = ttbar_herwig
 Weight.Source.700026: 831.76
@@ -417,8 +421,28 @@ Events.Source.700027: 43561608
 
 #700028 = ttbar_hdampup
 Weight.Source.700028: 831.76
-Events.Source.700028: 29689380
+Events.Source.700028: 58858606 # 29689380 + 29169226
 
 #700029 = ttbar_hdampdown
 Weight.Source.700029: 831.76
-Events.Source.700029: 29117820
+Events.Source.700029: 58163976 # 29117820 + 29046156
+
+#700030 = ttbar_erdOn
+Weight.Source.700030: 831.76
+Events.Source.700030: 59882210
+
+#700031 = ttbar_erdONQCD
+Weight.Source.700031: 831.76
+Events.Source.700031: 59620206
+
+#700032 = ttbar_gluonMove
+Weight.Source.700032: 831.76
+Events.Source.700032: 59037234
+
+#700033 = ttbar_gluonMove_erdOn
+Weight.Source.700033: 831.76
+Events.Source.700033 : 56168970
+
+#700034 = tW_mcatnlo
+Weight.Source.700034: 71.7
+Events.Source.700034: 2000000
