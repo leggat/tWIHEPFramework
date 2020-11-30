@@ -64,7 +64,9 @@ class mvaTool {
   void setNTrees(Int_t nTrees){_nTrees = nTrees;};
   void setDepth(Int_t depth){_depth = depth;};
   void setNCuts(Int_t nCuts){_nCuts = nCuts;};
-  
+  void setSplitBarrelEndcap(Bool_t split){_splitBarrelEndcap = split;};
+
+
  private:
 
 
@@ -75,7 +77,7 @@ class mvaTool {
   void processMCSample(TString sampleName,TString inDir,TString outDir, std::vector<std::vector<float > > proxyvars, bool isData, bool doMVA = true, int minFile = -1, int maxFile = -1);
   void loopInSample(TTree* theTree, TString sampleName, std::vector<std::vector<float > > proxyvars, bool isData, bool doMVA = true);
   void createHists(TString sampleName);
-  void fillHists(TString sampleName, std::vector<float> treevars, double mvaValue, double mvawJets, double theweight, float met, float mtw, int theChannel);
+  void fillHists(TString sampleName, std::vector<float> treevars, double mvaValue, double mvawJets, double theweight, float met, float mtw, float jet1Pt, int theChannel);
   void saveHists(std::vector<TFile *> outFile);
   void setbTagVars(TChain* theTree); 
 
@@ -112,6 +114,10 @@ class mvaTool {
   int _nTrees;
   int _depth;
   int _nCuts;
+
+
+  //How we decide whether to split between barrel and endcap or not. Default will be true hardcoded. 
+  Bool_t _splitBarrelEndcap;
 
   std::vector<TString> _bdtName;
 

@@ -1,6 +1,6 @@
 from ROOT import *
 
-import sys,os,math,weightProcesses,analysisComponents
+import sys,os,math,weightProcesses,analysisComponents,subprocess,json
 
 components = analysisComponents.AnalysisComponents()
 
@@ -11,9 +11,15 @@ if "--help" in sys.argv or "-h" in sys.argv or "--options" in sys.argv or "-o" i
     print "Assemble BDT discriminants into one root file per region/channel for the fit"
     print "Usage: python createDatacardRootFile.py <inDir> <outDir> [options]"
     print "   Options:"
-    print "      ele             Do electron channel"
-    print "      --usetWmcanlo   Use the mcanlo tW sample (for validation)"
-    print "      --extendRegions Include 0 tag regions"
+    print "      ele                       Do electron channel"
+    print "      --usetWmcanlo             Use the mcanlo tW sample (for validation)"
+    print "      --extendRegions           Include 0 tag regions"
+    print "      --onlySigReg              Only run on 3j1t"
+    print "      --noSplitBarrelEndcap     Don't run on both endcap and barrel. Running like this will be the default going forward"
+    print "      --jsonWeights <jsonFile>  Use json weights for the weights"
+    print "      --ignoreEndcap            Ignore the endcap in the hadd process"
+    print "      --preRebin <nBins>        Do a rebinning here with nBins"
+    print "      --jetPt2jReg              Use jet1pt instead of BDT in 2j1t region"
     sys.exit(1)
 
 usetWmcanlo = False
@@ -54,6 +60,9 @@ includeJetVariations = True
 nJetVariations = 54
 
 setNegToZero = False
+
+doDiffMVAName = False
+if "--jetPt2jReg" in sys.argv: doDiffMVAName = True
 
 gROOT.SetBatch()
 
@@ -116,6 +125,9 @@ if "ele" in sys.argv:
 #if len(sys.argv) > 3: systDir = sys.argv[3]
 
 weights = weightProcesses.ReweightObject(False,isEle)
+if "--jsonWeights" in sys.argv:
+    ind = sys.argv.index("--jsonWeights")
+    weights.overrideWeightsFromJSON(sys.argv[ind+1])
 
 if (not os.path.isdir(outDir)):
     os.makedirs(outDir)
@@ -132,9 +144,11 @@ systHists = {}
 
 totalYieldsCount = {}
 
-def findMaxAndMinBins(nominalHists,systHist):
+minMap = {"2j1t":-0.5}
+
+def findMaxAndMinBins(nominalHists,systHist,nBins=0,region="3j1t"):
     maxBin = 0
-    minBin = 50
+    minBin = 1000
     returnNominals = {}
     returnSysts = {}
     for key in nominalHists.keys():
@@ -146,22 +160,40 @@ def findMaxAndMinBins(nominalHists,systHist):
             if systHist[key][key2].FindLastBinAbove() > maxBin: maxBin = systHist[key][key2].FindLastBinAbove()
     xLow = nominalHists[key].GetXaxis().GetBinLowEdge(minBin)
     xHigh = nominalHists[key].GetXaxis().GetBinUpEdge(maxBin)
+    expandLevel = 25.
+    xLow = -0.8
+    if "2j1t" in region: xLow = -0.5 #fudge this a litlte because I don't know why it isn't working properly.
+    xHigh = 0.78
+    if nBins == 0: nBins = maxBin-minBin+1
     for key in nominalHists.keys():
-        returnNominals[key] = TH1F(nominalHists[key].GetName(),nominalHists[key].GetTitle(),maxBin-minBin+1,xLow,xHigh)
+        returnNominals[key] = TH1F(nominalHists[key].GetName(),nominalHists[key].GetTitle(),nBins,xLow,xHigh)
         i = 1
+        errorSqr = [0.]*(nBins)
         for j in range(minBin,maxBin+1):
-            returnNominals[key].SetBinContent(i,nominalHists[key].GetBinContent(j))
-            returnNominals[key].SetBinError(i,nominalHists[key].GetBinError(j))
-            i+=1
+            returnNominals[key].Fill(nominalHists[key].GetXaxis().GetBinCenter(j),nominalHists[key].GetBinContent(j))
+            newBin = returnNominals[key].GetXaxis().FindBin(nominalHists[key].GetXaxis().GetBinCenter(j))
+#            print newBin
+            errorSqr[newBin-1] += nominalHists[key].GetBinError(j) * nominalHists[key].GetBinError(j)
+#            returnNominals[key].SetBinContent(i,nominalHists[key].GetBinContent(j))
+#            returnNominals[key].SetBinError(i,nominalHists[key].GetBinError(j))
+#            i+=1
+        for j in range(len(errorSqr)): 
+            returnNominals[key].SetBinError(j+1,math.sqrt(errorSqr[j]))
         if key == "data" or key == "qcd":continue
         returnSysts[key] = {}
         for key2 in systHist[key].keys():
-            returnSysts[key][key2] = TH1F(systHist[key][key2].GetName(),systHist[key][key2].GetTitle(),maxBin-minBin+1,xLow,xHigh)
+            returnSysts[key][key2] = TH1F(systHist[key][key2].GetName(),systHist[key][key2].GetTitle(),nBins,xLow,xHigh)
             i = 1
+            errorSqr = [0.]*(nBins)
             for j in range(minBin,maxBin+1):
-                returnSysts[key][key2].SetBinContent(i,systHist[key][key2].GetBinContent(j))
-                returnSysts[key][key2].SetBinError(i,systHist[key][key2].GetBinError(j))
-                i+=1
+                returnSysts[key][key2].Fill(systHist[key][key2].GetXaxis().GetBinCenter(j),systHist[key][key2].GetBinContent(j))
+                newBin = returnSysts[key][key2].GetXaxis().FindBin(systHist[key][key2].GetXaxis().GetBinCenter(j))
+                errorSqr[newBin-1] += nominalHists[key].GetBinError(j) * nominalHists[key].GetBinError(j)
+            for j in range(len(errorSqr)):
+                returnSysts[key][key2].SetBinError(j+1,math.sqrt(errorSqr[j]))
+#                returnSysts[key][key2].SetBinContent(i,systHist[key][key2].GetBinContent(j))
+#                returnSysts[key][key2].SetBinError(i,systHist[key][key2].GetBinError(j))
+#                i+=1
     print "Hists have been rescaled to fit range {0}-{1}".format(xLow,xHigh)
     return (returnNominals,returnSysts)
 
@@ -446,7 +478,7 @@ def fillCutAndCountPlots(nominal,systHists,nomCC,systCC,fillBin):
                 systCC[sample][systName].Reset()
             systCC[sample][systName].SetBinContent(fillBin+1,systHists[sample][systName].Integral())
 
-def makeDatacard(mvaName,regions,savePostfix=""):
+def makeDatacard(mvaNameOrig,regions,savePostfix="",ignoreEndcap=False,nBins=0):
 
     cutAndCountNom = {}
     cutAndCountSysts = {}
@@ -456,6 +488,10 @@ def makeDatacard(mvaName,regions,savePostfix=""):
         region = regions[regionIt]
         saveName = "3j1t"
         if not region == "": saveName = region
+        mvaName = mvaNameDef + mvaNameOrig
+        if "2j1t" in region and doDiffMVAName: mvaName = "jet1Pt_"
+    
+        
         outFile = TFile(outDir+"mvaDists_{0}_{1}{2}.root".format(saveName,channeltr,savePostfix),"RECREATE")
 
         totalYieldsCount[region] = {}
@@ -480,7 +516,7 @@ def makeDatacard(mvaName,regions,savePostfix=""):
                     systHists[histoGramPerSample[sample]][sys+"Up"].Add(inFile.Get(mvaName+sample+"_"+sys+"_up"))
                     systHists[histoGramPerSample[sample]][sys+"Down"].Add(inFile.Get(mvaName+sample+"_"+sys+"_down"))
                 if includeJetVariations: #If we're doing jet variations, we'll add them here.
-                    for jetShiftSyst in range(nJetVariations/2.):
+                    for jetShiftSyst in range(int(nJetVariations/2.)):
                         if translateNames: jetShiftName = jetShiftNames["jetShift{0}".format(jetShiftSyst)]
                         else: jetShiftName = "jetShift{0}".format(jetShiftSyst)
                         systHists[histoGramPerSample[sample]]["{0}Up".format(jetShiftName)].Add(inFile.Get(mvaName+sample+"_JetShifts_{0}".format(jetShiftSyst*2)))
@@ -488,6 +524,7 @@ def makeDatacard(mvaName,regions,savePostfix=""):
                         
                     
             else:
+                print sample,histoGramPerSample[sample],mvaName
                 nominal[histoGramPerSample[sample]] = inFile.Get(mvaName+sample).Clone(histoGramPerSample[sample])
                 nominal[histoGramPerSample[sample]].Sumw2()
                 nominal[histoGramPerSample[sample]].SetDirectory(0)
@@ -512,10 +549,11 @@ def makeDatacard(mvaName,regions,savePostfix=""):
                     systHists[histoGramPerSample[sample]][sys+"Up"].Sumw2()
                     systHists[histoGramPerSample[sample]][sys+"Down"].Sumw2()
                 if includeJetVariations:
-                    for jetShiftSyst in range(nJetVariations/2.):
+                    for jetShiftSyst in range(int(nJetVariations/2.)):
                         if translateNames: jetShiftName = jetShiftNames["jetShift{0}".format(jetShiftSyst)]
                         else: jetShiftName = "jetShift{0}".format(jetShiftSyst)
                         systNameForClone = histoGramPerSample[sample]+"_{0}".format(jetShiftName)
+                        print jetShiftName, mvaName,sample
                         systHists[histoGramPerSample[sample]]["{0}Up".format(jetShiftName)] = inFile.Get(mvaName+sample+"_JetShifts_{0}".format(jetShiftSyst*2)).Clone(systNameForClone+"Up")
                         systHists[histoGramPerSample[sample]]["{0}Up".format(jetShiftName)].SetTitle(systNameForClone+"Up")
                         systHists[histoGramPerSample[sample]]["{0}Up".format(jetShiftName)].SetDirectory(0)
@@ -614,12 +652,15 @@ def makeDatacard(mvaName,regions,savePostfix=""):
                     systHists[sample][syst] = inFile.Get(mvaName+sample2).Clone(sample+"_"+cloneName)
                     systHists[sample][syst].SetDirectory(0)
 
+        #Here we will rebin if we want to.
+        if nBins > 0:
+            (nominal,systHists) = findMaxAndMinBins(nominal,systHists,nBins,region)
         for pair in sysNamesToGetDownHist:
 
-            print "Entry: ",pair[0],pair[1]
+            print "EnMaking down hist Entry: ",pair[0],pair[1]
             #A hack to normalise herwig sample correctly
-            if pair[0] == "ttbar" and pair[1] == "herwig":
-                systHists[pair[0]][pair[1]+"Up"].Scale(0.5)
+#            if pair[0] == "ttbar" and pair[1] == "herwig":
+#                systHists[pair[0]][pair[1]+"Up"].Scale(0.5)
             systHists[pair[0]][pair[1]+"Down"] = getDownHist(systHists[pair[0]][pair[1]+"Up"],nominal[pair[0]])
 
 #        halveSize = ["isr","fsr","tune","hdamp"]
@@ -639,13 +680,15 @@ def makeDatacard(mvaName,regions,savePostfix=""):
 
         #Here make a loop to find out the highest and lowest filled bins so get rid of zero occupancy bins?
     #    for key in nominal.keys():
-
-        if reduceBinsToFilled: (nominal,systHists) = findMaxAndMinBins(nominal,systHists)
+    #global reduceBinsToFilled
+        if False: (nominal,systHists) = findMaxAndMinBins(nominal,systHists)
         outFile.cd()
         print sysDirNamesList
         for key in nominal.keys():
             if "qcdMC" in key: continue
             scaleFactor = weights.getDatasetWeight(key,region)
+#            scaleFactor = 1.
+            if not scaleFactor == 1: print "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>   Non intergral SF in region {2}!!!: {0}: {1:.2f}".format(key,scaleFactor,region)
             nominal[key].Scale(scaleFactor)
             totalYieldsCount[region][key] *= scaleFactor
 #            if key in perMCSFs.keys():
@@ -676,15 +719,21 @@ def makeDatacard(mvaName,regions,savePostfix=""):
     #Here we're going to make a quick table for each of the systematic uncertainties impact on the tW rate
         if not region == "3j1t": continue
         systUpAllSamples = {}
-        systDownAllSamples = {}
+        systDownAllSamples = {}        
+        allSysts = ["JES","JER","Colour rec"]
         for sample in nominal.keys():
-            if "data" in sample or "qcd" in sample : continue
+            if "data" in sample or "qcd" in sample : continue 
             totalJESUp = 0.
             totalJESDown = 0.
+            totalJERUp = 0.
+            totalJERDown = 0.
+            colourUp = 0.
+            colourDown = 0.
             systUp = {}
             systDown = {}
             nomInt = nominal[sample].Integral()
             for key in systHists[sample].keys():
+                if "gluonMoveerdOn" in key: continue
                 fraction = (1-(systHists[sample][key].Integral()/nomInt))
                 if "statbin" in key: continue
                 if "JES" in key:
@@ -693,22 +742,40 @@ def makeDatacard(mvaName,regions,savePostfix=""):
                     elif "Down" in key:
                         totalJESDown += fraction * fraction
                     continue
+                if "erdO" in key or "gluonMove" in key:
+                    if "Up" in key: 
+                        colourUp += fraction * fraction
+                    elif "Down" in key:
+                        colourDown += fraction * fraction
+                    continue
+                if "JER" in key:
+                    if "Up" in key: 
+                        totalJERUp += fraction * fraction
+                    elif "Down" in key:
+                        totalJERDown += fraction * fraction
+                    continue
                 if "Up" in key or "up" in key:
                     systName = key[:-2]
+                    if not systName  in allSysts: allSysts.append(systName)
                     systUp[systName] = fraction
                 elif "Down" in key or "down" in key:
                     systName = key[:-4]
+                    if not systName  in allSysts: allSysts.append(systName)
                     systDown[systName] = fraction
             systUpAllSamples[sample] = systUp
             systDownAllSamples[sample] = systDown
             systUpAllSamples[sample]["JES"] = math.sqrt(totalJESUp)
-            systDownAllSamples[sample]["JES"] = math.sqrt(totalJESDown)
+            systDownAllSamples[sample]["JES"] = -math.sqrt(totalJESDown)
+            systUpAllSamples[sample]["JER"] = math.sqrt(totalJERUp)
+            systDownAllSamples[sample]["JER"] = -math.sqrt(totalJERDown)
+            systUpAllSamples[sample]["Colour rec"] = math.sqrt(colourUp)
+            systDownAllSamples[sample]["Colour rec"] = -math.sqrt(colourDown)
 #        print systUp.keys(), systDown.keys()
         print "\\hline"
         for sample in systUpAllSamples.keys():
             print "& {0}".format(sample),
         print "\\\\\n\\hline"
-        for syst in systUpAllSamples["tW"].keys():
+        for syst in allSysts:
             print "{0}".format(syst),
             for sample in systUpAllSamples.keys():
                 systUpPrint,systDownPrint = 0.0,0.0
@@ -746,6 +813,13 @@ def makeDatacard(mvaName,regions,savePostfix=""):
             print "{0},".format(totalYieldsCount[j][i]),
         print "],",
 
+    #add in a line about 4j region if we have used it
+    if "4j1t" in regions and "4j2t" in regions:
+        print "\"4j\":[",
+        for i in ["VV", "wPlusJets", "zPlusJets", "ttbar", "singleTop", "qcd", "tW"]:
+            print "{0},".format(totalYieldsCount["4j1t"][i] + totalYieldsCount["4j2t"][i]),
+        print "],",
+        
     print ""
 
     for j in regions:
@@ -756,11 +830,60 @@ def makeDatacard(mvaName,regions,savePostfix=""):
 
     for j in regions:
         print "\"{0}\":{1},".format(j,totalYieldsCount[j]["data"]),
+    if "4j1t" in regions and "4j2t" in regions: print "\"{0}\":{1},".format("4j",totalYieldsCount["4j1t"]["data"]+totalYieldsCount["4j2t"]["data"])
+
+    jsonYields = totalYieldsCount
+    #Redo these summing barrel and endcap
+    if "Barrel" in regions[0] or "Endcap" in regions[0]: jsonYields = {}
+    for j in regions:
+        if not "Barrel" in j: continue
+        reducedRegion = j.split("Barrel")[0]
+        endcapReg = "{0}Endcap".format(reducedRegion)
+        jsonYields[reducedRegion] = {}
+        print "\"{0}\":[".format(reducedRegion),
+        for i in ["VV", "wPlusJets", "zPlusJets", "ttbar", "singleTop", "qcd", "tW"]:
+            jsonYields[reducedRegion][i] = totalYieldsCount[j][i] 
+            if not ignoreEndcap: jsonYields[reducedRegion][i] += totalYieldsCount[endcapReg][i]
+            print "{0},".format(jsonYields[reducedRegion][i]),
+        print "],",
+            
+    for j in regions:
+        if not "Barrel" in j: continue
+        reducedRegion =j.split("Barrel")[0]
+        endcapReg = "{0}Endcap".format(reducedRegion)
+        jsonYields[reducedRegion]["data"] = totalYieldsCount[j]["data"]
+        if not ignoreEndcap: jsonYields[reducedRegion]["data"]  += totalYieldsCount[endcapReg]["data"]
+        print "\"{0}\":{1},".format(reducedRegion,jsonYields[reducedRegion]["data"]),
+
+    #if "4j1t" in regions and "4j2t" in regions: print "\"{0}\":{1},".format("4j",totalYieldsCount["4j1t"]["data"]+totalYieldsCount["4j2t"]["data"])
+                                    
+    with open("{0}/yields_{1}.json".format(outDir,channeltr),"w") as outfile:
+        json.dump(jsonYields,outfile)
+
+def haddRegions(regions,savePostfix,ignoreEndcap=False):
+    for region in regions:
+        if os.path.exists("{3}/mvaDists_{0}_{1}{2}.root".format(region,channeltr,savePostfix,outDir)): os.remove("{3}/mvaDists_{0}_{1}{2}.root".format(region,channeltr,savePostfix,outDir))
+        if ignoreEndcap:         subprocess.call("hadd {3}/mvaDists_{0}_{1}{2}.root {3}/mvaDists_{0}Barrel_{1}{2}.root".format(region,channeltr,savePostfix,outDir),shell=True)
+        else: subprocess.call("hadd {3}/mvaDists_{0}_{1}{2}.root {3}/mvaDists_{0}*_{1}{2}.root".format(region,channeltr,savePostfix,outDir),shell=True)
+
 
 if __name__ == "__main__":
 
     regions = components.regions
     if "--extendRegions" in sys.argv: regions = components.extendedRegions
+    if "--onlySigReg" in sys.argv: 
+        regions = ["4j1t","3j1t"] 
+    nBins = 0
+    if "--preRebin" in sys.argv:
+        ind = sys.argv.index("--preRebin")
+        nBins = int(sys.argv[ind+1])
+    ogRegions = regions
+    if not "--noSplitBarrelEndcap" in sys.argv:
+        newRegions = []
+        for region in regions:
+            newRegions.append("{0}Barrel".format(region))
+            newRegions.append("{0}Endcap".format(region))
+        regions = newRegions
 #    regions = ["3j1t"]
 #    regions = ["3j1t","2j1t","3j2t","4j1t","4j2t"]
     bins = ["bin10_","bin20_","bin30_","bin40_","bin50_","bin80_","bin100_","bin1000_"]
@@ -771,6 +894,9 @@ if __name__ == "__main__":
 #    for postName in ["bin10_","bin20_","bin30_","bin40_","bin50_","bin80_"]:
 #    for postName in ["bin80_","bin100_"]:
 #    for postName in ["bin10_"]:
+    ignoreEndcap = "--ignoreEndcap" in sys.argv            
     for postName in bins:
         print mvaNameDef+postName, "_"+postName[:-1]
-        makeDatacard(mvaNameDef+postName,regions,"_"+postName[:-1])
+        makeDatacard(postName,regions,"_"+postName[:-1],ignoreEndcap,nBins)
+        if not "--noSplitBarrelEndcap" in sys.argv:
+            haddRegions(ogRegions,"_"+postName[:-1],ignoreEndcap)
