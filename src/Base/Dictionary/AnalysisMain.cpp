@@ -1032,10 +1032,11 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
 
     //Reset and fill the additional variables
     AdditionalVarsProcessor::ResetBranches();
-    AdditionalVarsProcessor::FillBranches(this);
+
 
     // Fill the histograms
     writeThisEvent = CutListProcessor::Apply(this);
+
     // Fill Trees for Skim Events
     if (writeThisEvent) { 
       if (!firstEventWritten) {
@@ -1053,6 +1054,8 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
 	  }
 	}
       }
+      //Moving this back here because otherwise everything crashes.
+      AdditionalVarsProcessor::FillBranches(this);
       //AdditionalVarsProcessor::OutputBranches();
       if(DoSkim()) {
 	if(NULL != _skimEventTree) {
