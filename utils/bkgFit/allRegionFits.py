@@ -10,6 +10,7 @@ if "--help" in sys.argv or "-h" in sys.argv:
     print "--inDirPost <dirPost> changes the psotfix of the directory used to do the fit. Default: <{0}>".format(inDirPotsFix)
     print "--metFit makes the fit be on met instead of mtw"
     print "--jetAngFit - make fit on a jet angular dist"
+    print "--customHist <histName> - use a non default histogram name"
     print "--zeroTag - Run over the zero tag regions instead"
     print "--barrelEndcap - split the fit between the barrel and endcap"
     print "--barrel - only run on the barrel"
@@ -47,6 +48,9 @@ if "--zeroTag" in sys.argv:
 histName = "16_HistogrammingMtW_mTW.root"
 if "--metFit" in sys.argv: histName = "15_HistogrammingMET_MET_xy.root"
 if "--jetAngFit" in sys.argv: histName = "17_HistogrammingJetAngular_bJet1DelR.root"
+if "--customHist" in sys.argv:
+    ind = sys.argv.index("--customHist")
+    histName = sys.argv[ind+1]
 #histName = "19_HistogrammingJet_Jet1Pt.root"
 #histName = "17_Variables_BDTVars_M_DeltaPhiLeptonJet2.root"
 outDir = "fitOutputs"

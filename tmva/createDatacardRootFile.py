@@ -125,9 +125,11 @@ if "ele" in sys.argv:
 #if len(sys.argv) > 3: systDir = sys.argv[3]
 
 weights = weightProcesses.ReweightObject(False,isEle)
+print weights.getDatasetWeight("wPlusJets","3j1tBarrel")
 if "--jsonWeights" in sys.argv:
     ind = sys.argv.index("--jsonWeights")
     weights.overrideWeightsFromJSON(sys.argv[ind+1])
+print weights.getDatasetWeight("wPlusJets","3j1tBarrel")
 
 if (not os.path.isdir(outDir)):
     os.makedirs(outDir)
@@ -508,8 +510,9 @@ def makeDatacard(mvaNameOrig,regions,savePostfix="",ignoreEndcap=False,nBins=0):
             print sample
             #get nominal plot"
             if histoGramPerSample[sample] in nominal.keys():
-                
+                print sample, inFile.Get(mvaName+sample).Integral(),inFile.Get(mvaName+sample).GetEntries()
                 nominal[histoGramPerSample[sample]].Add(inFile.Get(mvaName+sample))
+                print "newNumbers:", nominal[histoGramPerSample[sample]].Integral(),nominal[histoGramPerSample[sample]].GetEntries()
                 if inFileInv: invNominal[histoGramPerSample[sample]].Add(inFileInv.Get(mvaName+sample))
                 for sys in systs:
                     #print mvaName+sample+"_"+sys+"_up"
@@ -524,7 +527,7 @@ def makeDatacard(mvaNameOrig,regions,savePostfix="",ignoreEndcap=False,nBins=0):
                         
                     
             else:
-                print sample,histoGramPerSample[sample],mvaName
+                print sample,histoGramPerSample[sample],mvaName,inFile.Get(mvaName+sample).Integral(),inFile.Get(mvaName+sample).GetEntries()
                 nominal[histoGramPerSample[sample]] = inFile.Get(mvaName+sample).Clone(histoGramPerSample[sample])
                 nominal[histoGramPerSample[sample]].Sumw2()
                 nominal[histoGramPerSample[sample]].SetDirectory(0)
@@ -873,6 +876,7 @@ if __name__ == "__main__":
     if "--extendRegions" in sys.argv: regions = components.extendedRegions
     if "--onlySigReg" in sys.argv: 
         regions = ["4j1t","3j1t"] 
+        regions = ["3j1t"] 
     nBins = 0
     if "--preRebin" in sys.argv:
         ind = sys.argv.index("--preRebin")

@@ -17,7 +17,9 @@ mvaTool::mvaTool(Int_t channel, Bool_t useIterFit, Bool_t isEle){
   _nTrees = 300;
   _depth=4;
   _nCuts=13;
-
+  
+  _emptyVarValue = -999.;
+  
   TString bdtType = "grad";
 
   /*  if (_isEle){
@@ -365,6 +367,7 @@ void mvaTool::doTraining(TString inDir, bool isttbar = true){
 	//	factory->BookMethod(&loader,TMVA::Types::kBDT, "paramScan_nTrees"+std::to_string(_nTrees)+"_depth"+std::to_string(depth)+"_nCuts"+std::to_string(nCuts),"!H:!V:NTrees="+std::to_string(_nTrees)+":MaxDepth="+std::to_string(depth)+":BoostType=AdaBoost:SeparationType=GiniIndex:nCuts="+std::to_string(nCuts)+":PruneMethod=NoPruning:Shrinkage=0.2" );
 	//	factory->BookMethod(&loader,TMVA::Types::kBDT, "grad_nTrees"+std::to_string(_nTrees)+"_depth"+std::to_string(depth)+"_nCuts"+std::to_string(nCuts),"!H:!V:NTrees="+std::to_string(_nTrees)+":MaxDepth="+std::to_string(depth)+":BoostType=AdaBoost:SeparationType=GiniIndex:nCuts="+std::to_string(nCuts)+":PruneMethod=NoPruning" );
 	//      factory->BookMethod(&loader,TMVA::Types::kBDT, "grad_nTrees"+std::to_string(_nTrees)+"_depth"+std::to_string(_depth)+"_nCuts"+std::to_string(_nCuts)+"_channel"+std::to_string(_channel),"!H:!V:NTrees="+std::to_string(_nTrees)+":MaxDepth="+std::to_string(_depth)+":BoostType=Grad:SeparationType=GiniIndex:nCuts="+std::to_string(_nCuts)+":PruneMethod=NoPruning" );
+  //	factory->BookMethod(&loader,TMVA::Types::kBDT, "grad_nTrees"+std::to_string(_nTrees)+"_depth"+std::to_string(_depth)+"_nCuts"+std::to_string(_nCuts),"!H:!V:NTrees="+std::to_string(_nTrees)+":MaxDepth="+std::to_string(_depth)+":BoostType=Grad:SeparationType=GiniIndex:nCuts="+std::to_string(_nCuts)+":PruneMethod=NoPruning" );
 	factory->BookMethod(&loader,TMVA::Types::kBDT, "grad_nTrees"+std::to_string(_nTrees)+"_depth"+std::to_string(_depth)+"_nCuts"+std::to_string(_nCuts),"!H:!V:NTrees="+std::to_string(_nTrees)+":MaxDepth="+std::to_string(_depth)+":BoostType=Grad:SeparationType=GiniIndex:nCuts="+std::to_string(_nCuts)+":PruneMethod=NoPruning" );
       // }
       //}
@@ -851,6 +854,12 @@ void mvaTool::loopInSample(TTree* theTree, TString sampleName, std::vector<std::
     for (unsigned int reg = 0; reg < regionNames.size(); reg++){
       for (unsigned int ivar=0; ivar<varList[reg].size(); ivar++) {
 	proxyvars[reg][ivar] = _varsInBDTs[varList[reg][ivar]];
+	//Here we will change the value of default parameters if they are very negative.
+	if (proxyvars[reg][ivar] < -100.){
+	  //	  std::cout << reg << " " << ivar << " " <<  proxyvars[reg][ivar];
+	  proxyvars[reg][ivar] = _emptyVarValue;
+	  //std::cout << " after: " << proxyvars[reg][ivar] << std::endl;
+	}
 	//	if (_varsInBDTs[varList[reg][ivar]] == 0) std::cout << reg << " " << ivar << std::endl;
       }
     }
@@ -858,11 +867,40 @@ void mvaTool::loopInSample(TTree* theTree, TString sampleName, std::vector<std::
     //    mvawJetsValue = reader->EvaluateMVA("BDT_wJets");
     mvawJetsValue = 0.;
 
+    //This is a test thing to check whether the mva value changes
+    if (false){
+      float defValues [13] = {-999.,-500.,-100.,-50.,0.,1.,2.,4.,5.,7.,10.,50.,500.};
+      for (int i = 0 ; i < 11; i++){
+	  for (unsigned int ivar=0; ivar<varList[theChannel].size(); ivar++) {
+	    if (proxyvars[theChannel][ivar] == defValues[i]) proxyvars[theChannel][ivar] = defValues[i+1];
+	  
+	}
+	std::cout << defValues[i+1] << " " << reader[theChannel]->EvaluateMVA(proxyvars[theChannel],_bdtName[theChannel]) << std::endl;
+      }
+    }
+
     float mtw = std::sqrt(2*met*lepPt*(1-cos(metPhi-lepPhi)));
 
     float ogMVA = 0.;
 
     if (theChannel > -1  && theChannel < regionNames.size()){
+
+      if (theChannel == 2 || theChannel == 10){ //Reset some variables if we are in the 2j case
+	float defVal = 999.;
+	if (!_isEle){
+	  proxyvars[theChannel][5] = 100.;	  
+	  proxyvars[theChannel][6] = 0.;
+	}
+	proxyvars[theChannel][3] = defVal;
+	proxyvars[theChannel][4] = defVal;
+	proxyvars[theChannel][7] = defVal;
+
+
+      }
+      if (theChannel == 0 || theChannel == 8){
+	proxyvars[theChannel][4] = -999.;
+	proxyvars[theChannel][5] = -999.;
+      }
 
       if (doMVA) {
 	//std::cout << theChannel << " " << reader[theChannel] << std::endl;
@@ -925,9 +963,33 @@ void mvaTool::loopInSample(TTree* theTree, TString sampleName, std::vector<std::
 	for (unsigned int varInd = 0; varInd < varList[jesChannel].size(); varInd ++){
 	    proxyvars[jesChannel][varInd] = _varsInBDT_JESShifts[varList[jesChannel][varInd]]->at(jesInd);
 	    if (proxyvars[jesChannel][varInd] < -995) proxyvars[jesChannel][varInd] = _varsInBDTs[varList[jesChannel][varInd]];
+	    if (proxyvars[jesChannel][varInd] < -100.) proxyvars[jesChannel][varInd] = _emptyVarValue;
 	    //	    if (isnan(proxyvars[jesChannel][varInd])) std::cout << jesInd << " " << varInd << std::endl;
 	    //treevarsJetShifts[jesChannel][varInd]->at(jesInd);
 	}
+	if (jesChannel == 2 || jesChannel == 10){ //Reset some variables if we are in the 2j case
+	  
+	  //proxyvars[jesChannel][6] = -999.;                                     	
+	  float defVal = 999.;
+	  if (!_isEle){
+	    proxyvars[jesChannel][5] = 100.;	  
+	    proxyvars[jesChannel][6] = 0.;
+	  }
+	  proxyvars[jesChannel][3] = defVal;
+	  proxyvars[jesChannel][4] = defVal;
+	  proxyvars[jesChannel][7] = defVal;
+                 
+	  //	  proxyvars[jesChannel][7] = 999.;                                                      
+	  //proxyvars[jesChannel][3] = 999.;                                                      
+	  //proxyvars[jesChannel][4] = 999.;                                                                                                                             proxyvars[jesChannel][5] = 999.;                  
+	  
+	}                                                                                        
+
+	if (jesChannel == 0 || jesChannel == 8){
+	  proxyvars[jesChannel][4] = -999.; 
+	  proxyvars[jesChannel][5] = -999.; 
+	}
+
 	if (doMVA)  {
 	  mvaValue = reader[jesChannel]->EvaluateMVA(proxyvars[jesChannel],_bdtName[jesChannel]);
 	  /*	  if (jesInd == 23 && fabs(ogMVA - mvaValue) > 0.001){ 

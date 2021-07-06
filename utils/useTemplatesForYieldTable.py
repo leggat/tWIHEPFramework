@@ -60,6 +60,7 @@ tableDict = {
 }
 
 def useMvaTemplates(region):
+    region = region[6:]+region[0:6]
     inFile = TFile("{0}/mvaDists_{1}{3}_{2}_bin1000.root".format(inDir,region,lepton,plotDirPrefix),"READ")
     hists = {}
     for sample in samples:
@@ -124,7 +125,7 @@ def makeTable(region,inDir):
     return (yields,uncerts)
 
 def turnMapsIntoPlots(yields,uncerts,regions):
-    samples = yields["3j1t"].keys()
+    samples = yields[regions[0]].keys()
     histMap = {}
     for sample in samples:
         histMap[sample] = TH1F(sample+"RegionPlot",sample+"RegionPlot",len(regions),0,len(regions))
@@ -204,9 +205,24 @@ if __name__ == "__main__":
     
 
         print "\\hline"
-        histMap = turnMapsIntoPlots(yields[inputDir],uncerts[inputDir],regions)
+        regionsForHist = regions
+        if "--useBarrelAndEndcap" in sys.argv:
+            regionsForHist = ["3j1t","2j1t","4j1t"]
+            for region in regionsForHist:
+                yields[inputDir][region] = {}
+                uncerts[inputDir][region] = {}
+                for sample in samples:
+                    yieldsEndcap = yields[inputDir]["Endcap"+region][sample]
+                    uncertEndcap = uncerts[inputDir]["Endcap"+region][sample]
+                    yields[inputDir][region][sample] = yields[inputDir]["Barrel"+region][sample] +  yieldsEndcap
+                    uncerts[inputDir][region][sample] = uncerts[inputDir]["Barrel"+region][sample] + uncertEndcap
+                    if "ele" in sys.argv:
+                        yields[inputDir][region][sample] = yields[inputDir]["Barrel"+region][sample]
+                        uncerts[inputDir][region][sample] = uncerts[inputDir]["Barrel"+region][sample] 
+
+        histMap = turnMapsIntoPlots(yields[inputDir],uncerts[inputDir],regionsForHist)
     
-        genericPlottingMacro.makeASingleStackPlot(histMap,lepton+"_regionPlot_"+inputDir,xAxisLabel="Region",xAxisBinLabels=regions)
+        genericPlottingMacro.makeASingleStackPlot(histMap,lepton+"_regionPlot_"+inputDir,xAxisLabel="Region",xAxisBinLabels=regionsForHist)
 
     if secondDir:
         initTable()

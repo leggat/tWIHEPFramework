@@ -11,6 +11,7 @@ if "--help" in sys.argv or "-h" in sys.argv:
     print " --onlyNominal don't include systematic variations"
     print " --numberOfFilesPerJob <n> Set there to be n files in each submitted job"
     print " --noSplitBarrelEndcap - slpit the samples into barrel and endcap during the reading"
+    print " --emptyVal <float> - fill the empty distributions with a different number than the -999. default. This is to test how the BDT responds with different values set"
     print " ele - run on the electron channel"
     exit(0)
 
@@ -39,6 +40,11 @@ runMacro = "runMVAReading"
 if not useMVA: runMacro = "runReadingNoMVA"
 
 inputtWIHEPFrameworkDirectory = "tW"
+
+emptyVal = ""
+if "--emptyVal" in sys.argv:
+    ind = sys.argv.index("--emptyVal")
+    emptyVal = ",{0}".format(sys.argv[ind+1])
 
 numberOfFilesPerJob = 5
 if "--numberOfFilesPerJob" in sys.argv:
@@ -153,13 +159,13 @@ def makeSubmissionFiles(systDir):
                         if not checkExistance(outDir+region+"/output_"+sample+str(i)+".root"): 
 #                            print outDir+region+"/output_"+sample+str(i)+".root"
                             runSample = True
-                    if runSample: toRun.append("root -b -q \"../../framework/tmva/{0}.C(\\\"{1}\\\",\\\"{2}{3}/\\\",\\\"{4}\\\",{5},{6});\"".format(runMacro,sample,inputtWIHEPFrameworkDirectory,elePostfix,outDir,i*tempNFilesPerJob,(i+1)*tempNFilesPerJob-1))
+                    if runSample: toRun.append("root -b -q \"../../framework/tmva/{0}.C(\\\"{1}\\\",\\\"{2}{3}/\\\",\\\"{4}\\\",{5},{6},false{7});\"".format(runMacro,sample,inputtWIHEPFrameworkDirectory,elePostfix,outDir,i*tempNFilesPerJob,(i+1)*tempNFilesPerJob-1,emptyVal))
                     if not runInvMV: continue # compatability with old directories
                     if onlyNominal: continue
                     runInvSample = False
                     for region in regions:
                         if not checkExistance(outDir+"QCD"+region+"/output_"+sample+str(i)+".root"): runInvSample = True
-                    if runInvSample: toRun.append("root -b -q \"../../framework/tmva/{0}.C(\\\"{1}\\\",\\\"{2}Inv{3}/\\\",\\\"{4}QCD\\\",{5},{6},true);\"".format(runMacro,sample,inputtWIHEPFrameworkDirectory,elePostfix,outDir,i*tempNFilesPerJob,(i+1)*tempNFilesPerJob-1))
+                    if runInvSample: toRun.append("root -b -q \"../../framework/tmva/{0}.C(\\\"{1}\\\",\\\"{2}Inv{3}/\\\",\\\"{4}QCD\\\",{5},{6},true{7});\"".format(runMacro,sample,inputtWIHEPFrameworkDirectory,elePostfix,outDir,i*tempNFilesPerJob,(i+1)*tempNFilesPerJob-1,emptyVal))
                 continue
                 #    continue
 #            runSample = False
@@ -184,12 +190,12 @@ def makeSubmissionFiles(systDir):
                     for region in regions:
                         if not checkExistance(outDir+region+"/output_"+sample+str(i)+".root"): 
                             runSample = True
-                    if runSample: toRun.append("root -b -q \"../../framework/tmva/{0}.C(\\\"{1}\\\",\\\"{2}Data{3}/\\\",\\\"{4}\\\",{5},{6},true);\"".format(runMacro,sample,inputtWIHEPFrameworkDirectory,elePostfix,outDir,i*numberOfFilesPerJob,(i+1)*numberOfFilesPerJob-1))
+                    if runSample: toRun.append("root -b -q \"../../framework/tmva/{0}.C(\\\"{1}\\\",\\\"{2}Data{3}/\\\",\\\"{4}\\\",{5},{6},true{7});\"".format(runMacro,sample,inputtWIHEPFrameworkDirectory,elePostfix,outDir,i*numberOfFilesPerJob,(i+1)*numberOfFilesPerJob-1,emptyVal))
                     runSample = False
                     if onlyNominal: continue
                     for region in regions:
                         if not checkExistance(outDir+"QCD"+region+"/output_"+sample+str(i)+".root"): runSample = True
-                    if runSample: toRun.append("root -b -q \"../../framework/tmva/{0}.C(\\\"{1}\\\",\\\"{2}InvData{3}/\\\",\\\"{4}QCD\\\",{5},{6},true);\"".format(runMacro,sample,inputtWIHEPFrameworkDirectory,elePostfix,outDir,i*numberOfFilesPerJob,(i+1)*numberOfFilesPerJob-1))
+                    if runSample: toRun.append("root -b -q \"../../framework/tmva/{0}.C(\\\"{1}\\\",\\\"{2}InvData{3}/\\\",\\\"{4}QCD\\\",{5},{6},true{7});\"".format(runMacro,sample,inputtWIHEPFrameworkDirectory,elePostfix,outDir,i*numberOfFilesPerJob,(i+1)*numberOfFilesPerJob-1,emptyVal))
                                         
                     
 
@@ -216,7 +222,7 @@ def makeSubmissionFiles(systDir):
                     runSyst = False
                     for region in regions:
                         if not checkExistance(outDir+"Systs"+region+"/output_"+sample+str(i)+".root"): runSyst = True
-                    if runSyst: toRun.append("root -b -q \"../../framework/tmva/"+runMacro+".C(\\\""+sample+"\\\",\\\""+systDir+"/\\\",\\\""+outDir+"Systs\\\",{0},{1},true);\"".format(i*numberOfFilesPerJob,(i+1)*numberOfFilesPerJob-1))
+                    if runSyst: toRun.append("root -b -q \"../../framework/tmva/"+runMacro+".C(\\\""+sample+"\\\",\\\""+systDir+"/\\\",\\\""+outDir+"Systs\\\",{0},{1},true{2});\"".format(i*numberOfFilesPerJob,(i+1)*numberOfFilesPerJob-1,emptyVal))
 
     nFinished = 0
     nRunning = 0

@@ -65,7 +65,7 @@ class mvaTool {
   void setDepth(Int_t depth){_depth = depth;};
   void setNCuts(Int_t nCuts){_nCuts = nCuts;};
   void setSplitBarrelEndcap(Bool_t split){_splitBarrelEndcap = split;};
-
+  void setEmptyVarValue(Float_t emptyVarValue){_emptyVarValue = emptyVarValue;};
 
  private:
 
@@ -118,6 +118,9 @@ class mvaTool {
 
   //How we decide whether to split between barrel and endcap or not. Default will be true hardcoded. 
   Bool_t _splitBarrelEndcap;
+
+  //Test out different values in the empty var
+  Float_t _emptyVarValue;
 
   std::vector<TString> _bdtName;
 

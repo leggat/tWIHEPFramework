@@ -23,4 +23,33 @@ class AnalysisComponents:
             }
         self.jetShiftDict = {"jetShift0" : "JES_AbsoluteStat","jetShift1" : "JES_AbsoluteScale","jetShift2" : "JES_AbsoluteMPFBias","jetShift3" : "JES_Fragmentation","jetShift4" : "JES_SinglePionECAL","jetShift5" : "JES_SinglePionHCAL","jetShift6" : "JES_FlavorQCD","jetShift7" : "JES_TimePtEta","jetShift8" : "JES_RelativeJEREC1","jetShift9" : "JES_RelativeJEREC2","jetShift10" : "JES_RelativeJERHF","jetShift11" : "JES_RelativePtBB","jetShift12" : "JES_RelativePtEC1","jetShift13" : "JES_RelativePtEC2","jetShift14" : "JES_RelativePtHF","jetShift15" : "JES_RelativeBal","jetShift16" : "JES_RelativeFSR","jetShift17" : "JES_RelativeStatEC","jetShift18" : "JES_RelativeStatHF","jetShift19" : "JES_PileUpPtRef","jetShift20" :  "JES_PileUpPtBB","jetShift21" : "JES_PileUpPtEC1","jetShift22" : "JES_PileUpPtEC2","jetShift23" : "JES_PileUpPtHF","jetShift24" : "JER_stat","jetShift25" : "JER_syst","jetShift26" : "ptmiss_uncert"
                              }
+        self.xAxisLabels = {
+            "lightJet1CSV":"CSV_{light jet 1}",
+            "M_DeltaRBJetLepton":"#DeltaR_{b jet,lepton}",
+            "M_DeltaRLeptonJet1":"#DeltaR_{lepton,jet_{1}}",
+            "M_DeltaRlightjets":"#DeltaR_{light jets}",
+            "M_hadronicWmass":"m_{W_{hadronic}}",
+            "M_Mass_Jet1Jet2Jet3LeptonMET":"m_{j_{1,2,3},lepton,MET}",
+            "M_nJet2040":"N_{Jets:20<p_{T}<40}",
+            "M_Pt_AllJetsLeptonMET":"p_{T}_{j_{all},lepton,MET}",
+            "M_Pt_Lepton":"p_{T,lepton}",
+            "M_topMass2_lep":"m_{top_{leptonic}}",
+            "M_DeltaPhiJet1Jet2":"#Delta#Phi_{j_{1,2}}",
+            "M_DeltaRJet1Jet2":"#DeltaR_{j_{1,2}}",
+            "M_DeltaRWlvJet2":"#DeltaR_{W_{lv}j_{2}}",
+            "M_E_AllJets":"E_{j_{all}}",
+            "M_E_Jet1Jet2Jet3MET":"E_{j_{1,2,3}MET}",
+            "M_E_Jet2Jet3":"E_{j_{2,3}}",
+            "M_HT":"H_{T}",
+            "M_Mass_AllJets":"m_{j_{all}}",
+            "M_Mass_AllJetsMET":"m_{j_{all}MET}",
+            "M_Mass_Jet1Jet2":"m_{j_{1,2}}",
+            "M_Mass_Jet1Jet3":"m_{j_{1,3}}",
+            "M_Pt_AllJets2040":"p_{T,j_{20-40}}",
+            "M_Pt_Jet1LeptonMET":"p_{T,j_{1}lMET}",
+            "M_Pt_Jet1Jet2Lepton":"p_{T,j_{1,2}l}",
+            "M_Pt_LeptonJet1":"p_{T,l,j_{1}}",
+            "M_Pt_Jet1_2030":"p_{T,j_{1,20-30}}",
+        }
+
         
