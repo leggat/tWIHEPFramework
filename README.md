@@ -1,4 +1,11 @@
 # tWIHEPFramework
+Documentation can be found in Framework_documentation_slides.pdf
+
+Please refer to the slides for reference and ask if anything is unclear!
+
+
+Old documentation:
+
 tW code based on IHEP framework
 
 The newTest.sh bash script is enough to run the code on a single file of the tW MC as it stands.
