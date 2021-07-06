@@ -522,6 +522,18 @@ Bool_t EventWeight::Apply()
     _hMisTagReshape[bSystName] -> FillWithoutWeight(EventContainerObj -> GetEventMisTagReshape(bSystName));
   }
 
+  //a bunch of debugging info
+  if (false){
+    std::cout << "---------" << std::endl;
+    std::cout << "Event number: "   << tree->EVENT_event << std::endl;
+    std::cout << "Event weight: "   << EventContainerObj -> GetEventWeight() << std::endl;
+    std::cout << "Global weight: "   << EventContainerObj -> GetGlobalEventWeight() << std::endl;
+    std::cout << "Pileup weight: "  << EventContainerObj -> GetEventPileupWeight() << std::endl;
+    std::cout << "Lepton weight: "  << EventContainerObj -> GetEventLepSFWeight() << std::endl;
+    std::cout << "Trigger weight: " << EventContainerObj -> GetEventTrigSFWeight() << std::endl;
+    
+  }
+
   return kTRUE;
   
 } //Apply

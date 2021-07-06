@@ -131,14 +131,13 @@ bool JESBDTVars::AddAdditionalVariables(EventContainer * obj){
 }
 
 void JESBDTVars::FillBranches(EventContainer * evtObj){
-
+  
   int nCorrs = evtObj->jets[0].GetNumberOfJESCorrections();
 
   int nJets = evtObj->jets.size();
   int nbJets = evtObj->taggedJets.size();
 
   _floatVars["M_channel"] = -1;
-  
   if (nJets == 2 && nbJets == 1) _floatVars["M_channel"] = 2.;
   else if (nJets == 3 && nbJets == 1) _floatVars["M_channel"] = 0.;
   else if (nJets == 4 && nbJets == 1) _floatVars["M_channel"] = 3.;
@@ -156,7 +155,6 @@ void JESBDTVars::FillBranches(EventContainer * evtObj){
   for (int i = 0; i < nCorrs + 2; i++){
     _floatVecVars["M_channel_JESShifts"][i] = -1;
   }
-
   //Was doing this inside the loop before, but why?
   TLorentzVector Lepton(00,0,0,0);
   TLorentzVector Miss(00,0,0,0);
@@ -176,7 +174,6 @@ void JESBDTVars::FillBranches(EventContainer * evtObj){
 
   //  std::cout << _floatVars["M_channel"] << " " << evtObj->jets.size() << " channel nominal"  << std::endl;
 
-  
 
   if ((evtObj->jets.size() > 1 && evtObj->taggedJets.size() > 0) && (evtObj->jets.size() != evtObj->taggedJets.size() )){
     
@@ -203,7 +200,6 @@ void JESBDTVars::FillBranches(EventContainer * evtObj){
     fillVectorBranches(Lepton,tempMet,evtObj->taggedJets,evtObj->jets,Jet2040,UntaggedJet,nCorrs+1);
     
   }
-
 
 
   //Evaluate each distribution once per JES shift
@@ -282,7 +278,6 @@ void JESBDTVars::FillBranches(EventContainer * evtObj){
     
     FillHistograms(evtObj->GetEventWeight());
   }
-
 }
 
 void JESBDTVars::fillVectorBranches(TLorentzVector Lepton, TLorentzVector Miss, std::vector<Jet> BJet,   std::vector<Jet> selectedJet, std::vector<Jet> Jet2040, std::vector<Jet> UntaggedJet, int i) {
