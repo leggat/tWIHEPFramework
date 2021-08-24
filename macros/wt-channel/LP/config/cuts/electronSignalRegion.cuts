@@ -51,7 +51,7 @@ Cut.Tagged.Jet.Number.Max: 2
 
 ################ Global Event Cuts #####################
 # Missing ET
-Cut.Event.MissingEt.Min:  50.0
+Cut.Event.MissingEt.Min:  0.0
 Cut.Event.MissingEt.Max: 999.0
 
 # ############## SumDeltaPhiLepMET #################
