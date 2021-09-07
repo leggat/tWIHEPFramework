@@ -31,7 +31,7 @@
 #define tau_h
 
 #include "SingleTopRootAnalysis/Particles/Recon/Particle.hpp"
-#include "SingleTopRootAnalysis/Trees/EventTree.hpp"
+//#include "SingleTopRootAnalysis/Trees/EventTree.hpp"
 #include "SingleTopRootAnalysis/Trees/FastSimTree.hpp"
 
 class Tau: public Particle
