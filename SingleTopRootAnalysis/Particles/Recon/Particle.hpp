@@ -13,6 +13,8 @@
 
 #include <TLorentzVector.h>
 #include <TEnv.h>
+#include "SingleTopRootAnalysis/Trees/EventTree.hpp"
+#include "SingleTopRootAnalysis/Trees/nanoAODTree.h"
 //
 
 class Particle: public TLorentzVector
