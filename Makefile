@@ -163,6 +163,7 @@ BINS_Example= bin/example/test_analysis.x bin/example/test_analysis2.x
 BINS_Matching= bin/Matching/MatchQuality.x
 BINS_ParticleStudies= bin/ParticleStudies/electron_study.x bin/ParticleStudies/jet_study.x bin/ParticleStudies/MCParticle_study.x bin/ParticleStudies/muon_study.x
 BINS_Wt= bin/Wt/Wt_generic.x
+BINS_Nano= bin/nanoTest/nanoTest.x
 BINS_Dilepton= bin/Wt/Wt_dilepton.x
 BINS_Vertex= bin/Wt/Wt_nVertOnly.x
 BINS_Synch= bin/Wt/Wt_synch.x
@@ -192,6 +193,7 @@ help:
 	@echo "  make  all             -->  Make all executables"
 	@echo "  make  St              -->  St executables"
 	@echo "  make  Wt              -->  Wt executables"
+	@echo "  make  Nano              -->  NanoAOD executables"
 	@echo "  make  Skimming              -->  Skimming executables"
 	@echo "  make  Example         -->  Example executable"
 	@echo "  make  Matching        -->  Matching executables"
@@ -207,6 +209,7 @@ help:
 	@echo "  make cleanExe             -->  Removes all executables"
 	@echo "  make cleanSt              -->  Removes St executables"
 	@echo "  make cleanWt              -->  Removes Wt executables"
+	@echo "  make cleanAOD              -->  Removes NanoAOD executables"
 	@echo "  make cleanSkimming              -->  Removes Skimming executables"
 	@echo "  make cleanExample         -->  Removes Example executables"
 	@echo "  make cleanMatching        -->  Removes Matching executables"
@@ -234,11 +237,13 @@ dbg:
 # Target: Executable categories
 # Make executables belonging to a certain category
 ####################################################################################
-all: lib St Wt Skimming FER2 Matching ParticleStudies MCStudies EventComparison BTag
+all: lib St Wt Nano Skimming FER2 Matching ParticleStudies MCStudies EventComparison BTag
 
 St: lib $(BINS_St)
 
 Wt: lib $(BINS_Wt)
+
+Nano: lib $(BINS_Nano)
 
 Dilepton: lib $(BINS_Dilepton)
 
@@ -402,6 +407,8 @@ cleanBTag:
 	rm -f $(BINS_BTag)
 cleanWt:
 	rm -f $(BINS_Wt)
+cleanNano:
+	rm -f $(BINS_Nano)
 cleanDilepton:
 	rm -f $(BINS_Dilepton)
 cleanSynch:
@@ -411,11 +418,11 @@ cleanSkimming:
 cleanSt:
 	rm -f $(BINS_St)
 
-cleanExe: cleanSt cleanWt cleanDilepton cleanSynch cleanSkimming cleanEventComparison cleanExample cleanParticleStudies cleanMCStudies
+cleanExe: cleanSt cleanWt cleanNano cleanDilepton cleanSynch cleanSkimming cleanEventComparison cleanExample cleanParticleStudies cleanMCStudies
 
 cleanall: clean
 
-clean:  cleanSt cleanWt cleanDilepton cleanSynch cleanSkimming cleanEventComparison cleanExample cleanParticleStudies cleanMCStudies
+clean:  cleanSt cleanWt cleanNano cleanDilepton cleanSynch cleanSkimming cleanEventComparison cleanExample cleanParticleStudies cleanMCStudies
 	rm -rf ti_files
 	rm -rf $(DIR_OBJ)/*
 	rm -rf $(DIR_TMP)/*
