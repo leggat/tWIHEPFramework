@@ -455,20 +455,18 @@ Bool_t Electron::ApplyCuts(TString electronType){
   // Pt and Eta Cuts
   // **************************************************************
   // If event passes or fails requirements
-  Bool_t passMinPt   = kTRUE;
-  Bool_t passMaxEta  = kTRUE;
-  Bool_t passTight   = kTRUE;
-m Bool_t passIDnoIso = kTRUE;
-  Bool_t passd0dZ    = kTRUE;
-  Bool_t passIso     = kTRUE;
-  Bool_t passInvIso  = kTRUE;
+  Bool_t passMinPt      = kTRUE;
+  Bool_t passMaxEta     = kTRUE;
+  Bool_t passTight      = kTRUE;
+  Bool_t passUnIsolated = kTRUE;
+  Bool_t passd0dZ       = kTRUE;
 
 
   // Test requirements
-  if(Pt() <= _minPtCuts[electronType])               passMinPt  = kFALSE;
-  if(TMath::Abs(Eta()) >= _maxEtaCuts[electronType]) passMaxEta = kFALSE;
-  if(!passTightId())				     passTight  = kFALSE;
-  
+  if(Pt() <= _minPtCuts[electronType])               passMinPt      = kFALSE;
+  if(TMath::Abs(Eta()) >= _maxEtaCuts[electronType]) passMaxEta     = kFALSE;
+  if(!passTightId())				     passTight      = kFALSE;
+  if(!passUnIsolatedId())                            passUnIsolated = kFALSE;
   
   // Checking that the d0 and dz cuts pass - are these still necessary in nanoAOD?
   if(TMath::Abs(Eta()) < 1.4442) passd0dZ = ((GetpatElectron_d0() < _d0CutBarrel[electronType]) && (GetpatElectron_dz() < _dZCutBarrel[electronType])); //barrel
@@ -492,7 +490,7 @@ m Bool_t passIDnoIso = kTRUE;
 
   if(     "Tight"      == electronType) return( passMinPt && passMaxEta && passTight && passNoGapElectron && passd0dZ);
   else if("Veto"       == electronType) return( passMinPt && passMaxEta);//no tight or isolation req.
-  else if(     "UnIsolated" == electronType) return( passMinPt && passMaxEta && passUnIsolatedId && passNoGapElectron && passd0dZ);
+  else if(     "UnIsolated" == electronType) return( passMinPt && passMaxEta && passUnIsolated && passNoGapElectron && passd0dZ);
 
   return kTRUE;
   
