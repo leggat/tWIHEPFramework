@@ -280,6 +280,45 @@ void Electron::SetCuts(TEnv* config, TString electronType)
 
 } // End SetCuts
 
+/******************************************************************************
+ * void Electron::Fill(nanoAODTree *evtr,int iE)                                *
+ *                                                                            *
+ * Fill electron vector from a nanoAODTree                                             *
+ *                                                                            *
+ * Input:  nanoAOD Tree                                                         *
+ * Output: kTRUE if this electron passes electron ID cuts                     *
+ ******************************************************************************/
+Bool_t Electron::Fill(nanoAODTree *evtr, Int_t iE, TString electronType, Bool_t isSimulation)
+{
+
+  // ******************************  Set up electron candidate ********************************
+  Double_t elPt        = evtr -> Electron_pt      [iE];                         
+  Double_t elEta       = evtr -> Electron_eta     [iE];                         
+  Double_t elPhi       = evtr -> Electron_phi     [iE];                         
+  Double_t elM         = evtr -> Electron_mass    [iE];                         
+
+  SetPtEtaPhiM(elPt, elEta, elPhi, elM);
+
+  SetCharge             ( evtr -> Electron_charge [iE] );
+
+  //Cut based ID. Can be changed to MVA if required.
+  Int_t idBit = evtr -> Electron_cutBased [iE];
+
+  SetpassVetoId         ( idBit > 0 );
+  SetpassLooseId        ( idBit > 1 );
+  SetpassMediumId       ( idBit > 2 );
+  SetpassTightId        ( idBit > 3 );
+
+  
+  SetpassHEEPId         ( evtr -> Electron_cutBased_HEEP   [iE] );
+  SetpatElectron_d0     ( evtr -> Electron_dxy             [iE] );
+  SetpatElectron_dz     ( evtr -> Electron_dz              [iE] );
+
+  return ApplyCuts(electronType);
+
+
+} // Fill(nanoAODTree);
+
 
 /******************************************************************************
  * void Electron::Fill(EventTree *evtr,int iE)                                *
@@ -353,69 +392,13 @@ Bool_t Electron::Fill(EventTree *evtr, Int_t iE, TString electronType, Bool_t is
   float effArea = get_effarea(scEta());                                                                             
   SetRelIsoPFRhoEA((isoChargedHadrons() + (std::max( 0.0, isoNeutralHadrons() + isoPhotons() - rho*effArea)))/elPt);
 
-  // **************************************************************
-  // **************************************************************
-  // **************************************************************
-  // Calcualte Minimum DeltaR between Electron and Jet
-  //Double_t DeltaRCurrent = 0;
-  //std::vector<Jet>::iterator JetIterator;
-  //for(JetIterator = jets.begin(); JetIterator != jets.end(); JetIterator++){
-  //  DeltaRCurrent =  JetIterator->DeltaR(*this);
-  //  if( (GetDeltaRElectronJet() == 0) || (DeltaRCurrent < GetDeltaRElectronJet()) ) SetDeltaRElectronJet(DeltaRCurrent); 
-  //} //for
-
-
-  // Get isolation requirement from config file (default is etcone20)
-  //  TString isoAlgoQ = "ObjectID.Electron." + electronType + ".IsoAlgo";
-  //TString isoAlgo  = config -> GetValue(isoAlgoQ, "ptetcone30");
-/*  
-  // The only choices for isolation are currently etcone20 and none
-  if( "etcone20" == isoAlgo ) {
-    Double_t coneCut = config -> GetValue("ObjectID.Electron." + electronType + ".IsoCut", 6.0);
-    if(_EtCone20 < coneCut) SetIsolation(kTRUE); // electron isolated  
-    //      if( coneCut < _EtCone20 ) SetIsolation(kTRUE); // electron isolated // old
-    else SetIsolation(kFALSE);
-  }// if etcone20
-  else if( "etcone30" == isoAlgo ) {
-    Double_t coneCut = config -> GetValue("ObjectID.Electron." + electronType + ".IsoCut", 6.0);
-    if(_EtCone30 < coneCut) SetIsolation(kTRUE); // electron isolated  
-    //      if( coneCut < _EtCone20 ) SetIsolation(kTRUE); // electron isolated // old
-    else SetIsolation(kFALSE);
-    cout<<"ARE YOU SURE YOU DON'T WANT THE PTCONE, ETCONE ISOLATION, ptetcone?"<<endl;
-  }// if etcone30
-  else if( "ptetcone30" == isoAlgo ) {
-    Double_t conecut1 = config -> GetValue("ObjectID.Electron." + electronType + ".IsoCutEt", 0.0);
-    Double_t conecut2 = config -> GetValue("ObjectID.Electron." + electronType + ".IsoCutPt", 0.0);
-    if(((_EtCone30/elPt) < conecut1) &&((_PtCone30/elPt) < conecut2)) SetIsolation(kTRUE); // electron isolated  
-    else SetIsolation(kFALSE);
-  }// if ptetcone30
-  else if("none" == isoAlgo) SetIsolation(kTRUE);
-  else{
-    std::cout << "ERROR " << "<Electron::Fill()>: " << "Insolation level " << isoAlgo
-	      << " is invalid.  Must be etcone20, etcone30, or none."
-	      << std::endl;
-    exit(8);
-  } //else
-*/ 
-  // **************************************************************
-  // Pt and Eta Cuts
-  // **************************************************************
-  // If event passes or fails requirements
-  Bool_t passMinPt   = kTRUE;
-  Bool_t passMaxEta  = kTRUE;
-  Bool_t passTight   = kTRUE;
-  Bool_t passIDnoIso = kTRUE;
-  Bool_t passd0dZ    = kTRUE;
-  Bool_t passIso     = kTRUE;
-  Bool_t passInvIso  = kTRUE;
-
-
-  // Test requirements
-  if(elPt <= _minPtCuts[electronType])               passMinPt  = kFALSE;
-  if(TMath::Abs(elEta) >= _maxEtaCuts[electronType]) passMaxEta = kFALSE;
-  if(!passTightId())				     passTight  = kFALSE;
   
   // Apply the ID requirements individually so that we can invert the isolation for QCD electrons
+  // For BSM framework electrons only. Sets the TightID property
+  Bool_t passIDnoIso = kTRUE;
+  Bool_t passIso     = kTRUE;
+  Bool_t passInvIso  = kTRUE;
+  
   if (TMath::Abs(scEta()) <= 1.479){ //Electron in barrel
     if (sigmaEtaEta() >= 0.00998 ||
 	TMath::Abs(dEtaInSeed()) >= 0.00308 ||
@@ -448,12 +431,47 @@ Bool_t Electron::Fill(EventTree *evtr, Int_t iE, TString electronType, Bool_t is
       passInvIso = kFALSE;
     }
   }
-
-  //Isolation requirement
   
+  SetpassTightId ( passIso && passIDnoIso );
+  SetpassUnIsolatedId( passInvIso && passIDnoIso );
 
-  // Checking that the d0 and dz cuts pass
-  if(TMath::Abs(elEta) < 1.4442) passd0dZ = ((GetpatElectron_d0() < _d0CutBarrel[electronType]) && (GetpatElectron_dz() < _dZCutBarrel[electronType])); //barrel
+  return ApplyCuts(electronType);
+
+}//Fill(EventTree)
+
+/****************************************************************************** 
+ * void Electron::ApplyCuts(TString electronType)                             * 
+ *                                                                            * 
+ * Apply the relevant cuts based on electron type selecting                   * 
+ *                                                                            * 
+ * Input:  TString electronType                                               * 
+ * Output: kTRUE if this electron passes electron ID cuts                     * 
+ ******************************************************************************/
+
+Bool_t Electron::ApplyCuts(TString electronType){
+
+
+  // **************************************************************
+  // Pt and Eta Cuts
+  // **************************************************************
+  // If event passes or fails requirements
+  Bool_t passMinPt   = kTRUE;
+  Bool_t passMaxEta  = kTRUE;
+  Bool_t passTight   = kTRUE;
+m Bool_t passIDnoIso = kTRUE;
+  Bool_t passd0dZ    = kTRUE;
+  Bool_t passIso     = kTRUE;
+  Bool_t passInvIso  = kTRUE;
+
+
+  // Test requirements
+  if(Pt() <= _minPtCuts[electronType])               passMinPt  = kFALSE;
+  if(TMath::Abs(Eta()) >= _maxEtaCuts[electronType]) passMaxEta = kFALSE;
+  if(!passTightId())				     passTight  = kFALSE;
+  
+  
+  // Checking that the d0 and dz cuts pass - are these still necessary in nanoAOD?
+  if(TMath::Abs(Eta()) < 1.4442) passd0dZ = ((GetpatElectron_d0() < _d0CutBarrel[electronType]) && (GetpatElectron_dz() < _dZCutBarrel[electronType])); //barrel
   else passd0dZ = ((GetpatElectron_d0() < _d0CutEndcap[electronType]) && (GetpatElectron_dz() < _dZCutEndcap[electronType])); //endcap
 
 
@@ -466,74 +484,19 @@ Bool_t Electron::Fill(EventTree *evtr, Int_t iE, TString electronType, Bool_t is
   
   // Test requirements and set variable
   if( (TMath::Abs(scEta()) >= _minEtaGapCuts[electronType]) && (TMath::Abs(scEta()) <= _maxEtaGapCuts[electronType]) ) passNoGapElectron = kFALSE;
-  //SetNoGapElectron(passNoGapElectron);
 
-  //  if ( (     "Tight"      == electronType) && TMath::Abs(scEta()) <= 1.479 && ( passTight ^ (passIso && passIDnoIso))){
-  // std::cout << "Electron passing one form if ID: " << passTight << " " << (passIso && passIDnoIso) << " is selected: " << (passMinPt && passMaxEta && passNoGapElectron && passd0dZ) <<  " pt: " << elPt << " eta: " << TMath::Abs(scEta()) << " " << sigmaEtaEta() << " (>= 0.00998) " << (dEtaInSeed()) << " (abs>= 0.00308) " << (dPhiIn()) << "  (abs>= 0.0816) " << hOverE() << " (>= 0.0414) " <<  (ooEmooP()) << " (abs>= 0.0129) "  << missingHits() << " (> 1) " << passConversionVeto() << " (kTrue) " << relIsoPFRhoEA() << " (> 0.0588) "<< std::endl;
-  //}
-  if (false &&      "Tight"      == electronType){ //true for verbose debugging
-  if (passMinPt && passMaxEta && passNoGapElectron && passd0dZ){
-    if (passTight && ! (passIDnoIso)) {
-      std::cout << "Passes tight but not hand done" <<std::endl;
-      std::cout << "scEta: " << scEta()<<std::endl;
-      std::cout << "sigmaEtaEta: " << sigmaEtaEta() << std::endl;
-      std::cout << "dEtaInSeed: " << dEtaInSeed() << std::endl;
-      std::cout << "dPhiIn: " << (dPhiIn()) << std::endl;
-      std::cout << "hOverE: " << hOverE() << std::endl;
-      std::cout << "ooEmooP: " << ooEmooP() << std::endl;
-      std::cout << "missingHits: " << missingHits() << std::endl;
-      std::cout << "conversionVeto: " << passConversionVeto() << std::endl;
-      std::cout << "relIsoPFRhoEA: " << relIsoPFRhoEA()  << std::endl;
-    }
-    
-    //    if (!passTight && (passIDnoIso && passIso) && (relIsoPFRhoEA() > 0.) && (hOverE() > 0.)) {
-    if (!passTight && (passIDnoIso && passIso)) {
-      std::cout << "FAAAAILS tight but not hand done" <<std::endl;
-      std::cout << "Pt: " << elPt << std::endl;
-      std::cout << "elEta: " << elEta <<std::endl;
-      std::cout << "scEta: " << scEta()<<std::endl;
-      std::cout << "d0: " << GetpatElectron_d0() << std::endl;
-      std::cout << "dZ: " << GetpatElectron_dz() << std::endl;
-      std::cout << "sigmaEtaEta: " << sigmaEtaEta() << std::endl;
-      std::cout << "dEtaInSeed: " << dEtaInSeed() << std::endl;
-      std::cout << "dPhiIn: " << (dPhiIn()) << std::endl;
-      std::cout << "hOverE: " << hOverE() << std::endl;
-      std::cout << "ooEmooP: " << ooEmooP() << std::endl;
-      std::cout << "missingHits: " << missingHits() << std::endl;
-      std::cout << "conversionVeto: " << passConversionVeto() << std::endl;
-      std::cout << "relIsoPFRhoEA: " << relIsoPFRhoEA()  << std::endl;
-      std::cout << "relIsoPFBeta: " << relIsoPFBeta() << std::endl;
-      float rho = evtr -> EVENT_rhopog;
-      float neutSec = relIsoPFRhoEA() * elPt - isoChargedHadrons();
-      float effArea = get_effarea(scEta());
-      float betterIso = (isoChargedHadrons() + (std::max( 0.0, isoNeutralHadrons() + isoPhotons() - rho*effArea)))/elPt;
-      std::cout << "Recalc iso: " << betterIso << std::endl;
-      float isoNotRelBeta = isoChargedHadrons() + (std::max( 0.0, isoNeutralHadrons() + isoPhotons() - 0.5 * isoPU()));
-      std::cout << "nonRel Beta: " << isoNotRelBeta << std::endl;
-      std::cout << "pt from iso: " << isoNotRelBeta/relIsoPFBeta() << std::endl;
-    }
-  }
-  }
-  
   
   // **************************************************************
   // Return value according to electron type passed to Fill
   // **************************************************************
-    //  std::cout << (passMinPt && passMaxEta && passIDnoIso && passIso && passNoGapElectron && passd0dZ) << " " << ( passMinPt && passMaxEta) << " " << ( passMinPt && passMaxEta && passIDnoIso && !passIso && passNoGapElectron && passd0dZ) << " bools: " << passMinPt << " " << passMaxEta << " " << passIDnoIso << " " << passIso << " " << passNoGapElectron << " " << passd0dZ << std::endl;
-  //if  ( passMinPt && passMaxEta && passIDnoIso && !passIso && passNoGapElectron && passd0dZ) std::cout << "This should return an unisolated lepton" << std::endl;
-  //if(     "Tight"      == electronType) return(GetIsRobusterTight() && passMinPt && passMaxEta && GetNoGapElectron() && Isolation());
-  if(     "Tight"      == electronType) return( passMinPt && passMaxEta && passIDnoIso && passIso && passNoGapElectron && passd0dZ);
-  //if(     "Tight"      == electronType) return( passMinPt && passMaxEta && passTight && passNoGapElectron && passd0dZ);
-  //if(     "PtEtaCut"   == electronType) return(passMinPt && passMaxEta && IsRobusterTight());
+
+  if(     "Tight"      == electronType) return( passMinPt && passMaxEta && passTight && passNoGapElectron && passd0dZ);
   else if("Veto"       == electronType) return( passMinPt && passMaxEta);//no tight or isolation req.
-  //else if("Isolated"   == electronType) return(GetIsolation()  && GetNoGapElectron()&& OverlapUse());
-  else if(     "UnIsolated" == electronType) return( passMinPt && passMaxEta && passIDnoIso && passInvIso && passNoGapElectron && passd0dZ);
-  //  else if("UnIsolated" == electronType) return(!GetIsolation() && GetIsRobusterTight() && passMinPt && passMaxEta && GetNoGapElectron());
-  //else if("All"        == electronType) return(kTRUE);
-  //else return kTRUE;
+  else if(     "UnIsolated" == electronType) return( passMinPt && passMaxEta && passUnIsolatedId && passNoGapElectron && passd0dZ);
+
   return kTRUE;
   
-} //Fill
+} //ApplyCuts
 
 /******************************************************************************
  * void Electron::FillFastSim(FastSimTree *evtr,int iE)                       *

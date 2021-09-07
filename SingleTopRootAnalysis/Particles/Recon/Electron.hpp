@@ -28,9 +28,10 @@
 #ifndef electron_h
 #define electron_h
 
+//#include "SingleTopRootAnalysis/Base/Dictionary/EventContainer.hpp"
 #include "SingleTopRootAnalysis/Particles/Recon/Jet.hpp"
 #include "SingleTopRootAnalysis/Particles/Recon/Particle.hpp"
-#include "SingleTopRootAnalysis/Trees/EventTree.hpp"
+//#include "SingleTopRootAnalysis/Trees/EventTree.hpp"
 #include "SingleTopRootAnalysis/Trees/FastSimTree.hpp"
 #include "SingleTopRootAnalysis/Base/Dictionary/Top_MET.hpp"
 
@@ -74,6 +75,9 @@ class Electron: public Particle
   // Fill the electron from an EventTree
   Bool_t Fill(EventTree *evtr, Int_t iE, TString electronType, Bool_t isSimulation=false);
 
+  // Fill the electron from a nanoAODTree
+  Bool_t Fill(nanoAODTree *evtr, Int_t iE, TString electronType, Bool_t isSimulation=false);
+
   // also fill from a fastsim tree
   Bool_t FillFastSim(FastSimTree *tr, Int_t iE,TEnv* config,TString electronType);
 
@@ -96,6 +100,10 @@ class Electron: public Particle
   inline void SetpassTightId(Int_t passTightId){_passTightId = passTightId;};
   inline Int_t GetpassTightId() const {return _passTightId;};
   inline Int_t passTightId() const {return _passTightId;};
+
+  inline void SetpassUnIsolatedId(Int_t passUnIsolatedId){_passUnIsolatedId = passUnIsolatedId;};
+  inline Int_t GetpassUnIsolatedId() const {return _passUnIsolatedId;};
+  inline Int_t passUnIsolatedId() const {return _passUnIsolatedId;};
 
   inline void SetpassHEEPId(Int_t passHEEPId){_passHEEPId = passHEEPId;};
   inline Int_t GetpassHEEPId() const {return _passHEEPId;};
@@ -185,6 +193,7 @@ class Electron: public Particle
   Int_t _passLooseId;
   Int_t _passMediumId;
   Int_t _passTightId;
+  Int_t _passUnIsolatedId;
   Int_t _passHEEPId;
   Int_t _passConversionVeto;
 
@@ -223,7 +232,8 @@ class Electron: public Particle
   std::map<TString,Double_t> _d0CutEndcap;
   std::map<TString,Double_t> _d0CutBarrel;
   
-  
+  //Apply the cuts 
+  Bool_t ApplyCuts(TString electronType);
 
   ////////////////////////////////////////////////////////////////////////////////
   // Integrate classes into the Root system
