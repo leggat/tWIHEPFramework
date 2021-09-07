@@ -66,7 +66,7 @@ ClassImp(Jet)
  * Output: None                                                               *
  ******************************************************************************/
   Jet::Jet() : Particle::Particle(),
-  _numberOfConstituents(0), _chargedMultiplicity(0),  _bDiscriminator ( -999.0), _pileupId ( 0.0), _mass ( 0.0), _uncorrPt ( 0.0), _neutralHadEnergyFraction(0.0), _neutralEmEmEnergyFraction ( 0.0), _chargedHadronEnergyFraction (0.0), _chargedEmEnergyFraction(0.0), _muonEnergyFraction(0.0), _electronEnergy(0.0), _photonEnergy(0.0),_genPt(-999.0), _jerSF(1.0), _jesSF(1.0), _smearFactor(1.0), _jesUp(false), _jesDown(false), _jerUp(false), _jerDown(false), _hadronFlavour(-1), _tagged(0), _prefireVeto(0), _nominalPx(0.), _nominalPy(0.), _nominalPz(0.), _passesIDs(false)
+  _numberOfConstituents(0), _chargedMultiplicity(0),  _bDiscriminator ( -999.0),  _btagCSVV2(-999.), _btagCMVA(-999.), _btagDeepB(-999.), _btagDeepC(-999.), _pileupId ( 0.0), _mass ( 0.0), _uncorrPt ( 0.0), _neutralHadEnergyFraction(0.0), _neutralEmEmEnergyFraction ( 0.0), _chargedHadronEnergyFraction (0.0), _chargedEmEnergyFraction(0.0), _muonEnergyFraction(0.0), _electronEnergy(0.0), _photonEnergy(0.0),_genPt(-999.0), _jerSF(1.0), _jesSF(1.0), _smearFactor(1.0), _jesUp(false), _jesDown(false), _jerUp(false), _jerDown(false), _hadronFlavour(-1), _tagged(0), _prefireVeto(0), _nominalPx(0.), _nominalPy(0.), _nominalPz(0.), _passesIDs(false), _jetID(0)
 {
 } //Jet()
 
@@ -97,6 +97,10 @@ _tagged				(other.IsTagged()),
 _prefireVeto			(other.IsPrefireVeto()),
 _chargedMultiplicity		(other.GetchargedMultiplicity()),  
 _bDiscriminator 		(other.GetbDiscriminator()), 
+_btagCSVV2                      (other.GetbtagCSVV2()),
+_btagCMVA                       (other.GetbtagCMVA()),
+_btagDeepB                      (other.GetbtagDeepB()),
+_btagDeepC                      (other.GetbtagDeepC()),
 _pileupId 			(other.GetpileupId()), 
 _mass 				(other.Getmass()), 
 _uncorrPt 			(other.GetuncorrPt()), 
@@ -115,7 +119,8 @@ _jerSF                          (other.GetjerSF()),
 _jesSF                          (other.GetjesSF()),
 _smearFactor                    (other.GetsmearFactor()),
 _passesIDs			(other.GetPassesIDs()),
-_jesShifts 			(other.GetJesShifts())
+_jesShifts 			(other.GetJesShifts()),
+_jetID                          (other.GetjetID())
 {
 } //Jet()
 
@@ -128,7 +133,7 @@ _jesShifts 			(other.GetJesShifts())
  * Output: None                                                               *
  ******************************************************************************/
 Jet::Jet(const Particle& other): Particle(other),
-				 _numberOfConstituents(0), _hadronFlavour(-1), _chargedMultiplicity(0),  _bDiscriminator ( -999.0), _pileupId ( 0.0), _mass ( 0.0), _uncorrPt ( 0.0), _neutralHadEnergyFraction(0.0), _neutralEmEmEnergyFraction ( 0.0), _chargedHadronEnergyFraction (0.0), _chargedEmEnergyFraction(0.0), _muonEnergyFraction(0.0), _electronEnergy(0.0), _photonEnergy(0.0), _genPt(-999.0), _jerSF(1.0), _jesSF(1.0), _smearFactor(1.0), _tagged(0), _prefireVeto(0), _nominalPx(0.), _nominalPy(0.), _nominalPz(0.), _passesIDs(false)
+				 _numberOfConstituents(0), _hadronFlavour(-1), _chargedMultiplicity(0),  _bDiscriminator ( -999.0), _btagCSVV2(-999.), _btagCMVA(-999.), _btagDeepB(-999.), _btagDeepC(-999.), _pileupId ( 0.0), _mass ( 0.0), _uncorrPt ( 0.0), _neutralHadEnergyFraction(0.0), _neutralEmEmEnergyFraction ( 0.0), _chargedHadronEnergyFraction (0.0), _chargedEmEnergyFraction(0.0), _muonEnergyFraction(0.0), _electronEnergy(0.0), _photonEnergy(0.0), _genPt(-999.0), _jerSF(1.0), _jesSF(1.0), _smearFactor(1.0), _tagged(0), _prefireVeto(0), _nominalPx(0.), _nominalPy(0.), _nominalPz(0.), _passesIDs(false), _jetID(0)
 {
  
 } //Jet()
@@ -183,6 +188,10 @@ Jet& Jet::operator=(const Particle& other)
   SetPrefireVeto(0),
   SetchargedMultiplicity(0),  
   SetbDiscriminator ( -999.0), 
+  SetbtagCSVV2  (-999.),
+  SetbtagCMVA  (-999.),
+  SetbtagDeepB (-999.),
+  SetbtagDeepC (-999.),    
   SetpileupId ( 0.0), 
   Setmass ( 0.0), 
   SetuncorrPt ( 0.0), 
@@ -202,6 +211,7 @@ Jet& Jet::operator=(const Particle& other)
   SetsmearFactor(1.0),
   SetPassesIDs(false),
   SetphotonEnergy(0.0);
+  SetjetID(0);
 
   return *this;
 } //= Particle
@@ -224,6 +234,10 @@ Jet& Jet::operator=(const Jet& other)
   SetPrefireVeto			(other.IsPrefireVeto());
   SetchargedMultiplicity		(other.GetchargedMultiplicity()); 
   SetbDiscriminator 			(other.GetbDiscriminator());
+  SetbtagCSVV2                          (other.GetbtagCSVV2());
+  SetbtagCMVA                           (other.GetbtagCMVA());
+  SetbtagDeepB                          (other.GetbtagDeepB());
+  SetbtagDeepC                          (other.GetbtagDeepC());
   SetpileupId 				(other.GetpileupId());
   Setmass 				(other.Getmass());
   SetuncorrPt 				(other.GetuncorrPt());
@@ -244,7 +258,7 @@ Jet& Jet::operator=(const Jet& other)
   SetsmearFactor                    (other.GetsmearFactor());
   SetJesShifts			    (other.GetJesShifts());
   SetPassesIDs                      (other.GetPassesIDs());
-
+  SetjetID                          (other.GetjetID());
   return *this;
 } //= const
 
@@ -265,6 +279,10 @@ Jet& Jet::operator=(Jet& other)
   SetPrefireVeto		        (other.IsPrefireVeto());
   SetchargedMultiplicity		(other.GetchargedMultiplicity()); 
   SetbDiscriminator 			(other.GetbDiscriminator());
+  SetbtagCSVV2                          (other.GetbtagCSVV2());
+  SetbtagCMVA                           (other.GetbtagCMVA());
+  SetbtagDeepB                          (other.GetbtagDeepB());
+  SetbtagDeepC                          (other.GetbtagDeepC());
   SetpileupId 				(other.GetpileupId());
   Setmass 				(other.Getmass());
   SetuncorrPt 				(other.GetuncorrPt());
@@ -285,7 +303,7 @@ Jet& Jet::operator=(Jet& other)
   SetsmearFactor                    (other.GetsmearFactor());
   SetJesShifts			    (other.GetJesShifts());
   SetPassesIDs                      (other.GetPassesIDs());
-
+  SetjetID                          (other.GetjetID());
   return *this;
 } //= non-const
 
@@ -313,6 +331,68 @@ void Jet::SetCuts(TEnv * config)
   _jerDown = 		config -> GetValue("Systs.doJERDown",0);
 }
 
+/****************************************************************************** 
+ * void Jet::Fill(nanoAODTree *evtr, Int_t iE,const TString& tagName)           * 
+ *                                                                            * 
+ * Fill jet vector from tree                                                  * 
+ *                                                                            * 
+ * Input:  Event Tree pointer                                                 * 
+ *         - which jet                                                        * 
+ * Output: True if this jet passes jet ID cuts                                * 
+ ******************************************************************************/
+
+
+Bool_t Jet::Fill(std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, nanoAODTree *evtr, Int_t iE, TLorentzVector * met, bool isMC, std::vector<std::vector<std::string> > * resolution, std::vector<std::vector<std::string> > * resSFs, TString * resFormula)
+{
+  //Set up the TLorentzVector of this particle
+  Double_t jetPt,jetEta,jetPhi,jetMass;
+  jetPt    = evtr -> Jet_pt    [iE];
+  jetEta   = evtr -> Jet_eta   [iE];
+  jetPhi   = evtr -> Jet_phi   [iE];
+  jetMass  = evtr -> Jet_mass  [iE];
+
+  SetPtEtaPhiM(jetPt,jetEta,jetPhi,jetMass);
+
+  //Now set up other information in the class that are available in nanoAOD
+  SetnumberOfConstituents		(evtr -> Jet_nConstituents         	[iE]);
+  SetbDiscriminator 			(evtr -> Jet_btagCSVV2           	[iE]); // This is the default variable used in b-jet cuts. Other available taggers: btagCMVA,btagCSVV2,btagDeepB,btagDeepC
+  SetbtagCSVV2  			(evtr -> Jet_btagCSVV2           	[iE]);
+  SetbtagCMVA   			(evtr -> Jet_btagCMVA           	[iE]);
+  SetbtagDeepB   			(evtr -> Jet_btagDeepB           	[iE]);
+  SetbtagDeepC   			(evtr -> Jet_btagDeepC           	[iE]);
+  SetpileupId 				(evtr -> Jet_puId          		[iE]);
+  Setmass 				(evtr -> Jet_mass     			[iE]);
+  SetneutralHadEnergyFraction		(evtr -> Jet_neHEF              	[iE]);
+  SetneutralEmEmEnergyFraction 		(evtr -> Jet_neEmEF                     [iE]);
+  SetchargedHadronEnergyFraction 	(evtr -> Jet_chHEF                      [iE]);
+  SetchargedEmEnergyFraction		(evtr -> Jet_chEmEF                     [iE]);
+  SetjetID                              (evtr -> Jet_jetId                      [iE]);
+
+  //Bits that were filled in the TNT/BOOM trees but are not immediately obvious to me in the nanoAOD trees
+  /*SetmuonEnergyFraction			(evtr -> Jet_muonEnergyFraction     	-> operator[](iE));
+  SetelectronEnergy			(evtr -> Jet_electronEnergy     	-> operator[](iE));
+  SetphotonEnergy			(evtr -> Jet_photonEnergy     		-> operator[](iE));
+  SetchargedMultiplicity		(evtr -> Jet_chargedMultiplicity     	-> operator[](iE)); 
+  SetuncorrPt 				(evtr -> Jet_Uncorr_pt     		-> operator[](iE));*/
+
+
+  if (isMC){
+    SethadronFlavour                    (evtr -> Jet_hadronFlavour              [iE]);
+    //This information does not seem immediately obvious either.
+    //SetgenPt                            (evtr -> Jet_genpt                      -> operator[](iE));
+  }
+
+  //The current implementation of JES uncertainties relies on information directly stored in the BSM trees. TODO: Update to nanoAOD
+  
+  _jesShifts.clear();
+  
+  //Apply the cuts. The return value is true if it passes, false if not.
+  return ApplyCuts(selectedMuons,selectedElectrons,kTRUE); 
+
+  return kFALSE;
+}
+
+
 /******************************************************************************         
  * void Jet::Fill(EventTree *evtr, Int_t iE,const TString& tagName)           *         
  *                                                                            *         
@@ -323,7 +403,7 @@ void Jet::SetCuts(TEnv * config)
  * Output: True if this jet passes jet ID cuts                                *         
  ******************************************************************************/
 
-Bool_t Jet::Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, EventTree *evtr, Int_t iE, TLorentzVector * met, bool isMC, std::vector<std::vector<std::string> > * resolution, std::vector<std::vector<std::string> > * resSFs, TString * resFormula)
+Bool_t Jet::Fill(std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, EventTree *evtr, Int_t iE, TLorentzVector * met, bool isMC, std::vector<std::vector<std::string> > * resolution, std::vector<std::vector<std::string> > * resSFs, TString * resFormula)
 {
 
   Double_t jetPt, jetEta,jetPhi,jetE, jetCharge, jetM;
@@ -363,17 +443,6 @@ Bool_t Jet::Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selecte
     SetjerSF(GetJerFromFile(Eta(),resSFs,0)); //Let's do rthis all from the file...
     if (jerSF() <= 0.) SetjerSF(1.);
     if (jesSF() <= 0.) SetjesSF(1.);
-
-    //Use JER to shift jet. Not actually what we want to do?
-    /*SetPx(Px()*GetjerSF());
-    SetPy(Py()*GetjerSF());
-    SetPz(Pz()*GetjerSF());
-    SetE(E()*GetjerSF());  */
-    /*SetPx(Px()*GetjesSF());
-    SetPy(Py()*GetjesSF());
-    SetPz(Pz()*GetjesSF());
-    SetE(E()*GetjesSF());  */
-
   }
 
   _jesShifts.clear();
@@ -401,53 +470,15 @@ Bool_t Jet::Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selecte
   SetNominalPy(Py());
   SetNominalPz(Pz());
   SetNominalE(E());
-
-  // Now we want to do the JER and JES systematic adjustments to the jet. This also requires correcting the MET.
-  if (_jesUp || _jesDown || _jerUp || _jerDown) SystematicPtShift(evtr, iE, met);  
-/*
-  SetPdgId      ( evtr -> Jet_flavor_truth_trueflav -> operator[](iE));
-  SetIsBadLoose ( evtr -> Jet_isBadLoose            -> operator[](iE));
-  ///////////////////////////////////////////////////////////////////////////////
-  //
-  // b-tagging choices
-  /////////////////////////////////////////////////////////////////////////////////
-  // Upated for version 14
-  //currently no TRF b-taggers, so using a cut on weights
   
-  std::vector<Double_t> bweight;
-  bweight.clear();
-  //cout<<evtr -> Jet_flavor_weight -> operator[](iE)<<endl;
-  bweight.push_back(evtr -> Jet_flavor_weight -> operator[](iE));//0
-  bweight.push_back(evtr -> Jet_flavor_weight_IP1D -> operator[](iE));//1
-  bweight.push_back(evtr -> Jet_flavor_weight_IP2D -> operator[](iE));//2
-  bweight.push_back(evtr -> Jet_flavor_weight_IP3D -> operator[](iE));//3
-  bweight.push_back(evtr -> Jet_flavor_weight_SV1 -> operator[](iE));//4
-  bweight.push_back(evtr -> Jet_flavor_weight_SV2 -> operator[](iE));//5
-  //for JetProb, we actually use -ln(JetProb)
-  bweight.push_back(-TMath::Log10(evtr -> Jet_flavor_weight_JetProb -> operator[](iE)));//6
-  bweight.push_back(evtr -> Jet_flavor_weight_TrackCounting2D -> operator[](iE));//7
-  bweight.push_back(evtr -> Jet_flavor_weight_SV0 -> operator[](iE));//8 
-  bweight.push_back(evtr -> Jet_flavor_weight_JetFitterCOMBNN-> operator[](iE));//9
-  SetBWeight(bweight);
-  //cout<<bweight.size()<<endl;
-  
-  double tagCut = 0;
+  //Apply the cuts and then return that value to the EventContainer
+  return ApplyCuts(selectedMuons,selectedElectrons,kFALSE);
 
-  tagCut = btagCut;
+} //End of BSM framework fill routine
 
-  if(tagName=="default" || tagName=="bTagged" || tagName=="IP3DSV1") {
-    if(evtr -> Jet_flavor_weight -> operator[](iE) > tagCut) SetTagged(kTRUE);
-    else SetTagged(kFALSE);
-  } // if
-  else if(tagName=="SV0") {
-    if(evtr->Jet_flavor_weight_SV0->operator[](iE) > tagCut) SetTagged(kTRUE);
-    else SetTagged(kFALSE);
-  } 
-  else {
-    cout<<"<ERROR>: Error in jet.cpp: invalid tagger, "<<tagName<<endl;
-    exit(8);
-  }
-*/
+
+Bool_t Jet::ApplyCuts(std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, Bool_t useJetIDFromTree){
+
   /////////////////////////////////////////////////////////////////////////////
   // Jet Pt and Eta Cuts
   /////////////////////////////////////////////////////////////////////////////
@@ -459,13 +490,18 @@ Bool_t Jet::Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selecte
   // Jet ID
   /////////////////////////////////////////////////////////////////////////
   
-  
-  Bool_t neutralID = (TMath::Abs(Eta()) > 3. || (neutralHadEnergyFraction() < 0.99 &&  neutralEmEmEnergyFraction() < 0.99 && numberOfConstituents() > 1));
-  Bool_t chargedID = (TMath::Abs(Eta()) > 2.4 || (chargedHadronEnergyFraction() > 0. && chargedMultiplicity() > 0. && chargedEmEnergyFraction() < 0.99));
-  Bool_t neutralHighEtaID = (TMath::Abs(Eta()) < 3. || (neutralEmEmEnergyFraction() < 0.9 && (numberOfConstituents() - chargedMultiplicity()) > 10));
+  Bool_t passesJetID = kFALSE;
 
-  Bool_t passesJetID = neutralID && chargedID && neutralHighEtaID;
-
+  if (useJetIDFromTree){ //This is different for nanoAOD vs BSM
+    passesJetID = (jetID() == 6); // Check https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookNanoAOD#Jets for what value this should be
+  }
+  else {
+    Bool_t neutralID = (TMath::Abs(Eta()) > 3. || (neutralHadEnergyFraction() < 0.99 &&  neutralEmEmEnergyFraction() < 0.99 && numberOfConstituents() > 1));
+    Bool_t chargedID = (TMath::Abs(Eta()) > 2.4 || (chargedHadronEnergyFraction() > 0. && chargedMultiplicity() > 0. && chargedEmEnergyFraction() < 0.99));
+    Bool_t neutralHighEtaID = (TMath::Abs(Eta()) < 3. || (neutralEmEmEnergyFraction() < 0.9 && (numberOfConstituents() - chargedMultiplicity()) > 10));
+    
+    passesJetID = neutralID && chargedID && neutralHighEtaID;
+  }
   /////////////////////////////////////////////////////////////////////////
   // Jet Cleaning
   /////////////////////////////////////////////////////////////////////////
@@ -512,7 +548,7 @@ Bool_t Jet::Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selecte
   
   return kFALSE;
 
-} //Fill()
+} //ApplyCuts()
 
 /******************************************************************************         
  * void Jet::FillFastSim(FastSimTree *tr, Int_t iE,const TString& tagName )   *         

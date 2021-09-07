@@ -34,9 +34,10 @@
 #include "SingleTopRootAnalysis/Particles/Truth/MCJet.hpp"
 #include "SingleTopRootAnalysis/Particles/Truth/MCTau.hpp"
 #include "SingleTopRootAnalysis/Particles/Recon/Particle.hpp"
+//#include "SingleTopRootAnalysis/Base/Dictionary/EventContainer.hpp"
 #include "SingleTopRootAnalysis/Particles/Recon/Electron.hpp"
 #include "SingleTopRootAnalysis/Particles/Recon/Muon.hpp"
-#include "SingleTopRootAnalysis/Trees/EventTree.hpp"
+//  #include "SingleTopRootAnalysis/Trees/EventTree.hpp"
 #include "SingleTopRootAnalysis/Trees/FastSimTree.hpp"
 //#include "SingleTopRootAnalysis/Base/Dictionary/MultijetJESUncertaintyProvider.hpp"
 //#include "SingleTopRootAnalysis/Base/Dictionary/JetEfficiencyEstimator.hpp"
@@ -73,8 +74,9 @@ class Jet: public Particle
 
   void SetCuts(TEnv* config);
 
-  // Fill the jet from an EventTree 
-  Bool_t Fill( double myJESCorr, double myJERCorr, std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, EventTree *evtr, Int_t iE, TLorentzVector * met, bool isMC, std::vector<std::vector<std::string> > * resolution, std::vector<std::vector<std::string> > * resSFs, TString * resFormula);
+  // Fill the jet. Overloaded functions for nanoAOD and BSM trees
+  Bool_t Fill( std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, EventTree *evtr, Int_t iE, TLorentzVector * met, bool isMC, std::vector<std::vector<std::string> > * resolution, std::vector<std::vector<std::string> > * resSFs, TString * resFormula);
+  Bool_t Fill( std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, nanoAODTree *evtr, Int_t iE, TLorentzVector * met, bool isMC, std::vector<std::vector<std::string> > * resolution, std::vector<std::vector<std::string> > * resSFs, TString * resFormula);
   //  Bool_t Fill( double myJESCorr, double myJERCorr, std::vector<Electron>& selectedElectrons, EventTree *evtr, Int_t iE);
   // Also fill from FastSim tree:
   Bool_t FillFastSim( std::vector<MCJet>& MCBJets, std::vector<MCJet>& MCCJets, std::vector<MCTau>& MCTaus,  std::vector<Electron>& electrons, FastSimTree *tr,Int_t iE,TEnv *config,const TString& tagName="default", Double_t btagCut = 999, Double_t mistagCut = 999, Double_t eshift = 0 );
@@ -94,6 +96,22 @@ class Jet: public Particle
   inline void SetbDiscriminator(Double_t bDiscriminator){_bDiscriminator = bDiscriminator;};
   inline Double_t GetbDiscriminator() const {return _bDiscriminator;};
   inline Double_t bDiscriminator() const {return _bDiscriminator;};
+
+  inline void SetbtagCSVV2(Double_t btagCSVV2){_btagCSVV2 = btagCSVV2;};
+  inline Double_t GetbtagCSVV2() const {return _btagCSVV2;};
+  inline Double_t btagCSVV2() const {return _btagCSVV2;};
+
+  inline void SetbtagCMVA(Double_t btagCMVA){_btagCMVA = btagCMVA;};
+  inline Double_t GetbtagCMVA() const {return _btagCMVA;};
+  inline Double_t btagCMVA() const {return _btagCMVA;};
+
+  inline void SetbtagDeepB(Double_t btagDeepB){_btagDeepB = btagDeepB;};
+  inline Double_t GetbtagDeepB() const {return _btagDeepB;};
+  inline Double_t btagDeepB() const {return _btagDeepB;};
+
+  inline void SetbtagDeepC(Double_t btagDeepC){_btagDeepC = btagDeepC;};
+  inline Double_t GetbtagDeepC() const {return _btagDeepC;};
+  inline Double_t btagDeepC() const {return _btagDeepC;};
 
   inline void SetpileupId(Double_t pileupId){_pileupId = pileupId;};
   inline Double_t GetpileupId() const {return _pileupId;};
@@ -169,6 +187,10 @@ class Jet: public Particle
   inline Double_t GetgenPt() const {return _genPt;};
   inline Double_t genPt() const {return _genPt;};
 
+  inline void SetjetID(Double_t jetID){_jetID = jetID;};
+  inline Double_t GetjetID() const {return _jetID;};
+  inline Double_t jetID() const {return _jetID;};
+
   inline void SetjerSF(Double_t jerSF){_jerSF = jerSF;};
   inline Double_t GetjerSF() const {return _jerSF;};
   inline Double_t jerSF() const {return _jerSF;};
@@ -201,6 +223,10 @@ class Jet: public Particle
   Int_t _chargedMultiplicity;   
   Int_t _hadronFlavour;
   Double_t _bDiscriminator;   
+  Double_t _btagCSVV2;
+  Double_t _btagCMVA;
+  Double_t _btagDeepB;
+  Double_t _btagDeepC;
   Double_t _pileupId;   
   Double_t _mass;   
   Double_t _neutralHadEnergyFraction;   
@@ -218,6 +244,10 @@ class Jet: public Particle
   Int_t _tagged;
   Int_t _prefireVeto;
   Double_t _closestLep;
+  Int_t _jetID;
+
+  //Internal method for running the cuts, so that they don't have to be written several times in the cpp
+  Bool_t ApplyCuts(std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, Bool_t useJetIDFromTree);
 
   //This is a variable that will be filled once during the normal filling but used by the JES shift to check
   Bool_t _passesIDs;
