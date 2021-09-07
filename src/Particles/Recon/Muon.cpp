@@ -305,6 +305,34 @@ void Muon::SetCuts(TEnv* config, TString muonType)
 }
 
 /******************************************************************************         
+ * void Muon::Fill(nanoAODTree *evtr, Int_t iE)                                 *         
+ *                                                                            *         
+ * Fill Muon vector from nanoAODTree                                                 *         
+ *                                                                            *         
+ * Input:  nanoAODTree tree                                                         *         
+ * Output: kTRUE if the muon passes object ID cuts                            *         
+ ******************************************************************************/
+Bool_t Muon::Fill(nanoAODTree *evtr,int iE,TString muonType, Bool_t isSimulation)
+{
+
+  Double_t muPt     = evtr -> Muon_pt              [iE];
+  Double_t muEta    = evtr -> Muon_eta             [iE];
+  Double_t muPhi    = evtr -> Muon_phi             [iE];
+  Double_t muM      = evtr -> Muon_mass            [iE];
+  Double_t muCharge = evtr -> Muon_charge          [iE];
+  SetrelIsoR04      ( evtr -> Muon_pfRelIso04_all  [iE] );
+  SetpassTightId    ( evtr -> Muon_tightId         [iE] );
+  Setdxy            ( evtr -> Muon_dxy             [iE] );
+  Setdz             ( evtr -> Muon_dz              [iE] );
+  SetisPf           ( evtr -> Muon_isPFcand        [iE] );
+
+  SetPtEtaPhiM(muPt, muEta, muPhi, muM); 
+
+  return ApplyCuts(muonType);
+
+}//Fill(nanoAODTree)
+
+/******************************************************************************         
  * void Muon::Fill(EventTree *evtr, Int_t iE)                                 *         
  *                                                                            *         
  * Fill Muon vector from tree                                                 *         
@@ -353,60 +381,28 @@ Bool_t Muon::Fill(EventTree *evtr,int iE,TString muonType, Bool_t isSimulation)
   SetrelIsoR04		(evtr -> Muon_relIsoDeltaBetaR04-> operator[](iE));
   Setndof		(evtr -> Muon_ndof		-> operator[](iE));
   SetCharge		(evtr -> Muon_charge		-> operator[](iE));
+
+  return ApplyCuts(muonType);
  
-  // **************************************************************
-  // Isolation Cuts
-  // **************************************************************
-  // Get isolation requirement from config file (default is etcone30)
-  //TString isoAlgoQ = "ObjectID.Muon." + muonType + ".IsoAlgo";
-  //TString isoAlgo  = config -> GetValue(isoAlgoQ, "etcone20");
-  
-  //// The choices for isolation are DeltaR, etcone20, etcone30, and none
-  //if( "deltaR" == isoAlgo){
-  //  Double_t deltaRMax = config -> GetValue("ObjectID.Muon." + muonType + ".IsoCut", 0.4);
-  //  // In case it's defined, we use the inverse muon isolation cut
-  //  if(config -> Defined("ObjectID.Muon." + muonType + ".InverseIsoCut")) {
-  //    deltaRMax = config -> GetValue("ObjectID.Muon." + muonType + ".InverseIsoCut", deltaRMax);
-  //  } //if
+} //Fill(EventTree)
 
-  //  // Current Values for calculation of Delta R
-  //  double DeltaRCurrent = 0;
-  //  Int_t n = 0;
-  //  // Iterators
-  //  std::vector<Jet>::iterator JetIterator;
-  //  // Jet 
-  //  for(JetIterator = jets.begin(); JetIterator != jets.end(); JetIterator++){
-  //    DeltaRCurrent =  JetIterator->DeltaR(*this);
-  //    if(DeltaRCurrent < deltaRMax){
-  //      n++; //muon is inside a jet
-  //    } //if
-  //  } //for
-  //  
-  //}//if deltaR
 
-  //else if( "etcone20" == isoAlgo ) {
-  //  Double_t conecut = config -> GetValue("ObjectID.Muon." + muonType + ".IsoCut", 6.0);
-  //}// if etcone20
-  //else{
-  //  std::cout << "ERROR " << "<Muon::Fill()>: " << "Insolation level " << isoAlgo
-  //            << " is invalid.  Must be deltaR, etcone20, etcone30 or none."
-  //            << std::endl;
-  //  exit(8);
-  //} //else
-
+/******************************************************************************  
+ * Bool_t Muon::ApplyCuts(TString muonType)                                   *  
+ *                                                                            *  
+ * Apply the relevant cuts based on muon type selecting                       *  
+ *                                                                            *  
+ * Input:  TString muonType                                                   *  
+ * Output: kTRUE if this muon passes muon ID cuts                             *  
+ ******************************************************************************/
+Bool_t Muon::ApplyCuts(TString muonType)
+{
   // **************************************************************
   // Run 2 relative isolation cuts
   // **************************************************************
   Bool_t passRelIso = kTRUE;
 
-  //  std::cout << relIsoR04() << " " << _maxRelIsoCuts[muonType] << " " << muonType << " ";
-
-  if (relIsoR04() > _maxRelIsoCuts[muonType]) {passRelIso = kFALSE;
-    //    std::cout << "false";
-  }
-  //  else std::cout << "true";
-
-  //  std::cout << " " << passRelIso << std::endl;
+  if (relIsoR04() > _maxRelIsoCuts[muonType]) {passRelIso = kFALSE; }
   
   // **************************************************************
   // Pt and Eta Cuts
@@ -415,34 +411,19 @@ Bool_t Muon::Fill(EventTree *evtr,int iE,TString muonType, Bool_t isSimulation)
   Bool_t passMinPt  = kTRUE;
   Bool_t passMaxEta = kTRUE;
 
-  Bool_t passCustomID = kTRUE;
-  
-  //I don't know if the tight ID is the same as these custom ID variables, so I'm checking both.
-  if (chi2()/ndof() 	>= 10  ||
-      TLayers()		<= 5   ||
-      validHits()	<  1   ||
-      dxy()		>= 0.2 ||
-      dz()		>= 0.5 ||
-      validHitsInner()	<  1   ||
-      matchedStat()	<  2)
-    passCustomID = kFALSE;
-  
-  // Test Requirements
-  if(muPt <= _minPtCuts[muonType])               passMinPt  = kFALSE;
-  if(TMath::Abs(muEta) >= _maxEtaCuts[muonType]) passMaxEta = kFALSE;
+   // Test Requirements
+  if(Pt() <= _minPtCuts[muonType])               passMinPt  = kFALSE;
+  if(TMath::Abs(Eta()) >= _maxEtaCuts[muonType]) passMaxEta = kFALSE;
 
-  //  if(     "Tight"      == muonType) return( passMinPt && passMaxEta  && IsTight() && Isolation() && !GetOverlapWithJet() && IsCombinedMuon());
-  if(     "Tight"      == muonType) return (passMinPt && passMaxEta  && passTightId() && passCustomID && passRelIso);
+
+  if(     "Tight"      == muonType) return (passMinPt && passMaxEta  && passTightId() && passRelIso);
   else if("Veto"       == muonType) return (passMinPt && passMaxEta);//no isolation req. or inner det or jet overlap.
-  else if("UnIsolated" == muonType) return (passMinPt && passMaxEta  && passTightId() && passCustomID && ! passRelIso); //The same as tight muons, but with an inverted isolation requirement
-    //    std::cout << muPt << " " << minPt << " " << muEta << " " << maxEta << std::end;
-  //else if("Isolated"   == muonType) return( GetIsolation()  && !GetOverlapWithJet() && IsCombinedMuon() && OverlapUse());
-  //else if("UnIsolated" == muonType) return( !GetIsolation()  && passMinPt && passMaxEta && IsTight() && !GetOverlapWithJet()&& IsCombinedMuon());
-  //else if("All"        == muonType) return( kTRUE );
-  //else return kTRUE;
+  else if("UnIsolated" == muonType) return (passMinPt && passMaxEta  && passTightId() && ! passRelIso); //The same as tight muons, but with an inverted isolation requirement
+
+  //This is True for the "All" collection of muons
   return kTRUE;
 
-} //Fill()
+} //ApplyCuts()
  
 /******************************************************************************         
  * void Muon::FillFastSim(FastSimTree *tr, Int_t iE)                          *         

@@ -30,7 +30,7 @@
 
 #include "SingleTopRootAnalysis/Particles/Recon/Jet.hpp"
 #include "SingleTopRootAnalysis/Particles/Recon/Particle.hpp"
-#include "SingleTopRootAnalysis/Trees/EventTree.hpp"
+//#include "SingleTopRootAnalysis/Trees/EventTree.hpp"
 #include "SingleTopRootAnalysis/Trees/FastSimTree.hpp"
 #include <TEnv.h>
 
@@ -56,6 +56,8 @@ public:
 
   // Fill the muon from an EventTree
   Bool_t Fill(EventTree *evtr,int iE,TString muonType, Bool_t isSimulation);
+  // Fill the muon from a nanoAODTree
+  Bool_t Fill(nanoAODTree *evtr,int iE,TString muonType, Bool_t isSimulation);
   // also fill from a fastsim tree
   Bool_t FillFastSim(TEnv *config, FastSimTree *tr, Int_t iE,TString muonType);
 
@@ -181,6 +183,10 @@ private:
   Double_t _ndof;
   Double_t _charge;
 
+  //////////////////////////
+  // The ApplyCuts method should be private
+  Bool_t ApplyCuts(TString muonType);
+  
   //////////////////////////////////
   // Definitions of the objects go here. This way we don't need to access the configuration file for every particle
   map<TString,Double_t> _minPtCuts;
