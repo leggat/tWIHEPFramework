@@ -116,7 +116,7 @@ using namespace std;
 // Integrate classes into the Root system
 ClassImp(EventContainer)
 
-//-----------------------------------------------------------------------------------------
+//---if (! DoFastSim()   && _eventTree      == NULL) return -1;--------------------------------------------------------------------------------------
 // Get the next event.
 // It reads in the next event from the current chain and 
 // Creates final state particles.
@@ -127,7 +127,7 @@ Int_t EventContainer::GetNextEvent(){
 
   //cout << "<EventContainer::GetNextEvent Start> " << endl;
   Int_t countOffSet=0;
-  if (! DoFastSim()   && _eventTree      == NULL) return -1;
+  if (! (DoFastSim() || DonanoAOD())   && _eventTree      == NULL) return -1;
   if (DoTruth()       && _truthTree      == NULL) return -1;
   if (DoFastSim()     && _fastSimTree    == NULL) return -1;
   if (DonanoAOD()     && _nanoAODTree    == NULL) return -1;
@@ -175,10 +175,19 @@ Int_t EventContainer::GetNextEvent(){
   // ************************
   if(DoSkim()){
     Int_t bytesReadTri =0;
+    if (DonanoAOD()){
+      bytesReadTri = _nanoAODTree->fChain->GetEntry(_eventCount);
+      if(0 == bytesReadTri) {
+	cout << "<EventContainer> Read 0 bytes from LooseTopInputs tree." << endl;
+	return -1;
+      }
+    }
+    else {
     bytesReadTri = _eventTree->fChain->GetEntry(_eventCount);
     if(0 == bytesReadTri) {
       cout << "<EventContainer> Read 0 bytes from LooseTopInputs tree." << endl;
       return -1;
+    }
     }
     if (_truthTree!=NULL){
       bytesReadTri = _truthTree->fChain->GetEntry(_eventCount);
@@ -215,11 +224,11 @@ Int_t EventContainer::GetNextEvent(){
  ******************************************************************************/
 EventContainer::EventContainer(): 
   //_collectionTree(NULL), 
-  _eventTree(NULL), _truthTree(NULL), 
+  _eventTree(NULL), _nanoAODTree(NULL), _truthTree(NULL), 
   _eventCount(0),   _targetTopMass(175.),
-  _debugLevel(0),   _doFastSim(false),_doSkim(false),
+  _debugLevel(0),   _donanoAOD(false),  _doFastSim(false),_doSkim(false),
   _sourceName("NONE"),
-  _globalEventWeight(1.), _treeEventWeight(1.), _outputEventWeight(1.),_EventPileupWeight(-1),_generalReweight(1.),
+  _globalEventWeight(1.), _treeEventWeight(1.), _outputEventWeight(1.),_EventPileupWeight(-1),_genEventWeight(1.),_generalReweight(1.),
   _EventPileupMinBiasUpWeight(-1),_EventPileupMinBiasDownWeight(-1),
   _config("Configuration"), _JESconfig("JESConfiguration"),_jesError(0.), _jesShift(0), _bTagAlgo("default"), _bTagCut(999), _misTagCut(999), jeteoverlap(kFALSE),closeindex(999),ejordr(999), bestjetdr(999), _isFirstEvent(true), isSimulation(kTRUE), _badJetEvent(kFALSE),  _celloutShift(0),_softjetShift(0),_pileupShift(0),_larShift(0),_metShift(0), _JESconfigread(false),_jesUShift(0),_jesPtShift(0),_jesEtaShift(0),_useUnisolatedLeptons(kFALSE),_trigID(0)
 {
@@ -450,6 +459,7 @@ void EventContainer::SetUseUnisolatedLeptons(const Bool_t& useUnisolatedLeptons,
  ******************************************************************************/
 Int_t EventContainer::ReadEvent()
 {
+
   // Set the event weight if there is any
   if(DoFastSim()) {
     // Will have to be updated when we have a fast sim tree
@@ -469,13 +479,14 @@ Int_t EventContainer::ReadEvent()
     _treeEventWeight = 1.0;                        
     runNumber          = _nanoAODTree -> run;  
     eventNumber        = _nanoAODTree -> event;
+    _genEventWeight    = _nanoAODTree -> genWeight;
     actualIntPerXing   = 1;//_eventTree ->         
     averageIntPerXing  = 1;//_eventTree ->         
     bcid               = 1;//_eventTree ->         
     distns = -999;                                 
     distbunch = -999;                              
     safejetevent= -999;                            
-    safejeteventup= -999;                          
+    safejeteventup= -999;                         
     safejeteventdown= -999;                        
   }  else {
     _treeEventWeight = 1.0;
@@ -536,7 +547,7 @@ Int_t EventContainer::ReadEvent()
   // ***************************************************
   // Reconstructed
   if(DonanoAOD()) { //Fill from the nanoAODTree
-    
+
     ///////////////////////////////////////////
     // Primary vertex information
     //////////////////////////////////////////
@@ -586,7 +597,8 @@ Int_t EventContainer::ReadEvent()
       if(useObj) {                                                       
         vetoElectrons.push_back(newElectron);                            
       }                                                                  
-    } //for                                                              
+    } //for                                    
+
     ///////////////////////////////////////////                          
     // Muons                                                             
     ///////////////////////////////////////////                          
@@ -617,7 +629,7 @@ Int_t EventContainer::ReadEvent()
     /////////////////////////////////////////// 
 
     
-    for(Int_t io = 0;io < _eventTree -> Jet_pt->size(); io++) {                                                                                      
+    for(Int_t io = 0;io < _nanoAODTree -> nJet; io++) {                                                                                      
       newJet.Clear();                                                                                                                                
                                                                                                                                                      
       //Fill the jet object                                                                               

@@ -322,6 +322,7 @@ class EventContainer
   inline Double_t GetOutputEventWeight() const { return _outputEventWeight; };
   inline Double_t GetTreeEventWeight()   const { return _treeEventWeight;   };
   inline Double_t GetGlobalEventWeight() const { return _globalEventWeight; };
+  inline Double_t GetGenEventWeight()         const { return _genEventWeight;    };
 
   //pileup weight per event
   inline void SetEventPileupWeight(const Double_t& pileupweight) {_EventPileupWeight = pileupweight;}; //tagging prob per event
@@ -439,6 +440,10 @@ class EventContainer
   inline Double_t GetMETShiftDown(){return missingEtDownSF;};
 
   inline std::vector<std::vector<std::string> > GetJetResObj(){return _resolution;};
+
+  //Getters for meta information
+  inline Int_t GetEventNumber(){return eventNumber;};
+  inline Int_t GetRunNumber(){return runNumber;};  
 
    // Get the configuration 
   TEnv * GetConfig() {return &_config; };
@@ -746,6 +751,7 @@ private:
 
   // Event Weight
   Double_t _globalEventWeight;         // Global event weight, unchanging event to event
+  Double_t _genEventWeight;            // Weight from the generator
   Double_t _treeEventWeight;           // Event weight read in from the tree
   Double_t _outputEventWeight;         // Output event weight passed to the histograms
  
