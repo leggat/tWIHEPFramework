@@ -342,7 +342,7 @@ void Jet::SetCuts(TEnv * config)
  ******************************************************************************/
 
 
-Bool_t Jet::Fill(std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, nanoAODTree *evtr, Int_t iE, TLorentzVector * met, bool isMC, std::vector<std::vector<std::string> > * resolution, std::vector<std::vector<std::string> > * resSFs, TString * resFormula)
+Bool_t Jet::Fill(std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, nanoAODTree *evtr, Int_t iE, TLorentzVector * met, bool isMC)
 {
   //Set up the TLorentzVector of this particle
   Double_t jetPt,jetEta,jetPhi,jetMass;
@@ -383,7 +383,6 @@ Bool_t Jet::Fill(std::vector<Muon>& selectedMuons, std::vector<Electron>& select
   }
 
   //The current implementation of JES uncertainties relies on information directly stored in the BSM trees. TODO: Update to nanoAOD
-  
   _jesShifts.clear();
   
   //Apply the cuts. The return value is true if it passes, false if not.
