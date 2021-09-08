@@ -14,7 +14,7 @@
 #include <TLorentzVector.h>
 #include <TEnv.h>
 #include "SingleTopRootAnalysis/Trees/EventTree.hpp"
-#include "SingleTopRootAnalysis/Trees/nanoAODTree.h"
+#include "SingleTopRootAnalysis/Trees/nanoAODTree.hpp"
 //
 
 class Particle: public TLorentzVector
