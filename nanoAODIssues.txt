@@ -4,7 +4,9 @@ JES and JER uncertainties are not treated the same
 Electron ID currently uses cut-bsaed. Implement MVA ID
 Also other selection requirements can be changed.
 Do jets need a similar thing to electrons and muons where they have different classes? Like Tight or Veto or whatever? 
-
+Unisolated leptons have been cut.
+Remove MET_xy variables
+Change the way leptons are selected so thta we don't have to read from the tree four times every event
 
 
 contents of nanoAOD found here:  https://cms-nanoaod-integration.web.cern.ch/integration/cms-swCMSSW_10_6_19/mc102X_doc.html
