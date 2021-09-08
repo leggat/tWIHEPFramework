@@ -57,7 +57,7 @@ public:
   // Fill the muon from an EventTree
   Bool_t Fill(EventTree *evtr,int iE,TString muonType, Bool_t isSimulation);
   // Fill the muon from a nanoAODTree
-  Bool_t Fill(nanoAODTree *evtr,int iE,TString muonType, Bool_t isSimulation);
+  Bool_t Fill(nanoAODTree *evtr,int iE, Bool_t isSimulation);
   // also fill from a fastsim tree
   Bool_t FillFastSim(TEnv *config, FastSimTree *tr, Int_t iE,TString muonType);
 
@@ -159,6 +159,19 @@ public:
   inline Double_t GetCharge() const {return _charge;};
   inline Double_t charge() const {return _charge;};
 
+  inline void SetisTightMu(Bool_t isTightMu){_isTightMu = isTightMu;};
+  inline Bool_t GetisTightMu() const {return _isTightMu;};
+  inline Bool_t isTightMu() const {return _isTightMu;};
+
+  inline void SetisVetoMu(Bool_t isVetoMu){_isVetoMu = isVetoMu;};
+  inline Bool_t GetisVetoMu() const {return _isVetoMu;};
+  inline Bool_t isVetoMu() const {return _isVetoMu;};
+
+  inline void SetisUnIsolatedMu(Bool_t isUnIsolatedMu){_isUnIsolatedMu = isUnIsolatedMu;};
+  inline Bool_t GetisUnIsolatedMu() const {return _isUnIsolatedMu;};
+  inline Bool_t isUnIsolatedMu() const {return _isUnIsolatedMu;};
+
+
 private:
 
   Bool_t _passTightId;
@@ -183,9 +196,14 @@ private:
   Double_t _ndof;
   Double_t _charge;
 
+  //IDs for use by the event container
+  Bool_t _isTightMu;
+  Bool_t _isVetoMu;
+  Bool_t _isUnIsolatedMu;
+
   //////////////////////////
   // The ApplyCuts method should be private
-  Bool_t ApplyCuts(TString muonType);
+  Bool_t ApplyCuts(TString muonType = "");
   
   //////////////////////////////////
   // Definitions of the objects go here. This way we don't need to access the configuration file for every particle

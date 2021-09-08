@@ -288,7 +288,7 @@ void Electron::SetCuts(TEnv* config, TString electronType)
  * Input:  nanoAOD Tree                                                         *
  * Output: kTRUE if this electron passes electron ID cuts                     *
  ******************************************************************************/
-Bool_t Electron::Fill(nanoAODTree *evtr, Int_t iE, TString electronType, Bool_t isSimulation)
+Bool_t Electron::Fill(nanoAODTree *evtr, Int_t iE, Bool_t isSimulation)
 {
 
   // ******************************  Set up electron candidate ********************************
@@ -314,7 +314,11 @@ Bool_t Electron::Fill(nanoAODTree *evtr, Int_t iE, TString electronType, Bool_t 
   SetpatElectron_d0     ( evtr -> Electron_dxy             [iE] );
   SetpatElectron_dz     ( evtr -> Electron_dz              [iE] );
 
-  return ApplyCuts(electronType);
+  SetisTightEle      ( ApplyCuts ( "Tight"      ) );
+  SetisVetoEle       ( ApplyCuts ( "Veto"       ) );
+  SetisUnIsolatedEle ( ApplyCuts ( "UnIsolated" ) );
+
+  return kTRUE;
 
 
 } // Fill(nanoAODTree);
@@ -488,9 +492,9 @@ Bool_t Electron::ApplyCuts(TString electronType){
   // Return value according to electron type passed to Fill
   // **************************************************************
 
-  if(     "Tight"      == electronType) return( passMinPt && passMaxEta && passTight && passNoGapElectron && passd0dZ);
-  else if("Veto"       == electronType) return( passMinPt && passMaxEta);//no tight or isolation req.
-  else if(     "UnIsolated" == electronType) return( passMinPt && passMaxEta && passUnIsolated && passNoGapElectron && passd0dZ);
+  if ( electronType == "Tight"      ) return ( passMinPt && passMaxEta && passTight && passNoGapElectron && passd0dZ);
+  if ( electronType == "Veto"       ) return ( passMinPt && passMaxEta);//no tight or isolation req.
+  if ( electronType == "UnIsolated" ) return ( passMinPt && passMaxEta && passUnIsolated && passNoGapElectron && passd0dZ);
 
   return kTRUE;
   

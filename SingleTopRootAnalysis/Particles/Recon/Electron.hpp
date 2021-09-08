@@ -76,7 +76,7 @@ class Electron: public Particle
   Bool_t Fill(EventTree *evtr, Int_t iE, TString electronType, Bool_t isSimulation=false);
 
   // Fill the electron from a nanoAODTree
-  Bool_t Fill(nanoAODTree *evtr, Int_t iE, TString electronType, Bool_t isSimulation=false);
+  Bool_t Fill(nanoAODTree *evtr, Int_t iE, Bool_t isSimulation=false);
 
   // also fill from a fastsim tree
   Bool_t FillFastSim(FastSimTree *tr, Int_t iE,TEnv* config,TString electronType);
@@ -185,6 +185,19 @@ class Electron: public Particle
   inline Int_t GetMissingHits() const {return _missingHits;};
   inline Int_t missingHits() const {return _missingHits;};
 
+  inline void SetisTightEle(Bool_t isTightEle){_isTightEle = isTightEle;};
+  inline Bool_t GetisTightEle() const {return _isTightEle;};
+  inline Bool_t isTightEle() const {return _isTightEle;};
+
+  inline void SetisVetoEle(Bool_t isVetoEle){_isVetoEle = isVetoEle;};
+  inline Bool_t GetisVetoEle() const {return _isVetoEle;};
+  inline Bool_t isVetoEle() const {return _isVetoEle;};
+
+  inline void SetisUnIsolatedEle(Bool_t isUnIsolatedEle){_isUnIsolatedEle = isUnIsolatedEle;};
+  inline Bool_t GetisUnIsolatedEle() const {return _isUnIsolatedEle;};
+  inline Bool_t isUnIsolatedEle() const {return _isUnIsolatedEle;};
+
+
   double get_effarea(double eta);
 
  private:
@@ -208,6 +221,10 @@ class Electron: public Particle
   Double_t _charge;
   Double_t _scEta;
   Int_t _inCrack;
+
+  Bool_t _isTightEle;
+  Bool_t _isVetoEle;
+  Bool_t _isUnIsolatedEle;
 
   //The ID values
   Double_t _sigmaEtaEta;
@@ -233,7 +250,7 @@ class Electron: public Particle
   std::map<TString,Double_t> _d0CutBarrel;
   
   //Apply the cuts 
-  Bool_t ApplyCuts(TString electronType);
+  Bool_t ApplyCuts(TString electronType = "");
 
   ////////////////////////////////////////////////////////////////////////////////
   // Integrate classes into the Root system

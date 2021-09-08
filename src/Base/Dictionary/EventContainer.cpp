@@ -581,20 +581,14 @@ Int_t EventContainer::ReadEvent()
     // All electrons                                                     
     for(Int_t io = 0; io < _nanoAODTree->nElectron; io++) {   
       newElectron.Clear();                                               
-      useObj=newElectron.Fill(_nanoAODTree, io,"All",isSimulation);        
+      useObj=newElectron.Fill(_nanoAODTree, io,isSimulation);        
       if(useObj) {                                                       
         electrons.push_back(newElectron);                                
       }                                                                  
-                                                                         
-      newElectron.Clear();                                               
-      useObj=newElectron.Fill(_nanoAODTree,  io,"Tight",isSimulation);     
-      if(useObj) {                                                       
+      if (newElectron.isTightEle()) {
         tightElectrons.push_back(newElectron);                           
       }                                                                  
-                                                                         
-      newElectron.Clear();                                               
-      useObj=newElectron.Fill(_nanoAODTree,  io,"Veto",isSimulation);      
-      if(useObj) {                                                       
+    if(newElectron.isVetoEle()) {                                                       
         vetoElectrons.push_back(newElectron);                            
       }                                                                  
     } //for                                    
@@ -605,20 +599,14 @@ Int_t EventContainer::ReadEvent()
     // All muon                                                          
     for(Int_t io = 0;io < _nanoAODTree -> nMuon; io++) {         
       newMuon.Clear();                                                   
-      useObj = newMuon.Fill(_nanoAODTree, io,"All", isSimulation);         
+      useObj = newMuon.Fill(_nanoAODTree, io, isSimulation);         
       if(useObj) {                                                       
         muons.push_back(newMuon);                                        
       } // if useObj                                                     
-                                                                         
-      newMuon.Clear();                                                   
-      useObj = newMuon.Fill(_nanoAODTree, io,"Tight", isSimulation);       
-      if(useObj) {                                                       
+      if(newMuon.isTightMu()) {                                                       
         tightMuons.push_back(newMuon);                                   
       } // if useObj                                                     
-                                                                         
-      newMuon.Clear();                                                   
-      useObj = newMuon.Fill(_nanoAODTree, io,"Veto", isSimulation);        
-      if(useObj) {                                                       
+      if(newMuon.isVetoMu()) {                                                       
         vetoMuons.push_back(newMuon);                                    
       } // if useObj                                                     
                                                                          
@@ -653,11 +641,11 @@ Int_t EventContainer::ReadEvent()
       for (int jesSyst = 0; jesSyst < newJet.GetNumberOfJESCorrections(); jesSyst++){                                                   
         if (newJet.ShiftPtWithJESCorr(jesSyst,&(metVecsJESShifted[jesSyst]))) jesShiftedJets[jesSyst].push_back(newJet);                                                                                                                                                        
       }                                                                                                                                 
-
+      
     }  //for jet loop
-
-  }
-  else { //Fill using the classic BSM trees
+   
+}
+ else { //Fill using the classic BSM trees
     //    isSimulation = _eventTree->isSimulation; // Why is this always set to true?!?
     
     ///////////////////////////////////////////  

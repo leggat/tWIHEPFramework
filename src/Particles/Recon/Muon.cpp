@@ -312,7 +312,7 @@ void Muon::SetCuts(TEnv* config, TString muonType)
  * Input:  nanoAODTree tree                                                         *         
  * Output: kTRUE if the muon passes object ID cuts                            *         
  ******************************************************************************/
-Bool_t Muon::Fill(nanoAODTree *evtr,int iE,TString muonType, Bool_t isSimulation)
+Bool_t Muon::Fill(nanoAODTree *evtr,int iE, Bool_t isSimulation)
 {
 
   Double_t muPt     = evtr -> Muon_pt              [iE];
@@ -328,7 +328,11 @@ Bool_t Muon::Fill(nanoAODTree *evtr,int iE,TString muonType, Bool_t isSimulation
 
   SetPtEtaPhiM(muPt, muEta, muPhi, muM); 
 
-  return ApplyCuts(muonType);
+  SetisTightMu      ( ApplyCuts( "Tight"      ) );
+  SetisVetoMu       ( ApplyCuts( "Veto"       ) );
+  SetisUnIsolatedMu ( ApplyCuts( "UnIsolated" ) );
+
+  return kTRUE;
 
 }//Fill(nanoAODTree)
 
@@ -415,10 +419,10 @@ Bool_t Muon::ApplyCuts(TString muonType)
   if(Pt() <= _minPtCuts[muonType])               passMinPt  = kFALSE;
   if(TMath::Abs(Eta()) >= _maxEtaCuts[muonType]) passMaxEta = kFALSE;
 
-
-  if(     "Tight"      == muonType) return (passMinPt && passMaxEta  && passTightId() && passRelIso);
-  else if("Veto"       == muonType) return (passMinPt && passMaxEta);//no isolation req. or inner det or jet overlap.
-  else if("UnIsolated" == muonType) return (passMinPt && passMaxEta  && passTightId() && ! passRelIso); //The same as tight muons, but with an inverted isolation requirement
+  //Set up the ID requirements for the event container
+  if (muonType == "Tight")      return (passMinPt && passMaxEta  && passTightId() && passRelIso);
+  if (muonType == "Veto")       return (passMinPt && passMaxEta);//no isolation req. or inner det or jet overlap.
+  if (muonType == "UnIsolated") return (passMinPt && passMaxEta  && passTightId() && ! passRelIso); //The same as tight muons, but with an inverted isolation requirement
 
   //This is True for the "All" collection of muons
   return kTRUE;
