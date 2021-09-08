@@ -492,7 +492,7 @@ Bool_t Jet::ApplyCuts(std::vector<Muon>& selectedMuons, std::vector<Electron>& s
   Bool_t passesJetID = kFALSE;
 
   if (useJetIDFromTree){ //This is different for nanoAOD vs BSM
-    passesJetID = (jetID() == 6); // Check https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookNanoAOD#Jets for what value this should be
+    passesJetID = (jetID() == 3); // Check https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookNanoAOD#Jets for what value this should be. Also this should probably be saved in the config...
   }
   else {
     Bool_t neutralID = (TMath::Abs(Eta()) > 3. || (neutralHadEnergyFraction() < 0.99 &&  neutralEmEmEnergyFraction() < 0.99 && numberOfConstituents() > 1));
