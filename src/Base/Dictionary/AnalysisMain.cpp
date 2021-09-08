@@ -822,6 +822,7 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
   //CollectionTree* treeCollection = new CollectionTree(chainCollection);
   EventTree*      treeEventTree      = NULL;
   FastSimTree*    treeFastSimTree    = NULL;
+  nanoAODTree*    treenanoAODTree    = NULL;
 
   TruthTree*       treeTruthTree     = NULL;
   if(DoTruth())    treeTruthTree     = new TruthTree(chainTruth);
@@ -829,6 +830,9 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
   if(DoFastSim()) {
     treeFastSimTree  = new FastSimTree(chainFastSim0);
   } //if
+  else if (DonanoAOD()) {
+    treenanoAODTree = new nanoAODTree(chainEV0);
+  }
   else treeEventTree = new EventTree(chainEV0);
 
   // Open the output histogram file
@@ -925,12 +929,6 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
     OpenSkimFile(_skimFileName);
     TDirectory *BSMTreeDir = _skimFile->mkdir("TNT","TNTD");
     BSMTreeDir->cd();
-    //_skimConfigTreeMeta         = (TTree*)chainConfig-> CloneTree(0);
-    //TDirectory *ConfigTreeMetaDir = _skimFile->mkdir("ConfigTreeMeta","ConfigTreeMetaD");
-    //ConfigTreeMetaDir->Add(_skimConfigTreeMeta);
-
-    // Create clones of chains
-    //_skimCollectionTree = (TTree*)chainCollection -> CloneTree(0);
 
     if(DoFastSim()){
       _skimEventTree    = (TTree*)chainFastSim0 -> CloneTree(0);
@@ -946,7 +944,7 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
   ////////////////////////////////////////////////////////////////////////////////
   //if(DoFastSim()) EventContainer::InitializeFastSim(m_tool,treeFastSimTree, treeTruthTree, treeTriggerTree, treeInfoTree, treeDecisionTree, treeElectronPreTagTree, treeDiElectronsPreTagTree, treeElectronMuonPreTagTree, treeMuonPreTagTree, treeDiMuonsPreTagTree, treeElectronLooseTree, treeDiElectronsLooseTree, treeElectronMuonLooseTree, treeMuonLooseTree, treeDiMuonsLooseTree, treeBunchConfTree);
   //else            EventContainer::Initialize(m_tool, treeEventTree, treeTruthTree, treeTriggerTree, treeInfoTree, treeDecisionTree, treeElectronPreTagTree, treeDiElectronsPreTagTree, treeElectronMuonPreTagTree, treeMuonPreTagTree, treeDiMuonsPreTagTree, treeElectronLooseTree, treeDiElectronsLooseTree, treeElectronMuonLooseTree, treeMuonLooseTree, treeDiMuonsLooseTree,treeBunchConfTree );
-  EventContainer::Initialize(treeEventTree, treeTruthTree);
+  EventContainer::Initialize(treeEventTree, treenanoAODTree, treeTruthTree);
 
   EventContainer::SetupObjectDefinitions();
 

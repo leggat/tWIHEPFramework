@@ -111,12 +111,13 @@
 #include "SingleTopRootAnalysis/Trees/EventTree.hpp"
 #include "SingleTopRootAnalysis/Trees/FastSimTree.hpp"
 #include "SingleTopRootAnalysis/Trees/TruthTree.hpp"
+#include "SingleTopRootAnalysis/Trees/nanoAODTree.hpp"
 
 // Our own particles
 #include "SingleTopRootAnalysis/Particles/Recon/Electron.hpp"
 #include "SingleTopRootAnalysis/Particles/Recon/Muon.hpp"
-#include "SingleTopRootAnalysis/Particles/Recon/Tau.hpp"
 #include "SingleTopRootAnalysis/Particles/Recon/Jet.hpp"
+#include "SingleTopRootAnalysis/Particles/Recon/Tau.hpp"
 #include "SingleTopRootAnalysis/Particles/Recon/Neutrino.hpp"
 
 // MC particles
@@ -167,7 +168,7 @@ class EventContainer
   inline Double_t GetTargetTopMass() const { return _targetTopMass; };
 
   // Initialize this class 
-  void Initialize(EventTree* eventTree, TruthTree* truthTree);
+  void Initialize(EventTree* eventTree, nanoAODTree* nanoAODTree, TruthTree* truthTree);
  
   //Set up the object definitions
   void SetupObjectDefinitions();
@@ -195,6 +196,9 @@ class EventContainer
   // Get the event tree
   inline EventTree* GetEventTree() const { return _eventTree; };
 
+  // Get the event tree
+  inline nanoAODTree* GetnanoAODTree() const { return _nanoAODTree; };
+
   // Get the FastSim tree
   inline FastSimTree* GetFastSimTree() const { return _fastSimTree; };
 
@@ -214,6 +218,11 @@ class EventContainer
   inline void SetDoTruth(const Bool_t& a=kTRUE) { _doTruth=a; };
   // get whether we should do the Truth tree or not
   inline Bool_t DoTruth(void) const { return _doTruth; };
+
+  // Set whether we should do the Truth
+  inline void SetDonanoAOD(const Bool_t& a=kTRUE) { _donanoAOD=a; };
+  // get whether we should do the Truth tree or not
+  inline Bool_t DonanoAOD(void) const { return _donanoAOD; };
 
   // get whether we should do the skim tree or not
   inline void SetDoSkim(const Bool_t& a=true) { _doSkim=a; };
@@ -564,6 +573,20 @@ class EventContainer
   //Track whterh it passes the MET filters
   Int_t passesMETFilters;
 
+  //Primary vertex information
+  Float_t pv_chi2;
+  Float_t pv_ndof;
+  Int_t   pv_npvs;
+  Int_t   pv_npvsGood;
+  Float_t pv_score;
+  Float_t pv_x;
+  Float_t pv_y;
+  Float_t pv_z;
+
+  //met info nanoAODTree
+  Float_t met_pt;
+  Float_t met_phi;
+
   //Various variables for plotting primary vertex information
   Int_t nPvtx;
   Int_t trueInteractions;
@@ -703,12 +726,14 @@ private:
   // The classes that contain the information from the trees:
   //CollectionTree *_collectionTree;
   EventTree      *_eventTree;
+  nanoAODTree    *_nanoAODTree;
   FastSimTree    *_fastSimTree;
   TruthTree      *_truthTree;
   // Counters to keep track of location in event chain
   Int_t _eventCount;
 
   Bool_t _doFastSim;    // should we run over fast simulation or full simulation?
+  Bool_t _donanoAOD;    // should we run over nanoAOD?
   Bool_t _doTruth;      // should we include the truth tree at all?
   Bool_t _doSkim;       // should we skim?
   Bool_t _doConfig;     // should we include the Bkgd tree at all?

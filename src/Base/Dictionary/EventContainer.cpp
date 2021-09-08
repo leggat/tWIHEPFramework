@@ -130,6 +130,7 @@ Int_t EventContainer::GetNextEvent(){
   if (! DoFastSim()   && _eventTree      == NULL) return -1;
   if (DoTruth()       && _truthTree      == NULL) return -1;
   if (DoFastSim()     && _fastSimTree    == NULL) return -1;
+  if (DonanoAOD()     && _nanoAODTree    == NULL) return -1;
 
   // now Set things up
   Int_t bytesReadTru;
@@ -140,7 +141,11 @@ Int_t EventContainer::GetNextEvent(){
   // ************************
   if(DoFastSim()) {
     bytesReadEv = _fastSimTree->fChain->GetEntry(_eventCount);
-  } else {
+  } 
+  else if (DonanoAOD()){
+    bytesReadEv = _nanoAODTree->fChain->GetEntry(_eventCount);
+  }
+  else {
     // normal running, get the next eventin the event tree
     bytesReadEv = _eventTree->fChain->GetEntry(_eventCount);
   } 
@@ -259,11 +264,12 @@ EventContainer::~EventContainer()
  ******************************************************************************/
 //void EventContainer::Initialize(CollectionTree* collectionTree,EventTree* eventTree, TruthTree* truthTree)
 //
-void EventContainer::Initialize( EventTree* eventTree, TruthTree* truthTree)
+void EventContainer::Initialize( EventTree* eventTree, nanoAODTree* nanoAODTree, TruthTree* truthTree)
 {
 
   _eventTree       = eventTree;
   _truthTree       = truthTree;
+  _nanoAODTree     = nanoAODTree;
 //  // now Set up the internal variables:
   SetIsFirstEvent(true);
   actualIntPerXing = 0;
@@ -458,7 +464,19 @@ Int_t EventContainer::ReadEvent()
     bcid = -999;
     safejetevent= -999;
     safejeteventup= -999;
-    safejeteventdown= -999;
+    safejeteventdown= -999;  
+  } else if (DonanoAOD()) {
+    _treeEventWeight = 1.0;                        
+    runNumber          = _nanoAODTree -> run;  
+    eventNumber        = _nanoAODTree -> event;
+    actualIntPerXing   = 1;//_eventTree ->         
+    averageIntPerXing  = 1;//_eventTree ->         
+    bcid               = 1;//_eventTree ->         
+    distns = -999;                                 
+    distbunch = -999;                              
+    safejetevent= -999;                            
+    safejeteventup= -999;                          
+    safejeteventdown= -999;                        
   }  else {
     _treeEventWeight = 1.0;
     runNumber          = _eventTree -> EVENT_run;
@@ -517,41 +535,133 @@ Int_t EventContainer::ReadEvent()
   } // end of filling from fastsim tree
   // ***************************************************
   // Reconstructed
-  else {
+  if(DonanoAOD()) { //Fill from the nanoAODTree
+    
+    ///////////////////////////////////////////
+    // Primary vertex information
+    //////////////////////////////////////////
+    
+    pv_chi2 = _nanoAODTree->PV_chi2;
+    pv_ndof = _nanoAODTree->PV_ndof;
+    pv_npvs = _nanoAODTree->PV_npvs;
+    pv_npvsGood = _nanoAODTree->PV_npvsGood;
+    pv_score = _nanoAODTree->PV_score;
+    pv_x = _nanoAODTree->PV_x;
+    pv_y = _nanoAODTree->PV_y;
+    pv_z = _nanoAODTree->PV_z;
+
+    ///////////////////////////////////////////
+    // Fill MET info                           
+    ///////////////////////////////////////////
+
+    met_pt = _nanoAODTree->MET_pt;
+    met_phi = _nanoAODTree->MET_phi;
+    missingEtVec.SetPtEtaPhiM(met_pt,0.,met_phi,0.);
+
+    passesMETFilters = _nanoAODTree->Flag_METFilters;
+
+    //For compatability reasons right now
+    missingEtVec_xy.SetPtEtaPhiM(met_pt,0.,met_phi,0.);
+
+    ///////////////////////////////////////////                          
+    // Electrons                                                         
+    ///////////////////////////////////////////                          
+                                                                         
+    // All electrons                                                     
+    for(Int_t io = 0; io < _nanoAODTree->nElectron; io++) {   
+      newElectron.Clear();                                               
+      useObj=newElectron.Fill(_nanoAODTree, io,"All",isSimulation);        
+      if(useObj) {                                                       
+        electrons.push_back(newElectron);                                
+      }                                                                  
+                                                                         
+      newElectron.Clear();                                               
+      useObj=newElectron.Fill(_nanoAODTree,  io,"Tight",isSimulation);     
+      if(useObj) {                                                       
+        tightElectrons.push_back(newElectron);                           
+      }                                                                  
+                                                                         
+      newElectron.Clear();                                               
+      useObj=newElectron.Fill(_nanoAODTree,  io,"Veto",isSimulation);      
+      if(useObj) {                                                       
+        vetoElectrons.push_back(newElectron);                            
+      }                                                                  
+    } //for                                                              
+    ///////////////////////////////////////////                          
+    // Muons                                                             
+    ///////////////////////////////////////////                          
+    // All muon                                                          
+    for(Int_t io = 0;io < _nanoAODTree -> nMuon; io++) {         
+      newMuon.Clear();                                                   
+      useObj = newMuon.Fill(_nanoAODTree, io,"All", isSimulation);         
+      if(useObj) {                                                       
+        muons.push_back(newMuon);                                        
+      } // if useObj                                                     
+                                                                         
+      newMuon.Clear();                                                   
+      useObj = newMuon.Fill(_nanoAODTree, io,"Tight", isSimulation);       
+      if(useObj) {                                                       
+        tightMuons.push_back(newMuon);                                   
+      } // if useObj                                                     
+                                                                         
+      newMuon.Clear();                                                   
+      useObj = newMuon.Fill(_nanoAODTree, io,"Veto", isSimulation);        
+      if(useObj) {                                                       
+        vetoMuons.push_back(newMuon);                                    
+      } // if useObj                                                     
+                                                                         
+    } //for muon loop                                                    
+
+    /////////////////////////////////////////// 
+    // Jets                                
+    /////////////////////////////////////////// 
+
+    
+    for(Int_t io = 0;io < _eventTree -> Jet_pt->size(); io++) {                                                                                      
+      newJet.Clear();                                                                                                                                
+                                                                                                                                                     
+      //Fill the jet object                                                                               
+      //The MET vector is not actually adjusted in the nanoAOD version of jets YET, because no smearing etc is done. But we pass it anyway so that in the future it will.
+      useObj = newJet.Fill(*muonsToUsePtr, *electronsToUsePtr, _nanoAODTree, io, &missingEtVec, isSimulation);
+
+      //Record every jet in this
+      alljets.push_back(newJet);                                                                                                        
+                                                                                                                                        
+      if(useObj) {              
+	//Only jets that pass event selections
+        jets.push_back(newJet);                                                                                                         
+                                              
+	//Put tagged selected jets into the tagged list, and non-tagged selected jets into the unTagged list
+        if(newJet.IsTagged()) taggedJets.push_back(newJet);                                                                             
+        else unTaggedJets.push_back(newJet);                                                                                            
+                                                                                                                                        
+      } // if useObj                                                                                                                    
+      //Now for each jet shift it by all of the JES corrections and append it to the shifted jet collections if it passes selections now
+      //Currently for nanoAOD the GetNumberOfJESCorrections is zero, so this will do nothing, but leaving it here for when it works again.
+      for (int jesSyst = 0; jesSyst < newJet.GetNumberOfJESCorrections(); jesSyst++){                                                   
+        if (newJet.ShiftPtWithJESCorr(jesSyst,&(metVecsJESShifted[jesSyst]))) jesShiftedJets[jesSyst].push_back(newJet);                                                                                                                                                        
+      }                                                                                                                                 
+
+    }  //for jet loop
+
+  }
+  else { //Fill using the classic BSM trees
     //    isSimulation = _eventTree->isSimulation; // Why is this always set to true?!?
-    _badJetEvent = kFALSE;
-    //must be done for each event
-    // Electrons, Jets, Muons, missingEt
-    Electrons_tlv.clear();
-    Electrons_tlv_scaled.clear();
-    Jets_tlv_scaled.clear();
-    Jets_tlv.clear();
-    Jets_JESup_tlv.clear();
-    Jets_emscale_tlv.clear();
-    Muons_tlv_scaled.clear();
-    Muons_tlv.clear();
-    Muons_ms_tlv_scaled.clear();
-    Muons_ms_tlv.clear();
-    Muons_track_tlv_scaled.clear();
-    Muons_track_tlv.clear();
-    missingEt = -888;
+    
     ///////////////////////////////////////////  
     // Number of vertices
     ///////////////////////////////////////////  
+    
     int ncount = 0;
-    //for(int i=0; i<_eventTree->Vertex_n; i++){
-    //  //events will be rejected if this isn't true for i == 0 (cut class applied later) but other vertices still allowed
-    //  if((_eventTree->Vertex_type->at(i) == 1 || _eventTree->Vertex_type->at(i) == 3) && _eventTree->Vertex_track_n->at(i) >= 5) ncount++;
-    //  //  for(int i=0; i<_eventTree->Vertex_n; i++){
-    //  // if(_eventTree->Vertex_track_n->at(i) > 4) ncount++;
-    //}
-    //nPvtx = ncount;
-    //Pvtxall_n = _eventTree->Vertex_n;
-
+    //Fill pvtx information
+    nPvtx = _eventTree->nBestVtx;
+    trueInteractions = _eventTree->trueInteractions;
+    npuVertices = _eventTree->npuVertices;
+    
+    
     ///////////////////////////////////////////
     // Fill MET info 
     ///////////////////////////////////////////
-    // Should I update this to use PUPPI information?!?
     missingEt = _eventTree->Met_type1PF_pt;
     missingEx = _eventTree->Met_type1PF_px;
     missingPhi = _eventTree->Met_type1PF_phi;
@@ -567,11 +677,6 @@ Int_t EventContainer::ReadEvent()
     missingEtUpSF = _eventTree->Met_type1PF_pt/_eventTree->Met_type1PF_shiftedPtUp;
     missingEtDownSF = _eventTree->Met_type1PF_pt/_eventTree->Met_type1PF_shiftedPtDown;
 
-    //Fill pvtx information
-    nPvtx = _eventTree->nBestVtx;
-    trueInteractions = _eventTree->trueInteractions;
-    npuVertices = _eventTree->npuVertices;
-    
     // Systematic variations on met to be re-calculated here.
     if (_metShift != 0){
       float oldEt = missingEt;
@@ -591,7 +696,7 @@ Int_t EventContainer::ReadEvent()
 
 
     ///////////////////////////////////////////
-    // Electrons-->refilled and sorted later in method!!
+    // Electrons
     ///////////////////////////////////////////
 
     // All electrons
@@ -601,18 +706,7 @@ Int_t EventContainer::ReadEvent()
       if(useObj) { 
 	electrons.push_back(newElectron);
       }  
-      //if(_eventTree->Electron_tight->at(io) == 1 && _eventTree->Electron_pt->at(io)>10000){
-      //  TLorentzVector a(0,0,0,0);
-      //  a.SetPtEtaPhiE(_eventTree->Electron_pt->at(io), _eventTree->Electron_eta->at(io), _eventTree->Electron_phi->at(io), 0);
-      //  Electrons_tlv.push_back(a);
-      //  a.SetPtEtaPhiE(_eventTree->Electron_pt->at(io)*newElectron.E()*1000/_eventTree->Electron_cluster_E->at(io),newElectron.Eta(), newElectron.Phi(),newElectron.E()*1000); 
-      //  Electrons_tlv_scaled.push_back(a);
-      //} else{
-      //  TLorentzVector a(0,0,0,0);
-      //  Electrons_tlv.push_back(a);
-      //  Electrons_tlv_scaled.push_back(a);
-      //}
-
+    
       newElectron.Clear();
       useObj=newElectron.Fill(_eventTree,  io,"Tight",isSimulation);
       if(useObj) {
@@ -634,7 +728,6 @@ Int_t EventContainer::ReadEvent()
     ///////////////////////////////////////////
     // Muons
     ///////////////////////////////////////////  
-    //NOTE: although the missingEt is sent into all the muon loops, it is ONLY shifted in the all muons loop
     // All muon
     for(Int_t io = 0;io < _eventTree -> Muon_pt->size(); io++) {
       newMuon.Clear();
@@ -666,23 +759,13 @@ Int_t EventContainer::ReadEvent()
     ///////////////////////////////////////////
     // Jets
     ///////////////////////////////////////////
-    closeindex = 999;
-    ejordr = 999;
-    bestjetdr = 999;
-    jeteoverlap = kFALSE;
-    //cout <<"EVENT"<<endl;
 
-    Double_t ejoverlap = GetConfig() -> GetValue("ObjectID.Jet.ElectronDeltaRMin", 0.0);
     for(Int_t io = 0;io < _eventTree -> Jet_pt->size(); io++) {
       newJet.Clear();
-      jeteoverlap = kFALSE;
-      closeindex = 999;
-      ejordr = 999;
-      bestjetdr = 999;
-      //      missingEt = -888;
-      //      std::cout << _resolution;
-      useObj = newJet.Fill(1.0,1.0, *muonsToUsePtr, *electronsToUsePtr, _eventTree, io, &missingEtVec_xy, isSimulation, &_resolution, &_resSFs, &_resFormula);
-      //      useObj = newJet.Fill(1.0,1.0, _eventTree, io);
+
+      //Fill the jet object
+      useObj = newJet.Fill(*muonsToUsePtr, *electronsToUsePtr, _eventTree, io, &missingEtVec_xy, isSimulation, &_resolution, &_resSFs, &_resFormula);
+
       
       missingEt = TMath::Sqrt(pow(missingEx,2) + pow(missingEy,2));//so MET gets JES adjustment toogEx=top_met.MET_ExMiss();
       /////////////////////////////////////
@@ -705,19 +788,6 @@ Int_t EventContainer::ReadEvent()
 	if(newJet.IsTagged()) taggedJets.push_back(newJet);
 	else unTaggedJets.push_back(newJet);
    
-	
-        //NOTE: PdgId of +/-1 is used for light quark jets when charge information is available and 
-	//uncharged particles that are not labeled as b, c, or tau are given an ID of 0
-	//Currently no charge information is available so all particles in this catagory have an
-	//PgdId of 0.
-	//NOTE: This PDGId() method returns the flavor of the MC particle associated
-	//with the jet (wrt position).  It is NOT nessesarily the jet's flavor, but
-	//a reasonable assumption BASED ON MC AND RECO INFORMATION
-	
-	//if(newJet.GetAbsPdgId() == 5)    bLabeledJets.push_back(newJet);
-	//if(newJet.GetAbsPdgId() == 4)    cLabeledJets.push_back(newJet);
-	//if(newJet.GetAbsPdgId() == 15)   tauLabeledJets.push_back(newJet);
-	//if((newJet.GetAbsPdgId() == 1) || (newJet.GetAbsPdgId() == 0) )  lightQuarkLabeledJets.push_back(newJet);
       } // if useObj
       //Now for each jet shift it by all of the JES corrections and append it to the shifted jet collections if it passes selections now
       for (int jesSyst = 0; jesSyst < newJet.GetNumberOfJESCorrections(); jesSyst++){
@@ -727,109 +797,6 @@ Int_t EventContainer::ReadEvent()
 	  
 
     } //jets
-    //Debugging for new JES corrections
-    /*    Int_t printNums = -1;
-    Int_t numberOfDiffs = 0;
-    if (jets.size() > 0){
-      for (int jesSyst = 0; jesSyst < jets[0].GetNumberOfJESCorrections() ; jesSyst++){
-	if (jesShiftedJets[jesSyst].size() != jets.size()) {
-	  printNums = jesSyst;
-	  numberOfDiffs++;
-	}
-      }
-    }
-    if (printNums > -1){
-      std::cout << "#Jets in event: " << jets.size() << " but " << printNums << " has " << jesShiftedJets[printNums].size() << "(" << numberOfDiffs << ")" << std::endl;
-      }*/
-    
-/*
-    missingEx = _eventTree -> MissingEt_etx / 1000.0;
-    missingEy = _eventTree -> MissingEt_ety / 1000.0;
-    missingEt = TMath::Sqrt(pow(missingEx,2) + pow(missingEy,2));//so MET gets adjustment by the muon smearing
-    ///////////////////////////////////////////  
-    // Missing ET-->Passed to objects for shifting: MUST BE CALCULATED AFTER ALL OBJECTS ARE SMEARED
-    ///////////////////////////////////////////  
-    top_met.Reset();
-  
-    Float_t mystupidfloat=0;
-    top_met.Set_METComposition(_eventTree->MissingEt_etx, _eventTree->MissingEt_ety, _eventTree->MissingEt_sumet, mystupidfloat, mystupidfloat, mystupidfloat, mystupidfloat, mystupidfloat, mystupidfloat, mystupidfloat, mystupidfloat, mystupidfloat, _eventTree->MissingEt_SoftJets_sumet, _eventTree->MissingEt_SoftJets_etx, _eventTree->MissingEt_SoftJets_ety, _eventTree->MissingEt_CellOut_sumet, _eventTree->MissingEt_CellOut_etx, _eventTree->MissingEt_CellOut_ety, mystupidfloat, mystupidfloat, mystupidfloat);
-
-    top_met.Set_METWeights(_eventTree->Electron_MissingEt_wpx, _eventTree->Electron_MissingEt_wpy, _eventTree->Electron_MissingEt_wet, 0, 0, 0, _eventTree->Jet_MissingEt_wpx, _eventTree->Jet_MissingEt_wpy, _eventTree->Jet_MissingEt_wet, _eventTree->Muon_MissingEt_statusWord, _eventTree->Muon_MissingEt_wpx, _eventTree->Muon_MissingEt_wpy, _eventTree->Muon_MissingEt_wet);
-    double mex=0;
-    double mey=0;
-
-    for (int muo=0;muo!=_eventTree->Muon_pt->size();muo++){
-	TLorentzVector a(0,0,0,0);
-	a.SetPtEtaPhiE(_eventTree->Muon_pt->at(muo), 0, _eventTree->Muon_phi->at(muo), 0);
-	Muons_tlv.push_back(a);
-	a.SetPtEtaPhiE(_eventTree->Muon_ms_pt->at(muo), 0, _eventTree->Muon_ms_phi->at(muo), 0);
-	//cout<<"muo "<<muo<<"  "<<_eventTree->Muon_ms_phi->at(muo)<<endl;
-	Muons_ms_tlv.push_back(a);
-	a.SetPtEtaPhiE(_eventTree->Muon_pt->at(muo), 0, _eventTree->Muon_phi->at(muo), 0);
-	Muons_track_tlv.push_back(a);
-    }
-      // Muon_ms_tlv_scaled = TLorentzVector(Muon_ms_pt*Muon_me_pt_scaled/Muon_me_pt, 0, Muon_ms_phi, 0)
-      // Muon_track_tlv_scaled = TLorentzVector(Muon_track_pt*Muon_id_pt_scaled/Muon_id_pt, 0, Muon_track_phi, 0) 
-    for (int muo =0;muo!=muons.size();muo++){
-	TLorentzVector a(0,0,0,0);
-	a.SetPtEtaPhiE(muons.at(muo).Pt()*1000, 0, muons.at(muo).Phi(), 0);
-	Muons_tlv_scaled.push_back(a);
-	//event tree pts are in MeV, muons.blah are in GeV.  Tool takes MeV
-	a.SetPtEtaPhiE(1000*_eventTree->Muon_ms_pt->at(muo)*muons.at(muo).GetptMS()/_eventTree->Muon_me_pt->at(muo), 0, _eventTree->Muon_ms_phi->at(muo), 0);
-	//	cout<<"muo "<<muo<<"  "<<_eventTree->Muon_ms_pt->at(muo)<<"  "<<muons.at(muo).GetptMS()<<"  "<<_eventTree->Muon_me_pt->at(muo)<<"  "<< _eventTree->Muon_ms_phi->at(muo)<<endl;
-	Muons_ms_tlv_scaled.push_back(a);
-	a.SetPtEtaPhiE(1000*_eventTree->Muon_pt->at(muo)*muons.at(muo).GetptID()/_eventTree->Muon_id_pt->at(muo), 0, _eventTree->Muon_phi->at(muo), 0);
-	Muons_track_tlv_scaled.push_back(a);
-
-    }
-    top_met.Set_Electrons(Electrons_tlv_scaled, Electrons_tlv);
-    top_met.Set_Jets(Jets_tlv_scaled, Jets_tlv, Jets_emscale_tlv);
-    top_met.Set_Muons(Muons_tlv_scaled, Muons_tlv, Muons_ms_tlv_scaled, Muons_ms_tlv, Muons_track_tlv_scaled, Muons_track_tlv);
-    top_met.ApplyCellOutUncertainty(celloutShift(),0);
-    top_met.ApplySoftJetUncertainty(softjetShift(),Jets_JESup_tlv,0);
-    top_met.ApplyPileupUncertainty(pileupShift());
-      
-    missingPhi = top_met.MET_MetPhi();
-    missingE1x=top_met.MET_ExMiss()/1000;
-    missingEy=top_met.MET_EyMiss()/1000;      
-    sumEt=top_met.MET_SumEt()/1000;
- 
-    missingEt = -888;
-    //so 0 jet events also have defined missing Et
-    missingEt = top_met.MET_EtMiss()/1000;
-
-    //sorts moved here because of particle index useage in top met tool.  sorts use scaled/smeared pt's
-    sort(jets.begin(), jets.end());
-    sort(alljets.begin(), alljets.end());
-    sort(jetms.begin(), jetms.end());
-    sort(taggedJets.begin(), taggedJets.end());
-    sort(unTaggedJets.begin(), unTaggedJets.end());
-    
-    sort(electrons.begin(), electrons.end());
-    sort(tightElectrons.begin(), tightElectrons.end());
-    sort(vetoElectrons.begin(), vetoElectrons.end());
-    sort(ptetaElectrons.begin(), ptetaElectrons.end());
-    sort(isolatedElectrons.begin(), isolatedElectrons.end());
-    sort(unIsolatedElectrons.begin(), unIsolatedElectrons.end());
-    
-    sort(muons.begin(), muons.end());
-    sort(tightMuons.begin(), tightMuons.end());
-    sort(vetoMuons.begin(), vetoMuons.end());    
-    sort(ptetaMuons.begin(), ptetaMuons.end());    
-    sort(isolatedMuons.begin(), isolatedMuons.end());
-    sort(unIsolatedMuons.begin(), unIsolatedMuons.end());    
-
-    ///////////////////////////////////////////
-    ////////////////////////////////////////
-    // HT and MTotal not in v13.0.30
-    // Set to -999 for now.
-    ////////////////////////////////////////
-    //particleHT     = _eventTree->HT/1000;
-    //particleMTotal = _eventTree->MTotal;
-    particleHT     = -999.0;
-    particleMTotal = -999.0;
-    // SetIsFirstEvent(kFALSE);//finished reading first event
-    */
   } // end of else: filling from reco tree
   
   //
