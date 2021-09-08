@@ -20,7 +20,7 @@
 #include "TSystem.h"
 
 // Include histogramming classes
-#include "SingleTopRootAnalysis/Cuts/Weights/EventWeight.hpp"
+#include "SingleTopRootAnalysis/Cuts/Weights/EventWeight_nanoAOD.hpp"
 //#include "SingleTopRootAnalysis/Histogramming/Topological/HistogrammingWtDiLepTopology.hpp"
 #include "SingleTopRootAnalysis/Histogramming/Recon/HistogrammingMuon.hpp"
 #include "SingleTopRootAnalysis/Histogramming/Recon/HistogrammingElectron.hpp"
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
   // Instantiate the analysis class
   AnalysisMain mystudy;
 
-  TChain *chainReco       = new TChain("TNT/BOOM");
+  TChain *chainReco       = new TChain("Events");
   TChain *chainTruth      = new TChain("TruthTree");
   TChain *chainTrigger    = new TChain("TriggerTree");
   TChain *chainInfo       = new TChain("InfoTree");
@@ -201,6 +201,10 @@ int main(int argc, char **argv)
     }// if nbJets
   } // for
 
+  //This commands makes the eventcontainer be set up with nanoAOD! Probably this should be moved to the parsecmdline section.
+  mystudy.SetDonanoAOD();
+
+
   TChain *chainBkgd = new TChain(mystudy.GetBkgdTreeName());//if nothing specified on commandline, this is just a "" string, which is ok if you don't want to use this chain (don't want a tree of multivariate variables).
 
   //////////////////////////////////////////////////////////////////////////////////
@@ -227,9 +231,7 @@ int main(int argc, char **argv)
   /////////////////////////////////////////////////////////////////////////////////
   // ******** Cuts and Histograms applied to all studies ********
 
-  mystudy.AddCut(new EventWeight(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight, useIterFitbTag, verbose));
-
-  mystudy.AddCut(new CutPrimaryVertex(particlesObj));
+  mystudy.AddCut(new EventWeight_nanoAOD(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight, useIterFitbTag, verbose));
 
   mystudy.AddCut(new CutMuonN(particlesObj, "Tight"));     //require that lepton to be isolated, central, high pt
  
@@ -237,53 +239,17 @@ int main(int argc, char **argv)
 
   mystudy.AddCut(new HistogrammingMuon(particlesObj,"Tight"));  // make the muon plots, hopefully.
 
-  mystudy.AddCut(new HistogrammingMET(particlesObj));
-  mystudy.AddCut(new HistogrammingMtW(particlesObj,useInvertedIsolation));
-
-  mystudy.AddCut(new HistogrammingMuon(particlesObj,leptonTypeToSelect));  // make the muon plots, hopefully.
-
-  //mystudy.AddCut(new CutMuonTighterPt(particlesObj, "Tight")); //require that new Pt cut for leading and subleading muon  
-  //if (isemu){
-  //  mystudy.AddCut(new CutEMuOverlap(particlesObj));
-  //}
-  //mystudy.AddCut(new CutJetPt1(particlesObj));
   mystudy.AddCut(new CutJetN(particlesObj,nJets));
-  
-  //  mystudy.AddCut(new CutTaggedJetN(particlesObj,nbJets));
 
-  //  mystudy.AddCut(new EventWeight(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight));
-
-  mystudy.AddCut(new HistogrammingMuon(particlesObj,"Tight"));  // make the muon plots, hopefully.
-
-  mystudy.AddCut(new HistogrammingMET(particlesObj));
-  mystudy.AddCut(new HistogrammingMtW(particlesObj,useInvertedIsolation));
-  mystudy.AddCut(new HistogrammingJetAngular(particlesObj,useInvertedIsolation));
   mystudy.AddCut(new HistogrammingJet(particlesObj));
-  mystudy.AddCut(new HistogrammingNPvtx(particlesObj));
-  //mystudy.AddCut(new CutTriangularSumDeltaPhiLepMET(particlesObj));  
-  //if (isemu){
-  //  mystudy.AddCut(new CutHTJET1(particlesObj));
-  //}
-  //mystudy.AddCut(new CutMissingEt(particlesObj));
-  //mystudy.AddCut(new CutLeptonOppositeCharge(particlesObj));
-  //if (isee || ismumu){
-  //  mystudy.AddCut(new CutZveto(particlesObj, "Tight"));
-  //}
 
-  //Add in any variables to the skim tree that you want here
-  //  mystudy.AddVars(new TestVar());
-  //if (whichtrig) mystudy.AddVars(new BDTVars(true));
-  mystudy.AddVars(new JESBDTVars());
+
+  
+  //Here you can add any additional variables that you require
   mystudy.AddVars(new WeightVars(useIterFitbTag));
-  mystudy.AddVars(new ChannelFlag());
-  //  mystudy.AddVars(new TopChargeFlag());
-  //  mystudy.AddCut(new ChannelFlagCut(particlesObj,4));
-
-  //  mystudy.AddVars(new Bootstrap());
-
-  mystudy.AddVars(new BDTVars(false));
 
 
+  //Now we set up the output
   TFile *_skimBDTFile;
   TString NNname = mystudy.GetHistogramFileName() + "skimBDT.root" ;
   _skimBDTFile = new TFile(NNname,"RECREATE"); 
