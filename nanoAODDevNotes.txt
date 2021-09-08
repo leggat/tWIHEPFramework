@@ -1,5 +1,12 @@
+Utilities to make generic:
+
+createPlots
+makeFileLists.py
+
+
 TODOs:
 
+Change 'AddCuts' to 'AddAction'
 JES and JER uncertainties are not treated the same
 Electron ID currently uses cut-bsaed. Implement MVA ID
 Also other selection requirements can be changed.
@@ -7,6 +14,9 @@ Do jets need a similar thing to electrons and muons where they have different cl
 Unisolated leptons have been cut.
 Remove MET_xy variables
 Change the way leptons are selected so thta we don't have to read from the tree four times every event
+Pileup/lepton reweighting. In fact the weight class needs to be basically re-done based on nano information?
+Jet ID should be moved to the config
 
+Make the example executable much more basic.
 
 contents of nanoAOD found here:  https://cms-nanoaod-integration.web.cern.ch/integration/cms-swCMSSW_10_6_19/mc102X_doc.html
