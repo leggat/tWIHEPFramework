@@ -1,5 +1,5 @@
 #define nanoAODTree_cxx
-#include "nanoAODTree.h"
+#include "SingleTopRootAnalysis/Trees/nanoAODTree.hpp"
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
