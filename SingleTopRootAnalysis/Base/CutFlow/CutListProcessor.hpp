@@ -59,6 +59,12 @@ public:
   // Destructor
   inline virtual ~CutListProcessor() {};
   
+  //Overloading AddCut with AddAction to avoid confusion
+  void AddAction (BaseCut * cut) { AddCut(cut); };
+
+  //Adding an AddHistogram method that is just AddCut but with a different name to avoid confusion. Maybe these could actually be different somehow?
+  void AddHists (BaseCut *cut) { AddCut(cut); };
+
   // Add a new cut to the list to processes
   void AddCut (BaseCut *cut);
   

@@ -231,17 +231,17 @@ int main(int argc, char **argv)
   /////////////////////////////////////////////////////////////////////////////////
   // ******** Cuts and Histograms applied to all studies ********
 
-  mystudy.AddCut(new EventWeight_nanoAOD(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight, useIterFitbTag, verbose));
+  mystudy.AddAction(new EventWeight_nanoAOD(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight, useIterFitbTag, verbose));
 
   mystudy.AddCut(new CutMuonN(particlesObj, "Tight"));     //require that lepton to be isolated, central, high pt
  
   mystudy.AddCut(new CutElectronN(particlesObj, "Tight")); //require that lepton to be isolated, central, high pt
 
-  mystudy.AddCut(new HistogrammingMuon(particlesObj,"Tight"));  // make the muon plots, hopefully.
+  mystudy.AddHists(new HistogrammingMuon(particlesObj,"Tight"));  // make the muon plots, hopefully.
 
   mystudy.AddCut(new CutJetN(particlesObj,nJets));
 
-  mystudy.AddCut(new HistogrammingJet(particlesObj));
+  mystudy.AddHists(new HistogrammingJet(particlesObj));
 
 
   
