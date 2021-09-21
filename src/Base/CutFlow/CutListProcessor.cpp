@@ -287,7 +287,8 @@ Bool_t CutListProcessor::Apply (EventContainer *EventContainerObj)
 	// this is the usual AND of the conditions, 
 	// and we quit if this cut fails.
 	// Clean up and return kFALSE if no cut/hist exists in vector
-	if( !(*itask) -> Apply() ) {
+	// If the task is not allowed to reject events, do not apply this step.
+	if( !(*itask) -> Apply() && (*itask)->GetAllowEventReject()) {
 	  CleanUpRun (_vectorCutAndHist.begin(), itask+1);
 	  return _alwaysPass;
 	} //if
@@ -347,11 +348,14 @@ void CutListProcessor::CleanUpRun(vector<BaseCut *>::iterator start,
  * Input:  Cut/hist class                                                     *
  * Output: None                                                               *
  ******************************************************************************/
-void CutListProcessor::AddCut (BaseCut *CutAndHistBaseCut)
+void CutListProcessor::AddCut (BaseCut *CutAndHistBaseCut, Bool_t allowReject)
 {
   _vectorCutAndHist.push_back(CutAndHistBaseCut);
   // also tell this cutandhist what cut flow table to use
   CutAndHistBaseCut->SetCutFlowTable(&_cutFlowDetails);
+  // tell the cut if it is allowed to reject events
+  CutAndHistBaseCut->SetAllowEventReject(allowReject);
+
 } //AddCut()
 
 /******************************************************************************

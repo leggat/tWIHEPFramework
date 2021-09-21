@@ -63,10 +63,10 @@ public:
   void AddAction (BaseCut * cut) { AddCut(cut); };
 
   //Adding an AddHistogram method that is just AddCut but with a different name to avoid confusion. Maybe these could actually be different somehow?
-  void AddHists (BaseCut *cut) { AddCut(cut); };
+  void AddHists (BaseCut *cut) { AddCut(cut,kFALSE); };
 
   // Add a new cut to the list to processes
-  void AddCut (BaseCut *cut);
+  void AddCut (BaseCut *cut, Bool_t allowReject = kTRUE);
   
   // Book Histograms - before looping over events
   virtual void BookHistogram(void);

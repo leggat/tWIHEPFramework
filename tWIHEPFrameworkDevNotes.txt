@@ -6,17 +6,26 @@ makeFileLists.py
 
 TODOs:
 
-Change 'AddCuts' to 'AddAction'
+Trigger cut in config?
 JES and JER uncertainties are not treated the same
 Electron ID currently uses cut-bsaed. Implement MVA ID
 Also other selection requirements can be changed.
-Do jets need a similar thing to electrons and muons where they have different classes? Like Tight or Veto or whatever? 
 Unisolated leptons have been cut.
 Remove MET_xy variables
-Change the way leptons are selected so thta we don't have to read from the tree four times every event
 Pileup/lepton reweighting. In fact the weight class needs to be basically re-done based on nano information?
 Jet ID should be moved to the config
 
 Make the example executable much more basic.
 
 contents of nanoAOD found here:  https://cms-nanoaod-integration.web.cern.ch/integration/cms-swCMSSW_10_6_19/mc102X_doc.html
+
+
+
+Done:
+
+Change 'AddCuts' to 'AddAction'
+  - Added in AddAction for generic actions (think EventWeight)
+  - Added in AddHists which are not allowed to reject events
+All objects are now read directly from input tree and labelled as tight, veto, etc if they pass each separate set of requirements.
+  -Do jets need a similar thing to electrons and muons where they have different classes? Like Tight or Veto or whatever? 
+  -C hange the way leptons are selected so thta we don't have to read from the tree four times every event

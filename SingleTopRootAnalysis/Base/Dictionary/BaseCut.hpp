@@ -98,12 +98,18 @@ public:
   inline void SetCutFlowTable(CutFlowTable *cft) { _cutFlow=cft; };
   inline CutFlowTable* GetCutFlowTable(void) { return _cutFlow; };
 
+  // Set and get event rejection
+  inline void SetAllowEventReject(Bool_t allowReject) { _allowEventReject = allowReject; };
+  inline Bool_t GetAllowEventReject() { return _allowEventReject; };
+
 protected:
 
   TDirectory     *_thisDirectory;      // Directory in which to put histograms and graphs
   EventContainer *_EventContainerObj;  // Structure for storing event info
   CutFlowTable   *_cutFlow;            // Provides access to the global cutFlow table with detailed cut info 
 
+  Bool_t         _allowEventReject;    // This is true if the cut is allowed to reject events. Set to false for histogram classes, for example
+  
   ////////////////////////////////////////////////////////////////////////////////
   // Integrate classes into the Root system
   // Must come at end of class definition
