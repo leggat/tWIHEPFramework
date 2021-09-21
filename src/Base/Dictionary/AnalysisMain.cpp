@@ -82,7 +82,6 @@ AnalysisMain::AnalysisMain(): CutListProcessor("cutter"),            // New Inst
 			      _skimInfoTree(NULL),                   // skimTree points to NULL
 			      _skimDecisionTree(NULL),                   // skimTree points to NULL
 			      _skimFastSimTree(NULL),                 // skimTree points to NULL
-			      _skimBkgdTree(NULL),                 // skimTree points to NULL
 			      _hevents(NULL),                         // events histo points to NULL
 			      _totalEvents(0),                        //events double is 0
                               _totalMCatNLOEvents(0),                  //events double is 0
@@ -126,7 +125,7 @@ AnalysisMain::~AnalysisMain()
  * Output: Return 0 if successful 1 if unsuccessful (and print error)         *        
  ******************************************************************************/
 Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain *chainTruth, TChain *chainTrigger, 
-				 TChain *chainInfo, TChain *chainDecision, TChain *chainFastSim0, TChain *chainBkgd)
+				 TChain *chainInfo, TChain *chainDecision, TChain *chainFastSim0)
 {
   /////////////////////////////////////////////////////////////////////////////////
   // Declare and Initialize Variables
@@ -183,13 +182,7 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
     return -1;
   }//if
 
-// Bkgd Tree
-  if(NULL == chainBkgd) {
-    cout << "<AnalysisMain::ParseCmdLine> " << "No valid input Bkgd Chain." << endl;
-    //cout << "<AnalysisMain::ParseCmdLine> " << "This is ok for now..." << endl;
-    return -1;
-  }//if
-// Config Tree
+  // Config Tree
   if(NULL == chainConfig) {
     cout << "<AnalysisMain::ParseCmdLine> " << "No valid input Config Chain." << endl;
     //cout << "<AnalysisMain::ParseCmdLine> " << "This is ok for now..." << endl;
@@ -553,7 +546,6 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
   Bool_t checkTrigger    = kTRUE;     // if false, stop checking for existence of Trigger tree
   Bool_t checkInfo       = kTRUE;     // if false, stop checking for existence of Info tree
   Bool_t checkDecision       = kTRUE;     // if false, stop checking for existence of Decision tree
-  Bool_t checkBkgd       = kTRUE;     // if false, stop checking for existence of Decision tree
   Bool_t checkConfig       = kTRUE;     // if false, stop checking for existence of Decision tree
   SetDoTruth(kTRUE);                  // set truth to true initially
 

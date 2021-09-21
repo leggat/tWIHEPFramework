@@ -12,20 +12,49 @@ Electron ID currently uses cut-bsaed. Implement MVA ID
 Also other selection requirements can be changed.
 Unisolated leptons have been cut.
 Remove MET_xy variables
-Pileup/lepton reweighting. In fact the weight class needs to be basically re-done based on nano information?
+Lepton reweighting. In fact the weight class needs to be basically re-done based on nano information?
 Jet ID should be moved to the config
 
-Make the example executable much more basic.
+What is eventContainer->GeteventReweight()?
+
+
 
 contents of nanoAOD found here:  https://cms-nanoaod-integration.web.cern.ch/integration/cms-swCMSSW_10_6_19/mc102X_doc.html
 
 
+Doing:
+
+Make the example executable much more basic.
+
 
 Done:
 
-Change 'AddCuts' to 'AddAction'
-  - Added in AddAction for generic actions (think EventWeight)
-  - Added in AddHists which are not allowed to reject events
-All objects are now read directly from input tree and labelled as tight, veto, etc if they pass each separate set of requirements.
-  -Do jets need a similar thing to electrons and muons where they have different classes? Like Tight or Veto or whatever? 
-  -C hange the way leptons are selected so thta we don't have to read from the tree four times every event
+-Pileup reweighting is re-implemented
+   - analysers are encouraged to calculate their own PV distributions for data, MC and syst variations.
+-Change 'AddCuts' to 'AddAction'
+   - Added in AddAction for generic actions (think EventWeight)
+   - Added in AddHists which are not allowed to reject events
+-All objects are now read directly from input tree and labelled as tight, veto, etc if they pass each separate set of requirements.
+   - Do jets need a similar thing to electrons and muons where they have different classes? Like Tight or Veto or whatever? 
+   - Change the way leptons are selected so thta we don't have to read from the tree four times every event
+-Simplifying example exectuable by trimming the fat
+   - Removed MCatNLO option
+   - Removed whichtrig (which was meaningless at this time)
+-Jet cleaning leptons are now set to tight leptons by default. Might be useful to be able to switch them to veto, or unisolated or whatever, so the functionality remains.
+
+Nominally working nanoTest.sh cutflow (so I can check my changes are messing everything up...):
+
+<CutFlowTable> GlobalCutFlow result:
+-----------------------------------------------------------------------------------------------------------------------------
+|    Cut Name                    |        exposed         |        pass            |      cut
+|                                |  count  |     yield    |  count  |    yield     |
+|           TightMuon.Number.Min |  398904 |      24687.7 |   98059 |      6068.77 | Tight Muon : N >= 1
+|           TightMuon.Number.Max |  398904 |      24687.7 |  395218 |      24459.6 | Tight Muon : N <= 1
+|           TightMuon.Number.All |  398904 |      24687.7 |   94373 |      5840.64 | Tight Muon : 1 <= N <= 1
+|       TightElectron.Number.Min |   94373 |      5840.64 |   94373 |      5840.64 | Tight Electron : N >= 0
+|       TightElectron.Number.Max |   94373 |      5840.64 |   88852 |      5498.95 | Tight Electron : N <= 0
+|       TightElectron.Number.All |   94373 |      5840.64 |   88852 |      5498.95 | Tight Electron : 0 <= N <= 0
+|                 Jet.Number.Min |   88852 |      5498.95 |   70265 |      4348.62 | Jet : N >=2
+|                 Jet.Number.Max |   88852 |      5498.95 |   83029 |      5138.58 | Jet : N <= 4
+|                 Jet.Number.All |   88852 |      5498.95 |   64442 |      3988.25 | Jet : 2 <= N <= 4
+-----------------------------------------------------------------------------------------------------------------------------

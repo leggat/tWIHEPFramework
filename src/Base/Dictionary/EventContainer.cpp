@@ -381,6 +381,9 @@ void EventContainer::Initialize( EventTree* eventTree, nanoAODTree* nanoAODTree,
     _resSFs.push_back(vstrings);                                                                                      
   }                                                                                                                       
 
+  //Set up the default values for the proxy muon and electron collections used in jet cleaning. Can be adjusted elsewhere.
+  SetUseUnisolatedLeptons(kFALSE,0);
+
   return;
 } //Initialize()
 
@@ -413,6 +416,9 @@ void EventContainer::SetupObjectDefinitions(){
  *                                                                            *
  * Used to switch between QCD estimation and non. This is important for       *
  * the jet cleaning algorithm						      *
+ * This is only important for the tW analysis. I am going to leave it here    *
+ * as an example of how to go about it, but I will call a default version in  *
+ * the constructor to set up the variables and forget about this for now.     *
  *                                                                            *
  * Input:  None                                                               *
  * Output: None                                                               *
@@ -560,7 +566,7 @@ Int_t EventContainer::ReadEvent()
     pv_x = _nanoAODTree->PV_x;
     pv_y = _nanoAODTree->PV_y;
     pv_z = _nanoAODTree->PV_z;
-
+    trueInteractions = _nanoAODTree->Pileup_nTrueInt;
     ///////////////////////////////////////////
     // Fill MET info                           
     ///////////////////////////////////////////
@@ -622,6 +628,7 @@ Int_t EventContainer::ReadEvent()
                                                                                                                                                      
       //Fill the jet object                                                                               
       //The MET vector is not actually adjusted in the nanoAOD version of jets YET, because no smearing etc is done. But we pass it anyway so that in the future it will.
+      //Here muonsToUsePtr and electronsToUsePtr are proxies for the tight electrons and muons for jet cleaning purposes. These can be adjusted elsewhere if we want to clean with, say, loose or unisolation leptons.
       useObj = newJet.Fill(*muonsToUsePtr, *electronsToUsePtr, _nanoAODTree, io, &missingEtVec, isSimulation);
 
       //Record every jet in this

@@ -50,39 +50,11 @@ EventWeight_nanoAOD::EventWeight_nanoAOD(EventContainer *EventContainerObj,Doubl
   _verbose(verbose),
   _doIterFitbTag(doIterFitbTag)
 {
-  //pileup is NOT applied by default.  Instead it is applied by the user, and stored in the tree for later application
 
   TEnv* conf = EventContainerObj -> GetConfig();
-  /**
-  if(MCtype.find("PileUpWgt")<=MCtype.size()){
-    cout<<"EventWeight_nanoAOD: This version of pileup weights is based on primary vertex number and no longer used!!!"<<endl;
-    vecPileUpWgt.push_back(conf->GetValue("Weight.Source.nPvtx.NPV0", 1.));
-    vecPileUpWgt.push_back(conf->GetValue("Weight.Source.nPvtx.NPV1", 1.));
-    vecPileUpWgt.push_back(conf->GetValue("Weight.Source.nPvtx.NPV2", 1.));
-    vecPileUpWgt.push_back(conf->GetValue("Weight.Source.nPvtx.NPV3", 1.));
-    vecPileUpWgt.push_back(conf->GetValue("Weight.Source.nPvtx.NPV4", 1.));
-    vecPileUpWgt.push_back(conf->GetValue("Weight.Source.nPvtx.NPV5", 1.));
-    vecPileUpWgt.push_back(conf->GetValue("Weight.Source.nPvtx.NPV6", 1.));
-    vecPileUpWgt.push_back(conf->GetValue("Weight.Source.nPvtx.NPV7", 1.));
-    vecPileUpWgt.push_back(conf->GetValue("Weight.Source.nPvtx.NPV8", 1.));
-    vecPileUpWgt.push_back(conf->GetValue("Weight.Source.nPvtx.NPV9", 1.));
-  }
-  **/
-  // Set Particle object
-  _totalMCatNLOEvents = 0;
 
- if(MCtype.find("MCatNLO")<=MCtype.size()){
-    setMCatNLO(true);
-  }else{
-    setMCatNLO(false);
-  }
- /**
- if(MCtype.find("PileUpWgt")<=MCtype.size()){
-    setPileUpWgt(true);
-  }else{
-    setPileUpWgt(false);
-  }
- **/
+  //Find the number of events in the file
+  _totalMCatNLOEvents = 0;
   SetEventContainer(EventContainerObj);
   if(MCtype.find("UseTotalEvtFromFile")<=MCtype.size()){
     Int_t sNumber = EventContainerObj -> GetSourceNumber();
@@ -94,6 +66,8 @@ EventWeight_nanoAOD::EventWeight_nanoAOD(EventContainer *EventContainerObj,Doubl
   } else {
     SetTotalMCatNLOEvents(TotalMCatNLOEvents);
   }
+
+  //Setting up pileup reweighting
   setPileUpSyst(false);
   if(pileup){
     setPileUpWgt(true);
@@ -349,35 +323,13 @@ Bool_t EventWeight_nanoAOD::Apply()
      //nanoAODTree* tree = EventContainerObj->GetEventTree();
 
      Double_t wgt = EventContainerObj -> GetGlobalEventWeight();
-     Double_t mnwgt = 1;
-     EventContainerObj->SeteventReweight(1.); //Reset the reweighting variable
-     //
-     // multiply by MCatNLO weight if desired.
-     //Note that if files like data are flagged as MCatNLO, strange weights might result (negative yields...)
-     if(isMCatNLO()) {
-       //  cout<<"we found MCatNLO"<<endl;
-       if(EventContainerObj->DoFastSim()){
-	 mnwgt =EventContainerObj -> GetFastSimTree() ->eventWeightMCatNLO;
-       }else{
-	 mnwgt = 1; //EventContainerObj -> GetEventTree() -> weight;
-	 // For comparison
-	 //mnwgt = 1;
-       }
-       //    cout << tree->EVENT_genWeight << " " << tree->bWeight << " " << tree->PUWeight << "weight" << endl;
-       //  Double_t mnwgt = EventContainerObj->GetTruthTree()->eventWeightMCatNLO;
-       // cout<<"the weight is "<<mnwgt<<endl;
 
-       // cout<<wgt<<"  "<<mnwgt<<"  "<<endl;
-       wgt *= mnwgt;
-       _hMCatNLOWeight->FillWithoutWeight(mnwgt);
-     }
-  
+     EventContainerObj->SeteventReweight(1.); //Reset the reweighting variable
+
      float genWeight(1.0);
      if (EventContainerObj->GetGenEventWeight() < 0.) genWeight = -1.;
 
      wgt *= genWeight;
-
-     // multiply by PileUpWgt weight if desired.
 
   // multiply by PileUpWgt weight if desired.
  float pileupEventWeight(-1.0);
@@ -389,27 +341,29 @@ Bool_t EventWeight_nanoAOD::Apply()
  //Do the pileup weight here, but commented out for now
 
  //only apply pileup weight if specified
- /*if(isPileUpWgt()) {
-   Int_t binOfInterest = _mcPV->GetXaxis()->FindBin(tree->trueInteractions);
+ if(isPileUpWgt()) {
+   Int_t binOfInterest = _mcPV->GetXaxis()->FindBin(EventContainerObj->trueInteractions);
    if (_mcPV->GetBinContent(binOfInterest) > 0){
-     pileupEventWeight_nanoAOD = _dataPV->GetBinContent(binOfInterest) / _mcPV->GetBinContent(binOfInterest);
-     Float_t pileupEventWeight_nanoAODDebug = _dataPV->GetBinContent(tree->trueInteractions+1) / _mcPV->GetBinContent(tree->trueInteractions+1);
+     pileupEventWeight = _dataPV->GetBinContent(binOfInterest) / _mcPV->GetBinContent(binOfInterest);
      if (isPileupSysts()){
        pileupMinBiasUpWeight = _minBiasUpPV->GetBinContent(binOfInterest) / _mcPV->GetBinContent(binOfInterest);
        pileupMinBiasDownWeight = _minBiasDownPV->GetBinContent(binOfInterest) / _mcPV->GetBinContent(binOfInterest);
-       Float_t pileupMinBiasUpWeightDebug = _minBiasUpPV->GetBinContent(tree->trueInteractions+1) / _mcPV->GetBinContent(tree->trueInteractions+1);
-       Float_t pileupMinBiasDownWeightDebug = _minBiasDownPV->GetBinContent(tree->trueInteractions+1) / _mcPV->GetBinContent(tree->trueInteractions+1);
-       //       std::cout << tree->trueInteractions << " " << binOfInterest << " " << pileupEventWeight_nanoAOD << " up: " << pileupMinBiasUpWeight << " down: " << pileupMinBiasDownWeight << std::endl;
-       //       std::cout << tree->trueInteractions << " " << binOfInterest << " nominal: " << pileupEventWeight_nanoAOD << " up: " << pileupMinBiasUpWeight << " down: " << pileupMinBiasDownWeight <<  " old: " << pileupEventWeight_nanoAODDebug << " up: " << pileupMinBiasUpWeightDebug << " down: " << pileupMinBiasDownWeightDebug << std::endl;
+       if (_verbose) { // Debugging checks - shouldn't be written out by default!
+	 Float_t pileupEventWeightDebug = _dataPV->GetBinContent(EventContainerObj->trueInteractions+1) / _mcPV->GetBinContent(EventContainerObj->trueInteractions+1);
+	 Float_t pileupMinBiasUpWeightDebug = _minBiasUpPV->GetBinContent(EventContainerObj->trueInteractions+1) / _mcPV->GetBinContent(EventContainerObj->trueInteractions+1);
+	 Float_t pileupMinBiasDownWeightDebug = _minBiasDownPV->GetBinContent(EventContainerObj->trueInteractions+1) / _mcPV->GetBinContent(EventContainerObj->trueInteractions+1);
+	 std::cout << EventContainerObj->trueInteractions << " " << binOfInterest << " " << pileupEventWeight << " up: " << pileupMinBiasUpWeight << " down: " << pileupMinBiasDownWeight << std::endl;
+	 std::cout << EventContainerObj->trueInteractions << " " << binOfInterest << " nominal: " << pileupEventWeight << " up: " << pileupMinBiasUpWeight << " down: " << pileupMinBiasDownWeight <<  " old: " << pileupEventWeightDebug << " up: " << pileupMinBiasUpWeightDebug << " down: " << pileupMinBiasDownWeightDebug << std::endl;
+       }
      }
    }
    else {
-     pileupEventWeight_nanoAOD = 1.;
+     pileupEventWeight = 1.;
      pileupMinBiasUpWeight = 1.;
      pileupMinBiasDownWeight = 1.;
    }
-   wgt *= pileupEventWeight_nanoAOD;
- }*/
+   wgt *= pileupEventWeight;
+ }
   
  //This is where lepton reweights are done, but agtain not implemented yet for nanoAOD
 

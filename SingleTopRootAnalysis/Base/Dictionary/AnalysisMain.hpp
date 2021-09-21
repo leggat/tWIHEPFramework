@@ -145,8 +145,7 @@ class AnalysisMain: public EventContainer, public CutListProcessor, public Addit
   // Parse the command line to extract the names of the root files 
   // And put them into chains
   //Int_t ParseCmdLine(Int_t argc, char **argv, TChain *chainCollection, TChain *chainEVO, TChain *chainTruth);
-  Int_t ParseCmdLine(Int_t argc, char **argv, TChain *chainEVO, TChain *chainTruth, TChain *chainTrigger, 
-		     TChain *chainInfo,TChain *chainDecision, TChain *chainFastSim, TChain *chainBgkd);
+  Int_t ParseCmdLine(Int_t argc, char **argv, TChain *chainEVO, TChain *chainTruth, TChain *chainTrigger, TChain *chainInfo,TChain *chainDecision, TChain *chainFastSim);
 
   // Loop over events
   void Loop();
@@ -176,7 +175,6 @@ class AnalysisMain: public EventContainer, public CutListProcessor, public Addit
   TTree* _skimInfoTree;             // Info tree in the skim file
   TTree* _skimFastSimTree;          // FastSim tree in the skim file
   TTree* _skimDecisionTree;             // Info tree in the skim file
-  TTree* _skimBkgdTree;             // bkgd tree in the skim file (for use with any trees hard coded into Analysis Main if statement)
   TTree* _skimConfigTreeMeta;  // ConfigMeta tree in skim file
   TTree* metaTree; 
 

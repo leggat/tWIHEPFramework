@@ -21,7 +21,6 @@
 
 // Include histogramming classes
 #include "SingleTopRootAnalysis/Cuts/Weights/EventWeight_nanoAOD.hpp"
-//#include "SingleTopRootAnalysis/Histogramming/Topological/HistogrammingWtDiLepTopology.hpp"
 #include "SingleTopRootAnalysis/Histogramming/Recon/HistogrammingMuon.hpp"
 #include "SingleTopRootAnalysis/Histogramming/Recon/HistogrammingElectron.hpp"
 #include "SingleTopRootAnalysis/Histogramming/Recon/HistogrammingMET.hpp"
@@ -30,20 +29,11 @@
 #include "SingleTopRootAnalysis/Histogramming/Recon/HistogrammingJet.hpp"
 #include "SingleTopRootAnalysis/Histogramming/Recon/HistogrammingNPvtx.hpp"
 // Include cuts classes
-//#include "SingleTopRootAnalysis/Cuts/Other/CutTriangularSumDeltaPhiLepMET.hpp"
-//#include "SingleTopRootAnalysis/Cuts/Other/CutEMuOverlap.hpp"
 #include "SingleTopRootAnalysis/Cuts/Jet/CutJetN.hpp"
 #include "SingleTopRootAnalysis/Cuts/TaggedJet/CutTaggedJetN.hpp"
-//#include "SingleTopRootAnalysis/Cuts/Jet/CutJetPt1.hpp"
-
-//#include "SingleTopRootAnalysis/Cuts/Other/CutMissingEt.hpp"
 #include "SingleTopRootAnalysis/Cuts/Muon/CutMuonN.hpp"
 //#include "SingleTopRootAnalysis/Cuts/Muon/CutMuonTighterPt.hpp"
 #include "SingleTopRootAnalysis/Cuts/Electron/CutElectronN.hpp"
-//#include "SingleTopRootAnalysis/Cuts/Electron/CutElectronTighterPt.hpp"
-//#include "SingleTopRootAnalysis/Cuts/Other/CutHTJET1.hpp"
-//#include "SingleTopRootAnalysis/Cuts/Lepton/CutLeptonOppositeCharge.hpp"
-//#include "SingleTopRootAnalysis/Cuts/Other/CutLarBurst.hpp"
 #include "SingleTopRootAnalysis/Cuts/Other/CutPrimaryVertex.hpp"
 #include "SingleTopRootAnalysis/Cuts/Other/ChannelFlagCut.hpp"
 //
@@ -81,7 +71,7 @@ int main(int argc, char **argv)
   gROOT->ProcessLine("#include <vector>");
 
   /////////////////////////////////////////////////////////////////////////////////
-  // Decleartions and Instantiations
+  // Declartions and Instantiations
   /////////////////////////////////////////////////////////////////////////////////
   // Instantiate the analysis class
   AnalysisMain mystudy;
@@ -96,7 +86,6 @@ int main(int argc, char **argv)
  
  // Check command line for Fast Running
   // In Fast Running only a few cuts are made and histograms filled
-  Bool_t doFast = kFALSE;
   string mcStr="";
   Bool_t doMC = kFALSE;
   Bool_t doPileup = kFALSE;
@@ -108,7 +97,6 @@ int main(int argc, char **argv)
   TString leptonTypeToSelect = "Tight"; //This variable is altered to unisolated when running QCD estimation.
   string evtListFileName="";
   Bool_t verbose = kFALSE;
-  int whichtrig = -1;
   // A couple of jet selection overrides to limit the number of config faces.  
   // -1 means use the value from the config file
   Int_t nJets = -1;
@@ -139,19 +127,10 @@ int main(int argc, char **argv)
       useIterFitbTag = kFALSE;
       cout << "Driver: Not using iterative fit b-tag reshaping" << endl;
     }
-    if (!strcmp(argv[i], "-fast")) {
-      doFast = kTRUE;
-      cout << "Driver: Fast running " << endl;
-    }//if fast
     if (!strcmp(argv[i], "-MC") ||!strcmp(argv[i], "-mc") ) {
       doMC = kTRUE;
       cout << "Driver: This is a MC sample" << endl;
     }//if MC
-    if (!strcmp(argv[i], "-MCatNLO")) {
-      mcStr=mcStr+"MCatNLO";
-      cout << "Driver: This is MCatNLO " << endl;
-      //Number of total events automatically includes the number with MCatNLO weights, but the events themselves will not be weighted in current code version unless this flag is called
-    }//if MCatNLO
     if (!strcmp(argv[i], "-PileUpWgt")) {
       mcStr=mcStr+"PileUpWgt";
       doPileup = kTRUE;
@@ -171,28 +150,6 @@ int main(int argc, char **argv)
       leptonTypeToSelect = "UnIsolated";
       cout << "Driver: useInvertedIsolation " << endl;
     }
-    if(!strcmp(argv[i],"-SelectTrigger")) {
-      if (argc < i+1) {
-	cout << "<AnalysisMain::ParseCmdLine> " << "ERROR: Missing Value for SelectTrigger - must choose either Electron or Muon" << endl;
-	return 1;
-      }
- 
-      if(!strcmp(argv[i+1],"Electron")) whichtrig = 0;
-      if(!strcmp(argv[i+1],"Muon")) whichtrig = 1;
-      if( whichtrig == -1){
-	cout << "<AnalysisMain::ParseCmdLine> " << "ERROR: Incorrect Value for SelectTrigger - must choose either Electron or Muon" << endl;
-	return 1;
-      }
-    }
-
-    if (!strcmp(argv[i],"-BkgdTreeName")){
-      // Check if BkgdTree is specified.  
-      if (argc < i+1) {
-	cout << " <AnalysisMain::ParseCmdLine> " << "ERROR: Missing Value for tree name for multivariate variables -BkgdTree!" << endl;
-	return 1;
-      } //if
-      mystudy.SetBkgdTreeName(argv[i+1]);
-    }// if BkgdTreeName
     if (!strcmp(argv[i],"-nJets")){
       nJets = atoi(argv[i+1]);
     }// if nJets
@@ -204,14 +161,11 @@ int main(int argc, char **argv)
   //This commands makes the eventcontainer be set up with nanoAOD! Probably this should be moved to the parsecmdline section.
   mystudy.SetDonanoAOD();
 
-
-  TChain *chainBkgd = new TChain(mystudy.GetBkgdTreeName());//if nothing specified on commandline, this is just a "" string, which is ok if you don't want to use this chain (don't want a tree of multivariate variables).
-
   //////////////////////////////////////////////////////////////////////////////////
   // Parse the Command Line (the rest of it)
   //////////////////////////////////////////////////////////////////////////////////
   cout<<"USING THE TOPINPUTS TREE"<<endl;
-  Int_t parseReturnValue = mystudy.ParseCmdLine(argc,argv,chainReco,chainTruth,chainTrigger,chainInfo,chainDecision, chainFastSim, chainBkgd);
+  Int_t parseReturnValue = mystudy.ParseCmdLine(argc,argv,chainReco,chainTruth,chainTrigger,chainInfo,chainDecision, chainFastSim);
   cout<<"ParseCmdLine done"<<endl;
   if(parseReturnValue != 0) return parseReturnValue;
 
@@ -220,11 +174,6 @@ int main(int argc, char **argv)
   /////////////////////////////////////////////////////////////////////////////////
   EventContainer *particlesObj = &mystudy;
   particlesObj->SetIsSimulation(doMC);
-  TString BkgdTreeName=mystudy.GetBkgdTreeName();
-  bool isee   = (BkgdTreeName == "DiElectronsPreTagTree"||BkgdTreeName=="DiElectronsLooseTree");
-  bool ismumu = (BkgdTreeName == "DiMuonsPreTagTree"||BkgdTreeName=="DiMuonsLooseTree");
-  bool isemu  = (BkgdTreeName == "ElectronMuonPreTagTree" ||  BkgdTreeName == "ElectronMuonLooseTree");
-  particlesObj->SetUseUnisolatedLeptons(useInvertedIsolation,whichtrig);
 
   /////////////////////////////////////////////////////////////////////////////////
   // Add Cuts and Histograms applicable to Fast and Full Analyses
