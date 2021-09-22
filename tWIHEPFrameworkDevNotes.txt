@@ -6,9 +6,10 @@ makeFileLists.py
 
 TODOs:
 
+Histograms as a config file?
 Trigger cut in config?
 JES and JER uncertainties are not treated the same
-Electron ID currently uses cut-bsaed. Implement MVA ID
+Electron ID currently uses cut-based. Implement MVA ID
 Also other selection requirements can be changed.
 Unisolated leptons have been cut.
 Remove MET_xy variables
