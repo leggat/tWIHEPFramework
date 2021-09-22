@@ -309,6 +309,9 @@ void EventContainer::Initialize( EventTree* eventTree, nanoAODTree* nanoAODTree,
   tauLabeledJets.clear();
   lightQuarkLabeledJets.clear();
   neutrinos.clear();
+
+  triggerBits.clear();
+  _triggerNames.clear();
 //  MCParticles.clear();
 //  MCMuons.clear();
 //  MCElectrons.clear();
@@ -384,8 +387,35 @@ void EventContainer::Initialize( EventTree* eventTree, nanoAODTree* nanoAODTree,
   //Set up the default values for the proxy muon and electron collections used in jet cleaning. Can be adjusted elsewhere.
   SetUseUnisolatedLeptons(kFALSE,0);
 
+  //Get a list of the trigger names in the tree if doing nanoAOD
+  if (DonanoAOD()) GetTriggerNames(nanoAODTree);
+
   return;
 } //Initialize()
+
+/******************************************************************************
+ * void EventContainer::GetTriggerNames(nanoAODTree* tree)                    *
+ *                                                                            *
+ * Read the list of HLT names from the nanoAOD tree                           *
+ *                                                                            *
+ * Input:  nanoAODTree                                                        *
+ * Output: None                                                               *
+ ******************************************************************************/
+void EventContainer::GetTriggerNames(nanoAODTree * inputTree){
+  Int_t numberOfBranches = inputTree->fChain->GetListOfBranches()->GetEntries();
+  for (int i=0; i < numberOfBranches; i++){
+    TString branchName = inputTree->fChain->GetListOfBranches()->At(i)->GetName();
+    if (branchName.BeginsWith("HLT_")){
+	_triggerNames.push_back(branchName);
+	//	TBranch* tmpBranch = (TBranch*) inputTree->fChain->GetListOfBranches()->At(i);
+	//triggerBranches[branchName] = tmpBranch;
+	triggerBits[branchName] = kFALSE;
+	//	inputTree->fChain->SetBranchAddress(branchName, &triggerBits[branchName], &triggerBranches[branchName]);
+	inputTree->fChain->SetBranchAddress(branchName, &triggerBits[branchName]);
+      }
+  }
+}
+
 
 /******************************************************************************
  * void EventContainer::SetupObjectDefinitions(TEnv config)                   *
@@ -537,6 +567,9 @@ Int_t EventContainer::ReadEvent()
   lightQuarkLabeledJets.clear();
   neutrinos.clear();
 
+  //Reset trigger bits
+  //  for (auto triggerName : _triggerNames) triggerBits[triggerName] = kFALSE;
+
   ////////////////////////////////////////////////////
   // Fill objects
   ////////////////////////////////////////////////////
@@ -567,6 +600,12 @@ Int_t EventContainer::ReadEvent()
     pv_y = _nanoAODTree->PV_y;
     pv_z = _nanoAODTree->PV_z;
     trueInteractions = _nanoAODTree->Pileup_nTrueInt;
+
+    ///////////////////////////////////////////
+    // Fill trigger info                           
+    ///////////////////////////////////////////
+
+
     ///////////////////////////////////////////
     // Fill MET info                           
     ///////////////////////////////////////////

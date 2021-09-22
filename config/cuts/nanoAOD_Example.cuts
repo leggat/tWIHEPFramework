@@ -9,8 +9,9 @@
 ###############################################################################
 
 # ############ Trigger Cuts ###############
-# Trigger cuts implemented within the trigger cut classes (for now)
-
+# A comma separated list of triggers to include as ORs or NOTs in the trigger selection. Invalid names not in the TTree will be ignored
+Trigger.Name.Or: HLT_IsoMu27,HLT_IsoTkMu27,HLT_Mu27
+Trigger.Name.Not: HLT_Ele30_WPTight_Gsf,HLT_Ele45_WPLoose_Gsf,HLT_Invalid
 ################# Electron Cuts #########################
 # Number of Electrons
 Cut.Electron.Tight.Number.Min:  0

@@ -1,3 +1,8 @@
+Reminder to call 
+
+'source /cvmfs/sft.cern.ch/lcg/views/LCG_93/x86_64-slc6-gcc62-opt/setup.sh'
+before compilation.
+
 Utilities to make generic:
 
 createPlots
@@ -30,6 +35,9 @@ Make the example executable much more basic.
 
 Done:
 
+-Added trigger informaton to the event container
+   - As something of a corrolary to this, it strips the HLT information from the nanoAODTree object, because I am re-casting the BranchAddress of the original TTree directly into the trigger object, so all work with the trigger information must necessarily then be done from the EventContainer. Which is probably fine?
+   - CutTriggerSelection class now takes in two comma separated lists of triggers for OR and NOT comparison from the configuration file
 -Pileup reweighting is re-implemented
    - analysers are encouraged to calculate their own PV distributions for data, MC and syst variations.
 -Change 'AddCuts' to 'AddAction'

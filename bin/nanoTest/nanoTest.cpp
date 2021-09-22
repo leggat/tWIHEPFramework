@@ -182,6 +182,8 @@ int main(int argc, char **argv)
 
   mystudy.AddAction(new EventWeight_nanoAOD(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight, useIterFitbTag, verbose));
 
+  mystudy.AddCut(new CutTriggerSelection(particlesObj));
+
   mystudy.AddCut(new CutMuonN(particlesObj, "Tight"));     //require that lepton to be isolated, central, high pt
  
   mystudy.AddCut(new CutElectronN(particlesObj, "Tight")); //require that lepton to be isolated, central, high pt

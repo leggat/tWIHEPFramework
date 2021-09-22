@@ -36,7 +36,7 @@ class CutTriggerSelection : public HistoCut
 public:
 
   // Parameterized Constructor
-  CutTriggerSelection(EventContainer *EventContainerObj, int whichtrigger = -1);
+  CutTriggerSelection(EventContainer *EventContainerObj);
   
   // Destructor
   ~CutTriggerSelection();
@@ -57,8 +57,9 @@ private:
   // Histograms
   myTH1F* _hTriggerSelectionBefore;    // Histogram Missing Et
   myTH1F* _hTriggerSelectionAfter;     // Histogram Missing Et
-  int _whichtrigger;
-  TString _triggerChannel;
+
+  std::vector<TString> _triggerOrs;
+  std::vector<TString> _triggerNots;
 
 };
 

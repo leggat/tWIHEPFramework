@@ -472,6 +472,10 @@ class EventContainer
   std::map<std::string,Float_t> _EventbTagReshape;
   std::map<std::string,Float_t> _EventMisTagReshape;
 
+  //Store the trigger bit information
+  std::map<TString,Bool_t> triggerBits;
+  std::map<TString,TBranch*> triggerBranches;
+
   //Add in the systematic variations to the SFs
   Float_t _EventLepSFWeightUp;
   Float_t _EventLepSFWeightDown;
@@ -702,6 +706,10 @@ private:
   // Target top mass used in the best jet algorithm
   Double_t _targetTopMass;
 
+  // Name of triggers in the tree, and the method for gettig them
+  std::vector<TString> _triggerNames;
+  void GetTriggerNames(nanoAODTree* tree);
+  
   // jet energy scale relative uncertainty
   Double_t _jesError;
   // jet energy scale shift, either +1 (for +1 sigma, -1 (for -1 sigma) or 0 (no shift)

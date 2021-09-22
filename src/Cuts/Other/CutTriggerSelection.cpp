@@ -36,10 +36,8 @@ using namespace std;
  *         0 - Electron, 1 - Muon
  * Output: None                                                               *
  ******************************************************************************/
-CutTriggerSelection::CutTriggerSelection(EventContainer *EventContainerObj, int whichTrigger)
+CutTriggerSelection::CutTriggerSelection(EventContainer *EventContainerObj)
 {
-  _whichtrigger = whichTrigger;
-
   // Set Event Container
   SetEventContainer(EventContainerObj);
 } // CutTriggerSelection
@@ -72,25 +70,22 @@ void CutTriggerSelection::BookHistogram(){
   // Make Strings for histogram titles and labels
   // ***********************************************  
 
-  if (_whichtrigger == 0) _triggerChannel = "Electron";
-  if (_whichtrigger == 1) _triggerChannel = "Muon";
-
   // Histogram Before Cut
   std::ostringstream histNameBeforeStream;
-  histNameBeforeStream << _triggerChannel << "TriggerSelectionBefore";
+  histNameBeforeStream  << "TriggerSelectionBefore";
   TString histNameBefore = histNameBeforeStream.str().c_str();
 
   std::ostringstream histTitleBeforeStream;
-  histTitleBeforeStream << _triggerChannel << " Channel Trigger Before Cut";
+  histTitleBeforeStream  << " Channel Trigger Before Cut";
   TString histTitleBefore = histTitleBeforeStream.str().c_str();
 
   // Histogram After Cut
   std::ostringstream histNameAfterStream;
-  histNameAfterStream << _triggerChannel << "TriggerSelectionAfter";
+  histNameAfterStream  << "TriggerSelectionAfter";
   TString histNameAfter = histNameAfterStream.str().c_str();
 
   std::ostringstream histTitleAfterStream;
-  histTitleAfterStream << _triggerChannel << " Channel Trigger After Cut";
+  histTitleAfterStream  << " Channel Trigger After Cut";
   TString histTitleAfter = histTitleAfterStream.str().c_str();
 
   // ***********************************************
@@ -116,13 +111,45 @@ void CutTriggerSelection::BookHistogram(){
   TString cutFlowName;
 
   // Min cut
-  cutFlowTitleStream << _triggerChannel << " Trigger";
+  cutFlowTitleStream <<  " Trigger";
   cutFlowTitle = cutFlowTitleStream.str().c_str();
 
-  cutFlowNameStream << _triggerChannel << "Trigger";
+  cutFlowNameStream  << "Trigger";
   cutFlowName = cutFlowNameStream.str().c_str();
 
   GetCutFlowTable()->AddCutToFlow(cutFlowName.Data(), cutFlowTitle.Data());
+
+  //Get the trigger path from the config
+  // Get configuration file                               
+  EventContainer *EventContainerObj = GetEventContainer();
+  TEnv *config = EventContainerObj -> GetConfig();        
+
+  //We can specify comma separated lists of triggers to run as ORs and NOTs
+  TString orTriggers = config -> GetValue("Trigger.Name.Or", "");
+  TString notTriggers = config -> GetValue("Trigger.Name.Not", "");
+
+  TObjArray *orTrigs = orTriggers.Tokenize(",");
+  for (Int_t i = 0; i < orTrigs->GetEntries(); i++){
+    // Double check that the given path is in the HLT information giveb
+    TString tmpName = ((TObjString *)(orTrigs->At(i)))->String();
+    if ( EventContainerObj->triggerBits.count( tmpName ) ){
+      _triggerOrs.push_back(tmpName);
+    }
+    else {
+      std::cout << "<CutTriggerSelection::BookHistogram>  | Trigger path " << tmpName << " not found in tree but included in config - ignoring this trigger name, but please check!" << std::endl;
+    }
+  }
+
+  TObjArray *notTrigs = notTriggers.Tokenize(",");
+  for (Int_t i = 0; i < notTrigs->GetEntries(); i++){
+    TString tmpName = ((TObjString *)(notTrigs->At(i)))->String();
+    if ( EventContainerObj->triggerBits.count( tmpName ) ){
+      _triggerNots.push_back(tmpName);
+    }
+    else {
+      std::cout << "<CutTriggerSelection::BookHistogram>  | Trigger path " << tmpName << " not found in tree but included in config - ignoring this trigger name, but please check!" << std::endl;
+    }
+  }
 
 }//BookHistograms()
 
@@ -139,33 +166,18 @@ void CutTriggerSelection::BookHistogram(){
 Bool_t CutTriggerSelection::Apply()
 {
 
-  EventTree *EventContainerObj = GetEventContainer()->GetEventTree();
-
   Bool_t passesTrigger = kFALSE;  //Event passes the trigger selection
 
-  Int_t triggerBit = 0.;
+  EventContainer *EventContainerObj = GetEventContainer();
 
-  Int_t electronTrigger = 0; //I seem to have messed up the electron trigger?
-  //  electronTrigger = EventContainerObj->HLT_Ele32_eta2p1_WPTight_Gsf;
-  electronTrigger = EventContainerObj->HLT_Ele27_WPTight_Gsf;
-  Int_t muonTrigger = EventContainerObj->HLT_IsoMu24 || EventContainerObj->HLT_IsoTkMu24;
-  
-  //  if (_whichtrigger == 0) triggerBit = EventContainerObj->HLT_Ele32_eta2p1_WPTight_Gsf;
-  if (_whichtrigger == 0) triggerBit = EventContainerObj->HLT_Ele27_WPTight_Gsf;
-  if (_whichtrigger == 1) {//I should really make these customisable, but I'm not gonna do that now.
-    //triggerBit = EventContainerObj->HLT_IsoMu18;
-    triggerBit = EventContainerObj->HLT_IsoMu24 || EventContainerObj->HLT_IsoTkMu24;
-  }
-  //  std::cout << _whichtrigger << " " << triggerBit << " " << muonTrigger << " " << " " << electronTrigger << " " <<  EventContainerObj->HLT_IsoMu24 << " " << EventContainerObj->HLT_IsoTkMu24 << " " << (EventContainerObj->HLT_IsoMu24 || EventContainerObj->HLT_IsoTkMu24 )<< std::endl;
-  
-  if (_whichtrigger == 0) passesTrigger = electronTrigger != 0. and muonTrigger == 0;
-  //if (_whichtrigger == 0) passesTrigger = muonTrigger == 0;
-  if (_whichtrigger == 1) passesTrigger = electronTrigger == 0. and muonTrigger != 0;
-  
-  //if (triggerBit != 0.) passesTrigger = kTRUE;
+  // Apply the trigger or and nots
+  for (auto trigName : _triggerOrs  ) passesTrigger = passesTrigger || EventContainerObj->triggerBits[trigName];
+  for (auto trigName : _triggerNots ) passesTrigger = passesTrigger && !(EventContainerObj->triggerBits[trigName]);
 
+  int histBinToFill = 0;
+  if (passesTrigger) histBinToFill = 1;
   // Fill the histograms before the cuts
-  _hTriggerSelectionBefore -> Fill(triggerBit);
+  _hTriggerSelectionBefore -> Fill(histBinToFill);
  
   // ***********************************************
   // Fill cut flow table
@@ -176,11 +188,11 @@ Bool_t CutTriggerSelection::Apply()
   
   TString cutFlowName;
   
-  cutFlowNameStream << _triggerChannel << "Trigger";
+  cutFlowNameStream  << "Trigger";
   cutFlowName = cutFlowNameStream.str().c_str();
   
   if (passesTrigger){
-    _hTriggerSelectionAfter -> Fill(triggerBit);
+    _hTriggerSelectionAfter -> Fill(histBinToFill);
     GetCutFlowTable()->PassCut(cutFlowName.Data());
     return kTRUE;
   }
