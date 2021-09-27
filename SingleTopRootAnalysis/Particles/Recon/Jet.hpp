@@ -266,6 +266,7 @@ class Jet: public Particle
   Double_t _bMinPtCut;
   Double_t _bTagCut;
   Double_t _closestLeptonCut;
+  Int_t    _jetIDValue;
 
   // Are we running systematic variations?
   Int_t _jesUp;

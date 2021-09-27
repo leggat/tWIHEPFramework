@@ -321,6 +321,7 @@ void Jet::SetCuts(TEnv * config)
 {
   _maxEtaCut = 		config -> GetValue("ObjectID.Jet.MaxEta",100.);
   _minPtCut = 		config -> GetValue("ObjectID.Jet.MinPt",0.);
+  _jetIDValue =         config -> GetValue("ObjectID.Jet.JetIDValue",6.);
   _bMaxEtaCut = 	config -> GetValue("ObjectID.BJet.MaxEta",100.);
   _bMinPtCut = 		config -> GetValue("ObjectID.BJet.MinPt",0.);
   _bTagCut = 		config -> GetValue("ObjectID.BJet.BTagCut",0.0);
@@ -329,6 +330,7 @@ void Jet::SetCuts(TEnv * config)
   _jesDown = 		config -> GetValue("Systs.doJESDown",0);
   _jerUp = 		config -> GetValue("Systs.doJERUp",0);
   _jerDown = 		config -> GetValue("Systs.doJERDown",0);
+  
 }
 
 /****************************************************************************** 
@@ -357,9 +359,7 @@ Bool_t Jet::Fill(std::vector<Muon>& selectedMuons, std::vector<Electron>& select
   SetnumberOfConstituents		(evtr -> Jet_nConstituents         	[iE]);
   SetbDiscriminator 			(evtr -> Jet_btagCSVV2           	[iE]); // This is the default variable used in b-jet cuts. Other available taggers: btagCMVA,btagCSVV2,btagDeepB,btagDeepC
   SetbtagCSVV2  			(evtr -> Jet_btagCSVV2           	[iE]);
-  SetbtagCMVA   			(evtr -> Jet_btagCMVA           	[iE]);
   SetbtagDeepB   			(evtr -> Jet_btagDeepB           	[iE]);
-  SetbtagDeepC   			(evtr -> Jet_btagDeepC           	[iE]);
   SetpileupId 				(evtr -> Jet_puId          		[iE]);
   Setmass 				(evtr -> Jet_mass     			[iE]);
   SetneutralHadEnergyFraction		(evtr -> Jet_neHEF              	[iE]);
@@ -373,7 +373,10 @@ Bool_t Jet::Fill(std::vector<Muon>& selectedMuons, std::vector<Electron>& select
   SetelectronEnergy			(evtr -> Jet_electronEnergy     	-> operator[](iE));
   SetphotonEnergy			(evtr -> Jet_photonEnergy     		-> operator[](iE));
   SetchargedMultiplicity		(evtr -> Jet_chargedMultiplicity     	-> operator[](iE)); 
-  SetuncorrPt 				(evtr -> Jet_Uncorr_pt     		-> operator[](iE));*/
+  SetuncorrPt 				(evtr -> Jet_Uncorr_pt     		-> operator[](iE));
+  SetbtagCMVA   			(evtr -> Jet_btagCMVA           	[iE]);
+  SetbtagDeepC   			(evtr -> Jet_btagDeepCvL           	[iE]);
+*/
 
 
   if (isMC){
@@ -492,7 +495,7 @@ Bool_t Jet::ApplyCuts(std::vector<Muon>& selectedMuons, std::vector<Electron>& s
   Bool_t passesJetID = kFALSE;
 
   if (useJetIDFromTree){ //This is different for nanoAOD vs BSM
-    passesJetID = (jetID() == 3); // Check https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookNanoAOD#Jets for what value this should be. Also this should probably be saved in the config...
+    passesJetID = (jetID() == _jetIDValue); // Check https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookNanoAOD#Jets for what value this should be. Also this should probably be saved in the config...
   }
   else {
     Bool_t neutralID = (TMath::Abs(Eta()) > 3. || (neutralHadEnergyFraction() < 0.99 &&  neutralEmEmEnergyFraction() < 0.99 && numberOfConstituents() > 1));

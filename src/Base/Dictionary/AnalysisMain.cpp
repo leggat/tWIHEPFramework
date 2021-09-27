@@ -601,7 +601,7 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
 	  // If the event tree doesn't exist, then we do fast simulation
 
 	  // Pointer to input file
-	  TFile *inFilePtr = new TFile(fileInChainName.c_str());
+	  TFile *inFilePtr =  TFile::Open(fileInChainName.c_str());
 
 	  // *****************************
 	  // Check Recon tree

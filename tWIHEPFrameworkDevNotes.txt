@@ -6,23 +6,20 @@ before compilation.
 Utilities to make generic:
 
 createPlots
-makeFileLists.py
+useFileListsForCondor
 
 
 TODOs:
 
 Histograms as a config file?
-Trigger cut in config?
 JES and JER uncertainties are not treated the same
 Electron ID currently uses cut-based. Implement MVA ID
 Also other selection requirements can be changed.
 Unisolated leptons have been cut.
 Remove MET_xy variables
 Lepton reweighting. In fact the weight class needs to be basically re-done based on nano information?
-Jet ID should be moved to the config
 
-What is eventContainer->GeteventReweight()?
-
+I could do with finding a more topical nanoAOD file to work with, and would like to check xroot performance.
 
 
 contents of nanoAOD found here:  https://cms-nanoaod-integration.web.cern.ch/integration/cms-swCMSSW_10_6_19/mc102X_doc.html
@@ -32,9 +29,20 @@ Doing:
 
 Make the example executable much more basic.
 
+-Make sure grid certificate can work on hep_sub?
 
 Done:
 
+-Jet ID cut value has added to the configuration
+-It *IS* possible to run the code on remote files using xrootd.
+   - Using the proper prefix 'root://cmsxrootd.fnal.gov///store/<whateverPath' in the file list allows access to these files
+   - Not recommended for local running as the reading from the tree can take a long time.
+   - Can be considered for condor submission, although it asks for your PEM password for the grid certificate so I don't know if it will work?
+      - Possibly there are some environment things that can be done here. 
+
+-Utilities now available:
+   - utils/makeFileListsFromLocalDirectories.py
+      - If you have a bunch of files locally this will make the necessary file lists for them
 -Added trigger informaton to the event container
    - As something of a corrolary to this, it strips the HLT information from the nanoAODTree object, because I am re-casting the BranchAddress of the original TTree directly into the trigger object, so all work with the trigger information must necessarily then be done from the EventContainer. Which is probably fine?
    - CutTriggerSelection class now takes in two comma separated lists of triggers for OR and NOT comparison from the configuration file
@@ -51,7 +59,7 @@ Done:
    - Removed whichtrig (which was meaningless at this time)
 -Jet cleaning leptons are now set to tight leptons by default. Might be useful to be able to switch them to veto, or unisolated or whatever, so the functionality remains.
 
-Nominally working nanoTest.sh cutflow (so I can check my changes are messing everything up...):
+Nominally working nanoTest.sh cutflow (so I can check my changes aren't messing everything up...):
 
 <CutFlowTable> GlobalCutFlow result:
 -----------------------------------------------------------------------------------------------------------------------------
