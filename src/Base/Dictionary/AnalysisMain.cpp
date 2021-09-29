@@ -46,6 +46,7 @@
 #include <string>
 #include <fstream>
 #include <iomanip>
+#include <sys/stat.h>
 
 #include <TStopwatch.h>
 #include <TTreeIndex.h>
@@ -828,7 +829,12 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
   else treeEventTree = new EventTree(chainEV0);
 
   // Open the output histogram file
-  OpenHistogramFile(_histogramFileName);
+  if (!OpenHistogramFile(_histogramFileName)){
+    std::cout << "<AnalysisMain::ParseCmdLine> Output histogram file " << _histogramFileName << " could not be made!" <<std::endl;
+    std::cout << "<AnalysisMain::ParseCmdLine> Please check your permissions and that the requested directory exists." <<std::endl;
+    std::cout << "<AnalysisMain::ParseCmdLine> Exiting..." << std::endl;
+    return 1;
+  }
 
   /////////////////////////////////////////////////////////////////////////////////
   // Parse the configuration file (part 2)
@@ -918,7 +924,12 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
   /////////////////////////////////////////////////////////////////////////////////
   if(DoSkim() && _skimFileName!="NONE") {
     // Open Skim File
-    OpenSkimFile(_skimFileName);
+    if (!OpenSkimFile(_skimFileName)){
+      std::cout << "<AnalysisMain::ParseCmdLine> Output skim file " << _skimFileName << " could not be made!" <<std::endl;
+      std::cout << "<AnalysisMain::ParseCmdLine> Please check your permissions and that the requested directory exists." <<std::endl;
+      std::cout << "<AnalysisMain::ParseCmdLine> Exiting..." << std::endl;
+      return 1;
+    }
     TDirectory *BSMTreeDir = _skimFile->mkdir("TNT","TNTD");
     BSMTreeDir->cd();
 

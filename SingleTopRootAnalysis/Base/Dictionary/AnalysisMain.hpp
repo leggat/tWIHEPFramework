@@ -51,7 +51,7 @@ class AnalysisMain: public EventContainer, public CutListProcessor, public Addit
   ~AnalysisMain();
 
   // Open the output histogram file
-  inline void OpenHistogramFile(const std::string& name) {
+  inline Bool_t OpenHistogramFile(const std::string& name) {
     _histogramFile = new TFile(name.c_str(), "RECREATE"); 
     _histogramFileName = name;
 
@@ -59,7 +59,9 @@ class AnalysisMain: public EventContainer, public CutListProcessor, public Addit
     if( _histogramFile -> IsZombie() ){
       std::cout << "<AnalysisMain::OpenHistogramFile> " << "WARNING: ";
       std::cout << "Could not open " << _histogramFileName << std::endl;
+      return kFALSE;
     } //if
+    return kTRUE;
   } //OpenHistogramFile
 
   // Write histograms to open output file
@@ -94,9 +96,17 @@ class AnalysisMain: public EventContainer, public CutListProcessor, public Addit
 
   // Same thing for the skim file
   // Open the output skim file
-  inline void OpenSkimFile(const std::string& name) {
+  inline Bool_t OpenSkimFile(const std::string& name) {
     _skimFile = new TFile(name.c_str(), "RECREATE"); 
     _skimFileName = name; 
+    if( _skimFile -> IsZombie() ){
+      std::cout << "<AnalysisMain::OpenSkimFile> " << "WARNING: ";
+      std::cout << "Could not open " << _skimFileName << std::endl;
+      return kFALSE;
+    } //if                                                              
+    return kTRUE;
+
+
   }
 
   // Write histograms to open output skim file

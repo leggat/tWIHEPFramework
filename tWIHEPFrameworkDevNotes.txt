@@ -18,9 +18,14 @@ Also other selection requirements can be changed.
 Unisolated leptons have been cut.
 Remove MET_xy variables
 Lepton reweighting. In fact the weight class needs to be basically re-done based on nano information?
-
 I could do with finding a more topical nanoAOD file to work with, and would like to check xroot performance.
+Electron/photon json files?
+Why is the second file being produced?
+Access to histograms and so forth?
 
+Add in some documentation for potential cuts?
+
+TCling errors
 
 contents of nanoAOD found here:  https://cms-nanoaod-integration.web.cern.ch/integration/cms-swCMSSW_10_6_19/mc102X_doc.html
 
@@ -33,6 +38,8 @@ Make the example executable much more basic.
 
 Done:
 
+-Added in a check to make sure that the output files have been created before any running.
+   - An error message is thrown and the code now exits if they do not exist, warning the user that the path may not exist as intended.
 -Jet ID cut value has added to the configuration
 -It *IS* possible to run the code on remote files using xrootd.
    - Using the proper prefix 'root://cmsxrootd.fnal.gov///store/<whateverPath' in the file list allows access to these files
