@@ -518,7 +518,14 @@ Int_t EventContainer::ReadEvent()
     _genEventWeight    = _nanoAODTree -> genWeight;
     actualIntPerXing   = 1;//_eventTree ->         
     averageIntPerXing  = 1;//_eventTree ->         
-    bcid               = 1;//_eventTree ->         
+    bcid               = 1;//_eventTree ->     
+
+    //Adding HTXS variables
+    HTXS_Higgs_pt        = _nanoAODTree -> HTXS_Higgs_pt;
+    HTXS_Higgs_y        = _nanoAODTree -> HTXS_Higgs_y;
+    HTXS_stage_0        = _nanoAODTree -> HTXS_stage_0;
+    //HTXS
+
     distns = -999;                                 
     distbunch = -999;                              
     safejetevent= -999;                            

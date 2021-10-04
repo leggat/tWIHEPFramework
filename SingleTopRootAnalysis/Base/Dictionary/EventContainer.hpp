@@ -502,6 +502,12 @@ class EventContainer
   Float_t bcid;
   Int_t Pvtxall_n;
 
+  //HTXS
+  Float_t HTXS_Higgs_pt;
+  Float_t HTXS_Higgs_y;
+  Float_t HTXS_stage_0;
+  //HTXS
+
   Bool_t _badJetEvent;
 
   Bool_t isSimulation;
