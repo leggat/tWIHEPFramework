@@ -309,7 +309,8 @@ void EventContainer::Initialize( EventTree* eventTree, nanoAODTree* nanoAODTree,
   tauLabeledJets.clear();
   lightQuarkLabeledJets.clear();
   neutrinos.clear();
-
+  
+  GenParts.clear();
   triggerBits.clear();
   _triggerNames.clear();
 //  MCParticles.clear();
@@ -554,6 +555,7 @@ Int_t EventContainer::ReadEvent()
   ptetaElectrons.clear();
   isolatedElectrons.clear();
   unIsolatedElectrons.clear();
+  GenParts.clear();
 
   muons.clear();
   tightMuons.clear();
@@ -626,6 +628,18 @@ Int_t EventContainer::ReadEvent()
     //For compatability reasons right now
     missingEtVec_xy.SetPtEtaPhiM(met_pt,0.,met_phi,0.);
 
+
+    /////////Gen///////
+    for (Int_t io = 0; io < _nanoAODTree->nGenPart; io++) {
+      //cout<<"Begin of gen fill event"<<endl;
+      newGenPart.Clear();
+      useObj=newGenPart.Fill(_nanoAODTree, io,isSimulation);
+      GenParts.push_back(newGenPart);
+      //cout<<"End of gen fill event"<<endl;
+    }
+      
+      ////
+      
     ///////////////////////////////////////////                          
     // Electrons                                                         
     ///////////////////////////////////////////                          
