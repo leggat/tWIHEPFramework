@@ -41,7 +41,7 @@ ClassImp(GenPart)
  * Input:  None                                                               *
  * Output: None                                                               *
  ******************************************************************************/
-GenPart::GenPart() : Particle::Particle(), _charge(0.0),_pdgId(0.0) 
+GenPart::GenPart() : Particle::Particle(), _status(0.0),_pdgId(0.0),_idxmother(0.0)
 {
   //cout<<"Begin of GenPart Hello"<<endl;
 } //GenPart()
@@ -68,7 +68,7 @@ GenPart::~GenPart()
  * Input:  GenPart                                                           *
  * Output: None                                                               *
  ******************************************************************************/
-GenPart::GenPart(const GenPart& other): Particle(other),_charge(other.GetCharge()),_pdgId(other.GetpdgId())
+GenPart::GenPart(const GenPart& other): Particle(other),_status(other.GetStatus()),_pdgId(other.GetpdgId()),_idxmother(other.GetIdxmother())
 {
 } //GenPart()
 
@@ -80,7 +80,7 @@ GenPart::GenPart(const GenPart& other): Particle(other),_charge(other.GetCharge(
  * Input:  Particle                                                           *
  * Output: None                                                               *
  ******************************************************************************/
-GenPart::GenPart(const Particle& other) : Particle(other),_charge(0.0),_pdgId(0.0)
+GenPart::GenPart(const Particle& other) : Particle(other),_status(0.0),_pdgId(0.0),_idxmother(0.0)
 { 
 } //GenPart()
 
@@ -129,8 +129,9 @@ GenPart& GenPart::operator=(const Particle& other)
 {
   
   Particle::operator = (other);
-  SetCharge(0.0);
+  SetStatus(0.0);
   SetpdgId(0.0);
+  SetIdxmother(0.0);
 
   return *this;
 } // = Particle
@@ -147,8 +148,9 @@ GenPart& GenPart::operator=(const GenPart& other)
 {
   
   Particle::operator=(other);
-  SetCharge(other.GetCharge());
+  SetStatus(other.GetStatus());
   SetpdgId(other.GetpdgId());
+  SetIdxmother(other.GetIdxmother());
   return *this;
 } //= const GenPart
 
@@ -164,9 +166,9 @@ GenPart& GenPart::operator=(GenPart& other)
 {
   
   Particle::operator=(other);
-  SetCharge(other.GetCharge());
-  SetpdgId(other.GetCharge());
-
+  SetStatus(other.GetStatus());
+  SetpdgId(other.GetpdgId());
+  SetIdxmother(other.GetIdxmother());
   return *this;
 } //= non-const GenPart
 
@@ -189,12 +191,12 @@ Bool_t GenPart::Fill(nanoAODTree *evtr, Int_t iE, Bool_t isSimulation)
   Double_t gpM         = evtr -> GenPart_mass    [iE];                         
 
   SetPtEtaPhiM(gpPt, gpEta, gpPhi, gpM);
-  Int_t charge= ((evtr->GenPart_pdgId[iE]) > 0) - ((evtr->GenPart_pdgId[iE])<0);
-  SetCharge             (charge);
+ 
 
   //Cut based ID. Can be changed to MVA if required.
-  
+  SetStatus         ( evtr -> GenPart_status   [iE] );
   SetpdgId         ( evtr -> GenPart_pdgId   [iE] );
+  SetIdxmother         ( evtr ->GenPart_genPartIdxMother   [iE] );
   
   return kTRUE;
   //cout<<"End of GenPart::Fill"<<endl;

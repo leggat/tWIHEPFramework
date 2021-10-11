@@ -108,10 +108,10 @@ void HistogrammingGenPart::BookHistogram(){
   _hPhiHiggs->SetXAxisTitle("#phi (Higgs)");
   _hPhiHiggs->SetYAxisTitle("Events");
 
-  // any Gen Particle Charge
-  _hChargeHiggs = DeclareTH1F("GenHiggsCharge","Gen Higgs charge",3,-1.5,1.5);
-  _hChargeHiggs->SetXAxisTitle("Charge^{Higgs}");
-  _hChargeHiggs->SetYAxisTitle("Events");
+  // any Gen Particle Status
+  _hStatusHiggs = DeclareTH1F("GenHiggsStatus","Gen Higgs status",100,-50,50);
+  _hStatusHiggs->SetXAxisTitle("Status^{Higgs}");
+  _hStatusHiggs->SetYAxisTitle("Events");
 
   //cout<<"Begin of HistogrammingGenPart::Book()"<<endl;
 } //BookHistogram
@@ -143,7 +143,7 @@ Bool_t HistogrammingGenPart::Apply()
 	_hPtHiggs  -> Fill(genpartVector[i].Pt());
 	_hEtaHiggs -> Fill(genpartVector[i].Eta());
 	_hPhiHiggs -> Fill(genpartVector[i].Phi());
-	_hChargeHiggs->Fill(genpartVector[i].GetCharge());
+	_hStatusHiggs->Fill(evc->GenParts[i].GetStatus());
       }
     }
   }    

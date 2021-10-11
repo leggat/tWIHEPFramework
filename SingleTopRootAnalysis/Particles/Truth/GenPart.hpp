@@ -75,9 +75,14 @@ class GenPart: public Particle
   //inline Double_t thetaID() const {return _thetaID;};
 
 
-  inline void SetCharge(Double_t charge){_charge = charge;};
-  inline Double_t GetCharge() const {return _charge;};
-  inline Double_t charge() const {return _charge;};
+  inline void SetStatus(Double_t status){_status = status;};
+  inline Double_t GetStatus() const {return _status;};
+  inline Double_t status() const {return _status;};
+
+  inline void SetIdxmother(Double_t idxmother){_idxmother = idxmother;};
+  inline Double_t GetIdxmother() const {return _idxmother;};
+  inline Double_t idxmother() const {return _idxmother;};
+
 
   inline void SetpdgId(Double_t pdgId){_pdgId = pdgId;};
   inline Double_t GetpdgId() const {return _pdgId;};
@@ -86,8 +91,9 @@ class GenPart: public Particle
 
  private:
 
-  Double_t _charge;
+  Double_t _status;
   Double_t _pdgId;
+  Double_t _idxmother;
 
   ////////////////////////////////////////////////////////////////////////////////
   // Integrate classes into the Root system

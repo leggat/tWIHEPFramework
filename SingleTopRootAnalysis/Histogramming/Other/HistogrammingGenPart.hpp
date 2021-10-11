@@ -59,7 +59,7 @@ private:
   myTH1F* _hEtaHiggs;         // Electron 1 Eta
   myTH1F* _hPhiHiggs;         // Electron 1 Phi
 
-  myTH1F *_hChargeHiggs;          // Charge of all electrons 
+  myTH1F *_hStatusHiggs;          // Status of all electrons 
 
   Int_t _nTimesRun;
   Float_t _integral;
