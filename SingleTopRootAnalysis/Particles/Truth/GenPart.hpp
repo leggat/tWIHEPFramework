@@ -1,7 +1,7 @@
 /******************************************************************************
  * GenPart.hpp                                                               *
  *                                                                            *
- * Store information about final state GenParts                              *
+ * Store information about final state genparts                              *
  *                                                                            *
  * Derived from Particle class                                                *
  *                                                                            *
@@ -42,7 +42,7 @@ class GenPart: public Particle
   // Default constructor
   GenPart();
 
-  // Copy constructor for GenParts
+  // Copy constructor for genparts
   GenPart(const GenPart& other);
 
   // Copy constructor for Particles

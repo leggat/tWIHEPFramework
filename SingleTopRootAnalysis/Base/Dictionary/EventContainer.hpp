@@ -560,7 +560,7 @@ class EventContainer
   std::vector<Jet>        lightQuarkLabeledJets;
   std::vector<Neutrino>   neutrinos;
 
-  std::vector<GenPart>   GenParts;
+  std::vector<GenPart>   genparts;
   
   //Pointers to collections
   std::vector<Electron> * electronsToUsePtr;

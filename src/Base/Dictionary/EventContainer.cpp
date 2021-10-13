@@ -310,7 +310,7 @@ void EventContainer::Initialize( EventTree* eventTree, nanoAODTree* nanoAODTree,
   lightQuarkLabeledJets.clear();
   neutrinos.clear();
   
-  GenParts.clear();
+  genparts.clear();
   triggerBits.clear();
   _triggerNames.clear();
 //  MCParticles.clear();
@@ -555,7 +555,7 @@ Int_t EventContainer::ReadEvent()
   ptetaElectrons.clear();
   isolatedElectrons.clear();
   unIsolatedElectrons.clear();
-  GenParts.clear();
+  genparts.clear();
 
   muons.clear();
   tightMuons.clear();
@@ -634,7 +634,7 @@ Int_t EventContainer::ReadEvent()
       //cout<<"Begin of gen fill event"<<endl;
       newGenPart.Clear();
       useObj=newGenPart.Fill(_nanoAODTree, io,isSimulation);
-      GenParts.push_back(newGenPart);
+      genparts.push_back(newGenPart);
       //cout<<"End of gen fill event"<<endl;
     }
       

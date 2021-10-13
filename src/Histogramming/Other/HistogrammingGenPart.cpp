@@ -133,7 +133,7 @@ Bool_t HistogrammingGenPart::Apply()
   
   // Gen Particles class depends on 
   std::vector<GenPart> genpartVector;
-  genpartVector.assign(evc -> GenParts.begin(),           evc -> GenParts.end());
+  genpartVector.assign(evc -> genparts.begin(),           evc -> genparts.end());
   
   _hNObj -> Fill(genpartVector.size());
 
@@ -143,7 +143,7 @@ Bool_t HistogrammingGenPart::Apply()
 	_hPtHiggs  -> Fill(genpartVector[i].Pt());
 	_hEtaHiggs -> Fill(genpartVector[i].Eta());
 	_hPhiHiggs -> Fill(genpartVector[i].Phi());
-	_hStatusHiggs->Fill(evc->GenParts[i].GetStatus());
+	_hStatusHiggs->Fill(evc->genparts[i].GetStatus());
       }
     }
   }    
