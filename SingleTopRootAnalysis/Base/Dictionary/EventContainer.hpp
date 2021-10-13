@@ -121,6 +121,9 @@
 #include "SingleTopRootAnalysis/Particles/Recon/Neutrino.hpp"
 
 // MC particles
+
+#include "SingleTopRootAnalysis/Particles/Truth/GenPart.hpp"
+
 #include "SingleTopRootAnalysis/Particles/Truth/MCParticle.hpp"
 #include "SingleTopRootAnalysis/Particles/Truth/MCMuon.hpp"
 #include "SingleTopRootAnalysis/Particles/Truth/MCElectron.hpp"
@@ -557,6 +560,8 @@ class EventContainer
   std::vector<Jet>        lightQuarkLabeledJets;
   std::vector<Neutrino>   neutrinos;
 
+  std::vector<GenPart>   genparts;
+  
   //Pointers to collections
   std::vector<Electron> * electronsToUsePtr;
   std::vector<Muon>     * muonsToUsePtr;
@@ -774,6 +779,7 @@ private:
   Muon newMuon;
   Electron newElectron;
   Jet newJet;
+  GenPart newGenPart;
 
   std::vector<std::vector<std::string> > _resolution;
   std::vector<std::vector<std::string> > _resSFs;

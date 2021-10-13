@@ -85,8 +85,8 @@ private:
   myTH1F *_hEtCone30OverPt;     // calorimeter ET in a cone 30 over Pt for selected electrons 
   myTH1F *_hPtCone30OverPt;     // inner dectector track sum Pt in a cone 30 over Pt for selected electrons 
 
- myTH1F *_hJetDeltaPhi;
- myTH1F *_hJetDeltaR;
+  myTH1F *_hJetDeltaPhi;
+  myTH1F *_hJetDeltaR;
 
   TString electronType; // Type of electron being plotted
 
