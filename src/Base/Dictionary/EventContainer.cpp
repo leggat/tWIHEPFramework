@@ -605,6 +605,7 @@ Int_t EventContainer::ReadEvent()
     // Fill trigger info                           
     ///////////////////////////////////////////
 
+    //This is done automatically
 
     ///////////////////////////////////////////
     // Fill MET info                           
@@ -681,7 +682,19 @@ Int_t EventContainer::ReadEvent()
         if(newJet.IsTagged()) taggedJets.push_back(newJet);                                                                             
         else unTaggedJets.push_back(newJet);                                                                                            
                                                                                                                                         
-      } // if useObj                                                                                                                    
+      } // if useObj                                                                 
+      //If this is the first 
+      if (io == 0) {                                                                   
+	metVecsJESShifted.clear();                                                   
+	jesShiftedJets.clear();                                                        
+	for (int jesSyst = 0; jesSyst < newJet.GetNumberOfJESCorrections(); jesSyst++){
+	  metVecsJESShifted.push_back(missingEtVec_xy);                                
+	  std::vector<Jet> tempVec;                                                    
+	  jesShiftedJets.push_back(tempVec);                                           
+	}                                                                              
+      }                                                                                
+
+
       //Now for each jet shift it by all of the JES corrections and append it to the shifted jet collections if it passes selections now
       //Currently for nanoAOD the GetNumberOfJESCorrections is zero, so this will do nothing, but leaving it here for when it works again.
       for (int jesSyst = 0; jesSyst < newJet.GetNumberOfJESCorrections(); jesSyst++){                                                   
