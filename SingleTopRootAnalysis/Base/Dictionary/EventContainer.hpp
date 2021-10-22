@@ -121,6 +121,9 @@
 #include "SingleTopRootAnalysis/Particles/Recon/Neutrino.hpp"
 
 // MC particles
+
+#include "SingleTopRootAnalysis/Particles/Truth/GenPart.hpp"
+
 #include "SingleTopRootAnalysis/Particles/Truth/MCParticle.hpp"
 #include "SingleTopRootAnalysis/Particles/Truth/MCMuon.hpp"
 #include "SingleTopRootAnalysis/Particles/Truth/MCElectron.hpp"
@@ -502,6 +505,12 @@ class EventContainer
   Float_t bcid;
   Int_t Pvtxall_n;
 
+  //HTXS
+  Float_t HTXS_Higgs_pt;
+  Float_t HTXS_Higgs_y;
+  Float_t HTXS_stage_0;
+  //HTXS
+
   Bool_t _badJetEvent;
 
   Bool_t isSimulation;
@@ -551,6 +560,8 @@ class EventContainer
   std::vector<Jet>        lightQuarkLabeledJets;
   std::vector<Neutrino>   neutrinos;
 
+  std::vector<GenPart>   genparts;
+  
   //Pointers to collections
   std::vector<Electron> * electronsToUsePtr;
   std::vector<Muon>     * muonsToUsePtr;
@@ -768,6 +779,7 @@ private:
   Muon newMuon;
   Electron newElectron;
   Jet newJet;
+  GenPart newGenPart;
 
   std::vector<std::vector<std::string> > _resolution;
   std::vector<std::vector<std::string> > _resSFs;

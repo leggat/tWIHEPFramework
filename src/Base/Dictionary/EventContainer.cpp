@@ -309,7 +309,8 @@ void EventContainer::Initialize( EventTree* eventTree, nanoAODTree* nanoAODTree,
   tauLabeledJets.clear();
   lightQuarkLabeledJets.clear();
   neutrinos.clear();
-
+  
+  genparts.clear();
   triggerBits.clear();
   _triggerNames.clear();
 //  MCParticles.clear();
@@ -518,7 +519,14 @@ Int_t EventContainer::ReadEvent()
     _genEventWeight    = _nanoAODTree -> genWeight;
     actualIntPerXing   = 1;//_eventTree ->         
     averageIntPerXing  = 1;//_eventTree ->         
-    bcid               = 1;//_eventTree ->         
+    bcid               = 1;//_eventTree ->     
+
+    //Adding HTXS variables
+    HTXS_Higgs_pt        = _nanoAODTree -> HTXS_Higgs_pt;
+    HTXS_Higgs_y        = _nanoAODTree -> HTXS_Higgs_y;
+    HTXS_stage_0        = _nanoAODTree -> HTXS_stage_0;
+    //HTXS
+
     distns = -999;                                 
     distbunch = -999;                              
     safejetevent= -999;                            
@@ -547,6 +555,7 @@ Int_t EventContainer::ReadEvent()
   ptetaElectrons.clear();
   isolatedElectrons.clear();
   unIsolatedElectrons.clear();
+  genparts.clear();
 
   muons.clear();
   tightMuons.clear();
@@ -620,6 +629,18 @@ Int_t EventContainer::ReadEvent()
     //For compatability reasons right now
     missingEtVec_xy.SetPtEtaPhiM(met_pt,0.,met_phi,0.);
 
+
+    /////////Gen///////
+    for (Int_t io = 0; io < _nanoAODTree->nGenPart; io++) {
+      //cout<<"Begin of gen fill event"<<endl;
+      newGenPart.Clear();
+      useObj=newGenPart.Fill(_nanoAODTree, io,isSimulation);
+      genparts.push_back(newGenPart);
+      //cout<<"End of gen fill event"<<endl;
+    }
+      
+      ////
+      
     ///////////////////////////////////////////                          
     // Electrons                                                         
     ///////////////////////////////////////////                          
