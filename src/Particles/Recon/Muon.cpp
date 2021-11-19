@@ -48,13 +48,16 @@ ClassImp(Muon)
  * Output: None                                                               *
  ******************************************************************************/
   Muon::Muon() : Particle::Particle(), 
-  _passTightId(kFALSE), 
-  _passLooseId(kFALSE),
-  _isSoft     (kFALSE),
-  _isHighPt   (kFALSE),
-  _isPf       (kFALSE),
-  _isoCharged (0.0),
-  _isoSum     (0.0),
+  _passTightId (kFALSE), 
+  _passMediumId(kFALSE), 
+  _passLooseId (kFALSE),
+  _isGlobal    (kFALSE),
+  _isTracker   (kFALSE),
+  _isSoft      (kFALSE),
+  _isHighPt    (kFALSE),
+  _isPf        (kFALSE),
+  _isoCharged  (0.0),
+  _isoSum      (0.0),
   _isoCharParPt		(0.0),
   _isoNeutralHadron	(0.0),
   _isoPhoton		(0.0),
@@ -68,7 +71,13 @@ ClassImp(Muon)
   _TLayers		(0.0),
   _relIsoR04		(0.0),
   _ndof			(0.0),
-  _charge		(0.0)
+  _charge		(0.0),
+  _isTightMu            (kFALSE),
+  _isVetoMu             (kFALSE),
+  _isUnIsolatedMu       (kFALSE),
+  _isTriggerMatchedMu   (kFALSE),
+  _isMetMu              (kFALSE)
+
 {
 
 } //Muon
@@ -96,7 +105,10 @@ Muon::~Muon()
  ******************************************************************************/
 Muon::Muon(const Muon& other): Particle(other),
   _passTightId(other.GetpassTightId()),
+  _passMediumId(other.GetpassMediumId()),
   _passLooseId(other.GetpassLooseId()),
+  _isGlobal(other.GetisGlobal()),			       
+  _isTracker(other.GetisTracker()),
   _isSoft(other.GetisSoft()),
   _isHighPt(other.GetisHighPt()),
   _isPf(other.GetisPf()),
@@ -114,8 +126,14 @@ Muon::Muon(const Muon& other): Particle(other),
   _matchedStat(other.GetmatchedStat()),
   _TLayers(other.GetTLayers()),
   _relIsoR04(other.GetrelIsoR04()),
-			       _ndof(other.Getndof()),
-			       _charge(other.GetCharge())			       
+  _ndof(other.Getndof()),
+  _charge(other.GetCharge()),
+  _isTightMu(other.GetisTightMu()),
+  _isVetoMu(other.GetisVetoMu()),
+  _isUnIsolatedMu(other.GetisUnIsolatedMu()),
+  _isTriggerMatchedMu(other.GetisTriggerMatchedMu()),
+  _isMetMu(other.GetisMetMu())
+
 			       
 {
 } //Muon()
@@ -129,27 +147,37 @@ Muon::Muon(const Muon& other): Particle(other),
  * Output: None                                                               *
  ******************************************************************************/
 Muon::Muon(const Particle& other): Particle(other),
-  _passTightId(kFALSE), 
-  _passLooseId(kFALSE),
-  _isSoft     (kFALSE),
-  _isHighPt   (kFALSE),
-  _isPf       (kFALSE),
-  _isoCharged (0.0),
-  _isoSum     (0.0),
-  _isoCharParPt		(0.0),
-  _isoNeutralHadron	(0.0),
-  _isoPhoton		(0.0),
-  _isoPU		(0.0),
-  _chi2			(0.0),
-  _dxy			(0.0),
-  _dz			(0.0),
-  _validHits		(0.0),
-  _validHitsInner	(0.0),
-  _matchedStat		(0.0),
-  _TLayers		(0.0),
+				   _passTightId (kFALSE), 
+				   _passMediumId(kFALSE), 
+				   _passLooseId(kFALSE),
+				   _isGlobal   (kFALSE),
+				   _isTracker  (kFALSE),
+				   _isSoft     (kFALSE),
+				   _isHighPt   (kFALSE),
+				   _isPf       (kFALSE),
+				   _isoCharged (0.0),
+				   _isoSum     (0.0),
+				   _isoCharParPt	(0.0),
+				   _isoNeutralHadron	(0.0),
+				   _isoPhoton		(0.0),
+				   _isoPU		(0.0),
+				   _chi2		(0.0),
+				   _dxy			(0.0),
+				   _dz			(0.0),
+				   _validHits		(0.0),
+				   _validHitsInner	(0.0),
+                                   _matchedStat		(0.0),
+                                   _TLayers		(0.0),
 				   _relIsoR04            (0.0),
 				   _ndof (0.0),
-				   _charge(0.0)
+  _charge(0.0),
+  _isTightMu(kFALSE),                  
+  _isVetoMu(kFALSE),                    
+  _isUnIsolatedMu(kFALSE),        
+  _isTriggerMatchedMu(kFALSE),
+  _isMetMu(kFALSE)                     
+                                                   
+
 {
 } //Muon
 
@@ -194,13 +222,16 @@ Muon Muon::operator+(const Muon& other)
 Muon& Muon::operator=(const Particle& other)
 {
   Particle::operator=(other);
-  SetpassTightId(kFALSE);
-  SetpassLooseId(kFALSE);
-  SetisSoft     (kFALSE);
-  SetisHighPt   (kFALSE);
-  SetisPf       (kFALSE);
-  SetisoCharged (0.0);
-  SetisoSum     (0.0);
+  SetpassTightId (kFALSE);
+  SetpassMediumId(kFALSE);
+  SetpassLooseId (kFALSE);
+  SetisGlobal    (kFALSE);
+  SetisTracker   (kFALSE);
+  SetisSoft      (kFALSE);
+  SetisHighPt    (kFALSE);
+  SetisPf        (kFALSE);
+  SetisoCharged  (0.0);
+  SetisoSum      (0.0);
   SetisoCharParPt	(0.0);
   SetisoNeutralHadron	(0.0);
   SetisoPhoton		(0.0);
@@ -215,6 +246,11 @@ Muon& Muon::operator=(const Particle& other)
   SetrelIsoR04		(0.0);
   Setndof		(0.0);
   SetCharge		(0.0);
+  SetisTightMu(kFALSE);
+  SetisVetoMu(kFALSE);
+  SetisUnIsolatedMu(kFALSE);
+  SetisTriggerMatchedMu(kFALSE);
+  SetisMetMu(kFALSE);
   return *this;
 } //= Particle
 
@@ -230,7 +266,10 @@ Muon& Muon::operator=(const Muon& other)
 {
   Particle::operator=(other);
   SetpassTightId(other.GetpassTightId());
+  SetpassMediumId(other.GetpassMediumId());
   SetpassLooseId(other.GetpassLooseId());
+  SetisGlobal(other.GetisGlobal());
+  SetisTracker(other.GetisTracker());
   SetisSoft(other.GetisSoft());
   SetisHighPt(other.GetisHighPt());
   SetisPf(other.GetisPf());
@@ -250,6 +289,12 @@ Muon& Muon::operator=(const Muon& other)
   SetrelIsoR04(other.GetrelIsoR04());
   Setndof(other.Getndof());
   SetCharge(other.GetCharge());
+  SetisTightMu(other.GetisTightMu());         
+  SetisVetoMu(other.GetisVetoMu());          
+  SetisUnIsolatedMu(other.GetisUnIsolatedMu());    
+  SetisTriggerMatchedMu(other.GetisTriggerMatchedMu());
+  SetisMetMu(other.GetisMetMu());           
+
   return *this;
 } //= const muon
 
@@ -265,7 +310,10 @@ Muon& Muon::operator=(Muon& other)
 {
   Particle::operator=(other);
   SetpassTightId(other.GetpassTightId());
+  SetpassMediumId(other.GetpassMediumId());
   SetpassLooseId(other.GetpassLooseId());
+  SetisGlobal(other.GetisGlobal());
+  SetisTracker(other.GetisTracker());
   SetisSoft(other.GetisSoft());
   SetisHighPt(other.GetisHighPt());
   SetisPf(other.GetisPf());
@@ -285,6 +333,12 @@ Muon& Muon::operator=(Muon& other)
   SetrelIsoR04(other.GetrelIsoR04());
   Setndof(other.Getndof());
   SetCharge(other.GetCharge());
+  SetisTightMu(other.GetisTightMu());                  
+  SetisVetoMu(other.GetisVetoMu());                    
+  SetisUnIsolatedMu(other.GetisUnIsolatedMu());        
+  SetisTriggerMatchedMu(other.GetisTriggerMatchedMu());
+  SetisMetMu(other.GetisMetMu());                      
+
   return *this;
 } //= non-const muon
 
@@ -301,6 +355,8 @@ void Muon::SetCuts(TEnv* config, TString muonType)
   _minPtCuts[muonType] = config -> GetValue("ObjectID.Muon."+muonType+".MinPt", 100.0);
   _maxEtaCuts[muonType] = config -> GetValue("ObjectID.Muon."+muonType+".MaxEta", 0.0);
   _maxRelIsoCuts[muonType] = config -> GetValue("ObjectID.Muon."+muonType+".MaxRelIso", 100.0);
+  _maxDxyCuts[muonType] = config -> GetValue("ObjectID.Muon."+muonType+".MaxDxy", 100.0);
+  _maxDzCuts[muonType] = config -> GetValue("ObjectID.Muon."+muonType+".MaxDz", 100.0);
 
 }
 
@@ -322,15 +378,20 @@ Bool_t Muon::Fill(nanoAODTree *evtr,int iE, Bool_t isSimulation)
   Double_t muCharge = evtr -> Muon_charge          [iE];
   SetrelIsoR04      ( evtr -> Muon_pfRelIso04_all  [iE] );
   SetpassTightId    ( evtr -> Muon_tightId         [iE] );
+  SetpassMediumId   ( evtr -> Muon_mediumId        [iE] );
+  SetisGlobal       ( evtr -> Muon_isGlobal        [iE] );
+  SetisTracker      ( evtr -> Muon_isTracker       [iE] );
   Setdxy            ( evtr -> Muon_dxy             [iE] );
   Setdz             ( evtr -> Muon_dz              [iE] );
   SetisPf           ( evtr -> Muon_isPFcand        [iE] );
 
   SetPtEtaPhiM(muPt, muEta, muPhi, muM); 
 
-  SetisTightMu      ( ApplyCuts( "Tight"      ) );
-  SetisVetoMu       ( ApplyCuts( "Veto"       ) );
-  SetisUnIsolatedMu ( ApplyCuts( "UnIsolated" ) );
+  SetisTightMu      ( ApplyCuts( "Tight"        ) );
+  SetisVetoMu       ( ApplyCuts( "Veto"         ) );
+  SetisUnIsolatedMu ( ApplyCuts( "UnIsolated"   ) );
+  SetisTriggerMatchedMu      ( kFALSE ); // This is done elsewhere
+  SetisMetMu        ( ApplyCuts( "MetMu"        ) );
 
   return kTRUE;
 
@@ -419,7 +480,23 @@ Bool_t Muon::ApplyCuts(TString muonType)
   if(Pt() <= _minPtCuts[muonType])               passMinPt  = kFALSE;
   if(TMath::Abs(Eta()) >= _maxEtaCuts[muonType]) passMaxEta = kFALSE;
 
+  // **************************************************************
+  // Impact parameter cuts
+  // **************************************************************
+  Bool_t passImpactParam = kTRUE;
+
+  if (dxy() > _maxDxyCuts[muonType] || dz() > _maxDzCuts[muonType]) passImpactParam = kFALSE;
+
+  // **************************************************************
+  // Moer complicated ID selection
+  // **************************************************************
+  Bool_t passMetId = kTRUE;
+  
+  if (! (passMediumId() && (isGlobal() || isTracker()))) passMetId = kFALSE;
+
+
   //Set up the ID requirements for the event container
+  if (muonType == "MetMu")      return (passMinPt && passMaxEta  && passMetId && passRelIso && passImpactParam);
   if (muonType == "Tight")      return (passMinPt && passMaxEta  && passTightId() && passRelIso);
   if (muonType == "Veto")       return (passMinPt && passMaxEta);//no isolation req. or inner det or jet overlap.
   if (muonType == "UnIsolated") return (passMinPt && passMaxEta  && passTightId() && ! passRelIso); //The same as tight muons, but with an inverted isolation requirement

@@ -79,9 +79,21 @@ public:
   inline Bool_t GetpassTightId() const {return _passTightId;};
   inline Bool_t passTightId() const {return _passTightId;};
 
+  inline void SetpassMediumId(Bool_t passMediumId){_passMediumId = passMediumId;};
+  inline Bool_t GetpassMediumId() const {return _passMediumId;};
+  inline Bool_t passMediumId() const {return _passMediumId;};
+
   inline void SetpassLooseId(Bool_t passLooseId){_passLooseId = passLooseId;};
   inline Bool_t GetpassLooseId() const {return _passLooseId;};
   inline Bool_t passLooseId() const {return _passLooseId;};
+
+  inline void SetisGlobal(Bool_t isGlobal){_isGlobal = isGlobal;};
+  inline Bool_t GetisGlobal() const {return _isGlobal;};
+  inline Bool_t isGlobal() const {return _isGlobal;};
+
+  inline void SetisTracker(Bool_t isTracker){_isTracker = isTracker;};
+  inline Bool_t GetisTracker() const {return _isTracker;};
+  inline Bool_t isTracker() const {return _isTracker;};
 
   inline void SetisSoft(Bool_t isSoft){_isSoft = isSoft;};
   inline Bool_t GetisSoft() const {return _isSoft;};
@@ -171,11 +183,21 @@ public:
   inline Bool_t GetisUnIsolatedMu() const {return _isUnIsolatedMu;};
   inline Bool_t isUnIsolatedMu() const {return _isUnIsolatedMu;};
 
+  inline void SetisTriggerMatchedMu(Bool_t isTriggerMatchedMu=true){_isTriggerMatchedMu = isTriggerMatchedMu;};
+  inline Bool_t GetisTriggerMatchedMu() const {return _isTriggerMatchedMu;};
+  inline Bool_t isTriggerMatchedMu() const {return _isTriggerMatchedMu;};
+
+  inline void SetisMetMu(Bool_t isMetMu){_isMetMu = isMetMu;};
+  inline Bool_t GetisMetMu() const {return _isMetMu;};
+  inline Bool_t isMetMu() const {return _isMetMu;};
 
 private:
 
   Bool_t _passTightId;
+  Bool_t _passMediumId;
   Bool_t _passLooseId;
+  Bool_t _isGlobal;
+  Bool_t _isTracker;
   Bool_t _isSoft;
   Bool_t _isHighPt;
   Bool_t _isPf;
@@ -200,6 +222,8 @@ private:
   Bool_t _isTightMu;
   Bool_t _isVetoMu;
   Bool_t _isUnIsolatedMu;
+  Bool_t _isTriggerMatchedMu;
+  Bool_t _isMetMu;
 
   //////////////////////////
   // The ApplyCuts method should be private
@@ -210,6 +234,8 @@ private:
   map<TString,Double_t> _minPtCuts;
   map<TString,Double_t> _maxEtaCuts;
   map<TString,Double_t> _maxRelIsoCuts;
+  map<TString,Double_t> _maxDxyCuts;
+  map<TString,Double_t> _maxDzCuts;
 
   ////////////////////////////////////////////////////////////////////////////////
   // Integrate classes into the Root system
