@@ -39,9 +39,7 @@ HistogrammingMuon::HistogrammingMuon(EventContainer *obj, TString muonTypePassed
 {
   _unisolated = unIsolated;
   // Check muonType parameter
-  if( muonTypePassed.CompareTo("All")   && muonTypePassed.CompareTo("UnIsolated") && 
-      muonTypePassed.CompareTo("Tight") && muonTypePassed.CompareTo("Veto") &&
-      muonTypePassed.CompareTo("Isolated") && muonTypePassed.CompareTo("PtEtaCut") ){
+  if(!(obj->IsValidCollection("Muon",muonTypePassed))){
     std::cout << "ERROR " << "<HistogrammingMuon::HistogrammingMuon()> " 
               << "Must pass Tight, Veto, Isolated, UnIsolated, PtEtaCut, or All to constructor" << std::endl;
     exit(8);
@@ -90,26 +88,26 @@ void HistogrammingMuon::BookHistogram(){
   Double_t TGCPhiMin = 0.0;
   Double_t TGCPhiMax = 15.0;
 
-  Int_t ptBin    = 25;
+  Int_t ptBin    = 100;
   Int_t ptBin2D  = 10;
   Double_t ptMin = 0.0;
   Double_t ptMax = 100.0;
 
-  Int_t relIsoBin = 30;
+  Int_t relIsoBin = 100;
   Double_t relIsoMin = 0.0;
-  Double_t relIsoMax = 2.0;
+  Double_t relIsoMax = 0.8;
 
   //  Int_t etaBin    = 60;
-  Int_t etaBin    = 24;
+  Int_t etaBin    = 100;
   Int_t etaBin2D  = 10;
   Double_t etaMin = -3.0;
   Double_t etaMax = 3.0;
 
   //  Int_t phiBin    = 25;
-  Int_t phiBin    = 16;
+  Int_t phiBin    = 50;
   Int_t phiBin2D  = 10;
-  Double_t phiMin = -1.0 * TMath::Pi();
-  Double_t phiMax = TMath::Pi();
+  Double_t phiMin = 0.;
+  Double_t phiMax = 2.0*TMath::Pi();
     
 
   ////////////////////////////////////////////////////////////////
@@ -250,19 +248,14 @@ Bool_t HistogrammingMuon::Apply()
   EventContainer *evc = GetEventContainer();
 
   // Muons class depends on 
-  std::vector<Muon> muonVector;
-  if(     "All"        == muonType) muonVector.assign(evc -> muons.begin(),           evc -> muons.end());
-  else if("Veto"       == muonType) muonVector.assign(evc -> vetoMuons.begin(),       evc -> vetoMuons.end());
-  else if("PtEtaCut"   == muonType) muonVector.assign(evc -> ptetaMuons.begin(),      evc -> ptetaMuons.end());
-  else if("Tight"      == muonType) muonVector.assign(evc -> tightMuons.begin(),      evc -> tightMuons.end());
-  else if("Isolated"   == muonType) muonVector.assign(evc -> isolatedMuons.begin(),   evc -> isolatedMuons.end());
-  else if("UnIsolated" == muonType) muonVector.assign(evc -> unIsolatedMuons.begin(), evc -> unIsolatedMuons.end());
-  else{
+  if(!(evc->IsValidCollection("Muon",muonType))){ 
     std::cout << "ERROR " << "<HistogramminMuon::Apply()> " 
-	      << "muonType must be All, Tight, Veto, Isolated, or UnIsolated, PtEtaCut" << std::endl;
+	      << muonType << " not recognised: Must be All, Tight, Veto, Isolated, or UnIsolated, PtEtaCut" << std::endl;
     exit(8);
   } //else
-    
+
+  std::vector<Muon> muonVector = evc->GetMuonCollection(muonType);
+        
   if ("Tight" == muonType && _unisolated) muonVector = evc->unIsolatedMuons;
 
   // Fill Histograms
