@@ -226,7 +226,7 @@ EventContainer::EventContainer():
   //_collectionTree(NULL), 
   _eventTree(NULL), _nanoAODTree(NULL), _truthTree(NULL), 
   _eventCount(0),   _targetTopMass(175.),
-  _debugLevel(0),   _donanoAOD(false),  _doFastSim(false),_doSkim(false),
+  _debugLevel(0),   _donanoAOD(false),  _doFastSim(false),_doSkim(false),_doManyMETs(false),
   _sourceName("NONE"),
   _globalEventWeight(1.), _treeEventWeight(1.), _outputEventWeight(1.),_EventPileupWeight(-1),_genEventWeight(1.),_generalReweight(1.),
   _EventPileupMinBiasUpWeight(-1),_EventPileupMinBiasDownWeight(-1),
@@ -296,6 +296,8 @@ void EventContainer::Initialize( EventTree* eventTree, nanoAODTree* nanoAODTree,
   muons.clear();
   tightMuons.clear();
   vetoMuons.clear();
+  metMuons.clear();
+  triggerMatchMuons.clear();
   ptetaMuons.clear();
   isolatedMuons.clear();
   unIsolatedMuons.clear();
@@ -309,7 +311,8 @@ void EventContainer::Initialize( EventTree* eventTree, nanoAODTree* nanoAODTree,
   tauLabeledJets.clear();
   lightQuarkLabeledJets.clear();
   neutrinos.clear();
-  
+  triggerObjects.clear();
+
   genparts.clear();
   triggerBits.clear();
   _triggerNames.clear();
@@ -431,6 +434,8 @@ void EventContainer::SetupObjectDefinitions(){
   newMuon.SetCuts(GetConfig(),"All");
   newMuon.SetCuts(GetConfig(),"UnIsolated");
   newMuon.SetCuts(GetConfig(),"Veto");
+  newMuon.SetCuts(GetConfig(),"MetMu");
+  newMuon.SetCuts(GetConfig(),"TriggerMatch");
 
   newElectron.SetCuts(GetConfig(),"Tight");
   newElectron.SetCuts(GetConfig(),"All");
@@ -560,6 +565,8 @@ Int_t EventContainer::ReadEvent()
   muons.clear();
   tightMuons.clear();
   vetoMuons.clear();
+  metMuons.clear();
+  triggerMatchMuons.clear();
   ptetaMuons.clear();
   isolatedMuons.clear();
   unIsolatedMuons.clear();
@@ -575,6 +582,21 @@ Int_t EventContainer::ReadEvent()
   tauLabeledJets.clear();
   lightQuarkLabeledJets.clear();
   neutrinos.clear();
+  triggerObjects.clear();
+
+  //Some extra resets
+  missingEtVecs.clear();
+  pv_chi2 = -999;
+  pv_ndof = -999;
+  pv_npvs = -999;
+  pv_npvsGood = -999;
+  pv_score = -999;
+  pv_x = -999;
+  pv_y = -999;
+  pv_z = -999;
+  trueInteractions = -999;
+  npuVertices = -999;
+
 
   //Reset trigger bits
   //  for (auto triggerName : _triggerNames) triggerBits[triggerName] = kFALSE;
@@ -608,8 +630,10 @@ Int_t EventContainer::ReadEvent()
     pv_x = _nanoAODTree->PV_x;
     pv_y = _nanoAODTree->PV_y;
     pv_z = _nanoAODTree->PV_z;
-    trueInteractions = _nanoAODTree->Pileup_nTrueInt;
-
+    if (GetIsSimulation()){
+      trueInteractions = _nanoAODTree->Pileup_nTrueInt;
+      npuVertices = _nanoAODTree->Pileup_nPU;
+    }
     ///////////////////////////////////////////
     // Fill trigger info                           
     ///////////////////////////////////////////
@@ -623,11 +647,57 @@ Int_t EventContainer::ReadEvent()
     met_pt = _nanoAODTree->MET_pt;
     met_phi = _nanoAODTree->MET_phi;
     missingEtVec.SetPtEtaPhiM(met_pt,0.,met_phi,0.);
+    missingEtVecs["met"] = missingEtVec;
+    sumETs["met"] = _nanoAODTree->MET_sumEt;
 
+    missingEt = met_pt;
+    missingEx = missingEtVec.Px(); 
+    missingEy = missingEtVec.Py(); 
+    missingPhi = met_phi;
+
+    TLorentzVector tempMet;
+    //Fill the various mets
+    //Calo met
+    if (DoManyMETs()){
+      tempMet.SetPtEtaPhiM(_nanoAODTree->CaloMET_pt,0.,_nanoAODTree->CaloMET_phi,0.);
+      missingEtVecs["calo"] = tempMet;
+      sumETs["calo"] = _nanoAODTree->CaloMET_sumEt;
+      
+      //chs met
+      tempMet.SetPtEtaPhiM(_nanoAODTree->ChsMET_pt,0.,_nanoAODTree->ChsMET_phi,0.);
+      missingEtVecs["chs"] = tempMet;
+      sumETs["chs"] = _nanoAODTree->ChsMET_sumEt;
+      
+      //puppi met
+      tempMet.SetPtEtaPhiM(_nanoAODTree->PuppiMET_pt,0.,_nanoAODTree->PuppiMET_phi,0.);
+      missingEtVecs["puppi"] = tempMet;
+      sumETs["puppi"] = _nanoAODTree->PuppiMET_sumEt;
+      
+      //raw met
+      tempMet.SetPtEtaPhiM(_nanoAODTree->RawMET_pt,0.,_nanoAODTree->RawMET_phi,0.);
+      missingEtVecs["raw"] = tempMet;
+      sumETs["raw"] = _nanoAODTree->RawMET_sumEt;
+      
+      //raw puppi met
+      tempMet.SetPtEtaPhiM(_nanoAODTree->RawPuppiMET_pt,0.,_nanoAODTree->RawPuppiMET_phi,0.);
+      missingEtVecs["rawPuppi"] = tempMet;
+      sumETs["rawPuppi"] = _nanoAODTree->RawPuppiMET_sumEt;
+      
+    }
+    //met filters
     passesMETFilters = _nanoAODTree->Flag_METFilters;
-
+      
     //For compatability reasons right now
     missingEtVec_xy.SetPtEtaPhiM(met_pt,0.,met_phi,0.);
+
+    ///////////////////////////////////////////
+    // Trigger objects                               
+    ///////////////////////////////////////////
+    for (Int_t io = 0; io < _nanoAODTree->nTrigObj; io++) {
+      newTriggerObj.Clear();
+      useObj = newTriggerObj.Fill(_nanoAODTree,io);
+      if (useObj) triggerObjects.push_back(newTriggerObj);
+    }
 
 
     /////////Gen///////
@@ -672,7 +742,13 @@ Int_t EventContainer::ReadEvent()
       } // if useObj                                                     
       if(newMuon.isTightMu()) {                                                       
         tightMuons.push_back(newMuon);                                   
-      } // if useObj                                                     
+      } // if useObj      
+      if(newMuon.isMetMu()) {
+	metMuons.push_back(newMuon);
+      }
+      if(newMuon.isTriggerMatchedMu()) {
+	triggerMatchMuons.push_back(newMuon);
+      }
       if(newMuon.isVetoMu()) {                                                       
         vetoMuons.push_back(newMuon);                                    
       } // if useObj                                                     
@@ -1173,3 +1249,54 @@ void EventContainer::MakeTopQuarks()
   return;
 } //MakeTopQuark
 
+//A shortcut to getting a particular muon collection so that it doesn't have to be done in each cut routine.
+//Will likely add similar options to jets, electrons, photons, etc.
+std::vector<Muon> EventContainer::GetMuonCollection(TString muonType){
+
+  std::vector<Muon> vec;
+  if(      ! muonType.CompareTo("Veto") )         return vetoMuons;
+  else if( ! muonType.CompareTo("Tight") )        return tightMuons;
+  else if( ! muonType.CompareTo("PtEtaCut") )     return ptetaMuons;
+  else if( ! muonType.CompareTo("UnIsolated") )   return unIsolatedMuons;
+  else if( ! muonType.CompareTo("Isolated") )     return isolatedMuons;
+  else if( ! muonType.CompareTo("MetMu") )        return metMuons;
+  else if( ! muonType.CompareTo("TriggerMatch") ) return triggerMatchMuons;
+  else if( ! muonType.CompareTo("All") )          return muons;
+  else{
+    std::cout << "ERROR in getting muon collection of type: " << muonType.Data() << std::endl;
+
+  } //else                                                                                                                      
+  return vec;
+}
+
+//A way to check that your choice of particle and collection is valid
+Bool_t EventContainer::IsValidCollection(TString particleName, TString collectionName){
+
+  Bool_t returnValue = kFALSE;
+
+  if ( !particleName.CompareTo("Muon") ){
+    if( ! ( collectionName.CompareTo("All")   && collectionName.CompareTo("UnIsolated") &&
+	    collectionName.CompareTo("Tight") && collectionName.CompareTo("Veto") &&
+	    collectionName.CompareTo("Trigger") && collectionName.CompareTo("MetMu") &&
+	    collectionName.CompareTo("Isolated") && collectionName.CompareTo("PtEtaCut") ) ){
+      returnValue = kTRUE;
+    }
+    else {
+      std::cout << "Muon collection "<< collectionName << " not valid!" << std::endl;
+      exit(8);
+    }
+  }
+
+  return returnValue;
+
+}
+
+//This is a bit hacked together for now, will try and sort out soon.
+void EventContainer::SetObjectIsTrigger(TString particleName, TString collectionName, Int_t index){
+  if (particleName == "Muon"){
+    if (collectionName == "MetMu") {
+      metMuons[index].SetisTriggerMatchedMu();
+    }
+  }
+  //std::cout << "after "<< metMuons.size() << std::endl;
+}

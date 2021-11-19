@@ -119,6 +119,7 @@
 #include "SingleTopRootAnalysis/Particles/Recon/Jet.hpp"
 #include "SingleTopRootAnalysis/Particles/Recon/Tau.hpp"
 #include "SingleTopRootAnalysis/Particles/Recon/Neutrino.hpp"
+#include "SingleTopRootAnalysis/Particles/Recon/TriggerObj.hpp"
 
 // MC particles
 
@@ -222,10 +223,15 @@ class EventContainer
   // get whether we should do the Truth tree or not
   inline Bool_t DoTruth(void) const { return _doTruth; };
 
-  // Set whether we should do the Truth
+  // Set whether we should do the nanoAOD
   inline void SetDonanoAOD(const Bool_t& a=kTRUE) { _donanoAOD=a; };
-  // get whether we should do the Truth tree or not
+  // get whether we should do the nanoAOD tree or not
   inline Bool_t DonanoAOD(void) const { return _donanoAOD; };
+
+  // Set whether we should do the mets
+  inline void SetDoManyMETs(const Bool_t& a=kTRUE) { _doManyMETs=a; };
+  // get whether we should do the mets or not
+  inline Bool_t DoManyMETs(void) const { return _doManyMETs; };
 
   // get whether we should do the skim tree or not
   inline void SetDoSkim(const Bool_t& a=true) { _doSkim=a; };
@@ -239,6 +245,9 @@ class EventContainer
 
   void SetUseUnisolatedLeptons(const Bool_t& a=true, int whichtrig=1);
   inline Bool_t UseUnisolatedLeptons(void) const {return _useUnisolatedLeptons; };
+
+  //Use this to make sure that various bits of code will use the met muons 
+  inline void SetUseMetMuons(const Bool_t& a = true){muonsToUsePtr = &metMuons;};
 
   // Set the global event weight
   inline void SetGlobalEventWeight(const Double_t& wt) { _globalEventWeight=wt; };
@@ -444,6 +453,12 @@ class EventContainer
 
   inline std::vector<std::vector<std::string> > GetJetResObj(){return _resolution;};
 
+  std::vector<Muon> GetMuonCollection(TString muonType);
+
+  Bool_t IsValidCollection(TString particleName, TString collectionName);
+
+  void SetObjectIsTrigger(TString particleName, TString collectionName, Int_t index);
+
   //Getters for meta information
   inline Int_t GetEventNumber(){return eventNumber;};
   inline Int_t GetRunNumber(){return runNumber;};  
@@ -542,6 +557,8 @@ class EventContainer
   std::vector<Muon>       muons;
   std::vector<Muon>       tightMuons;
   std::vector<Muon>       vetoMuons;
+  std::vector<Muon>       metMuons;
+  std::vector<Muon>       triggerMatchMuons;
   std::vector<Muon>       ptetaMuons;
   std::vector<Muon>       isolatedMuons;
   std::vector<Muon>       unIsolatedMuons;
@@ -559,6 +576,7 @@ class EventContainer
   std::vector<Jet>        tauLabeledJets;
   std::vector<Jet>        lightQuarkLabeledJets;
   std::vector<Neutrino>   neutrinos;
+  std::vector<TriggerObj> triggerObjects;
 
   std::vector<GenPart>   genparts;
   
@@ -574,6 +592,10 @@ class EventContainer
   Double_t missingPhi;
   Double_t missingEy;
   TLorentzVector missingEtVec;
+
+  //Gonna make a map to store a number of missingET vectors
+  std::map<TString,TLorentzVector> missingEtVecs;
+  std::map<TString,Float_t> sumETs;
   // and the sum of scalar ET
   Double_t sumEt;
 
@@ -582,7 +604,7 @@ class EventContainer
   Double_t missingEy_xy;
   Double_t missingPhi_xy;
   TLorentzVector missingEtVec_xy;
-  
+
   //SFs for met up/down
   Double_t missingEtUpSF;
   Double_t missingEtDownSF;
@@ -764,6 +786,8 @@ private:
   Bool_t _useUnisolatedLeptons;   // should we use unisolated leptons? (for QCD estimation)
   Int_t _trigID;
 
+  Bool_t _doManyMETs;   // For the MET analysis we want to access a whole bunch of met variables that may not be available in other trees
+
   // Info for source that we are reading (i.e. tb, tq, tW, tt_lepjets, tt_dilep, etc.
   TString _sourceName;    // Source Name
   Int_t   _sourceNumber;  // Source Number
@@ -779,6 +803,7 @@ private:
   Muon newMuon;
   Electron newElectron;
   Jet newJet;
+  TriggerObj newTriggerObj;
   GenPart newGenPart;
 
   std::vector<std::vector<std::string> > _resolution;
