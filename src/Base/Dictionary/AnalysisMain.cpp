@@ -823,10 +823,12 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
   if(DoFastSim()) {
     treeFastSimTree  = new FastSimTree(chainFastSim0);
   } //if
-  else if (DonanoAOD()) {
+  if (DonanoAOD()) {
     treenanoAODTree = new nanoAODTree(chainEV0);
   }
-  else treeEventTree = new EventTree(chainEV0);
+  else {
+    treeEventTree = new EventTree(chainEV0);
+  }
 
   // Open the output histogram file
   if (!OpenHistogramFile(_histogramFileName)){
@@ -1033,7 +1035,6 @@ Int_t AnalysisMain::ParseCmdLine(int argc, char **argv, TChain *chainEV0, TChain
 
     //Reset and fill the additional variables
     AdditionalVarsProcessor::ResetBranches();
-
 
     // Fill the histograms
     writeThisEvent = CutListProcessor::Apply(this);
