@@ -45,6 +45,7 @@
 
 #include "SingleTopRootAnalysis/Base/Histograms/myTH1F.hpp"
 #include "TDirectory.h"
+#include "TStopwatch.h"
 
 #include <sstream>
 #include <iostream>
@@ -271,6 +272,7 @@ Bool_t CutListProcessor::Apply (EventContainer *EventContainerObj)
       // Debug info
       if (_gDebug) {
 	cout << "<CutListProcessor::Apply> " << "DEBUG: Apply " << (*itask) -> GetCutName() << endl;
+	
       } //if
       // Change directory and get current task
       (*itask) -> GetDirectory() -> cd();
