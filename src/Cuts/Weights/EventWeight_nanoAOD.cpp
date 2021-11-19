@@ -72,13 +72,15 @@ EventWeight_nanoAOD::EventWeight_nanoAOD(EventContainer *EventContainerObj,Doubl
   if(pileup){
     setPileUpWgt(true);
     TFile* dataPVFile = TFile::Open(conf -> GetValue("Include.dataPVFile","null"),"READ");
+    std::cout << "Getting data pileup info from " << conf -> GetValue("Include.dataPVFile","null") << std::endl;
     _dataPV = (TH1F*)dataPVFile->Get("pileup");
     _dataPV->SetDirectory(0);
     _dataPV->Scale(1./_dataPV->Integral());
     dataPVFile->Close();
     delete dataPVFile;
     
-    TFile* mcPVFile = TFile::Open(conf -> GetValue("Include.mcPVFile","null"),"READ");
+    TFile* mcPVFile = TFile::Open(conf -> GetValue("Include.mcPVFile","null"),"READ");    
+    std::cout << "Getting MC pileup info from " << conf -> GetValue("Include.mcPVFile","null") << std::endl;
     _mcPV = (TH1F*)mcPVFile->Get("pileup");
     _mcPV->SetDirectory(0);
     _mcPV->Scale(1./_mcPV->Integral());
@@ -343,7 +345,10 @@ Bool_t EventWeight_nanoAOD::Apply()
      
   //only apply pileup weight if specified
   if(isPileUpWgt()) {
+    //Uncomment to use true interactions
     Int_t binOfInterest = _mcPV->GetXaxis()->FindBin(EventContainerObj->trueInteractions);
+    //Uncomment to use number of reconstructed vertices
+    //Int_t binOfInterest = _mcPV->GetXaxis()->FindBin(EventContainerObj->pv_npvs);
     if (_mcPV->GetBinContent(binOfInterest) > 0){
       pileupEventWeight = _dataPV->GetBinContent(binOfInterest) / _mcPV->GetBinContent(binOfInterest);
       if (isPileupSysts()){
@@ -371,11 +376,11 @@ Bool_t EventWeight_nanoAOD::Apply()
  float lepSFWeight(1.0), lepSFWeightUp(1.0), lepSFWeightDown(1.0);
  float trigSFWeight(1.0), trigSFWeightUp(1.0), trigSFWeightDown(1.0);
 
- /*if(_useLeptonSFs){
+ if(_useLeptonSFs){
    std::tie(lepSFWeight,lepSFWeightUp,lepSFWeightDown,trigSFWeight,trigSFWeightUp,trigSFWeightDown) = getLeptonWeight(EventContainerObj);
    wgt *= lepSFWeight;
    wgt *= trigSFWeight;
-   }*/
+ }
   
  
  std::map<std::string,float> bTagReshape;
@@ -480,27 +485,36 @@ void EventWeight_nanoAOD::setLeptonHistograms(TString muonIDFileName, TString mu
   
   TFile* muonIDFile = TFile::Open(muonIDFileName,"READ");
   if (!muonIDFile) std::cout << "Muon ID file not found!" << std::endl;
-  _muonIDSF = (TH2F*)muonIDFile->Get(muonIDHistName+"/pt_abseta_ratio");
+  _muonIDSF = (TH2F*)muonIDFile->Get(muonIDHistName)->Clone();
+  _idEtaIsX = muonIDHistName.Contains("abseta_pt");
   _muonIDSF->SetDirectory(0);
   muonIDFile->Close();
 
   TFile* muonIsoFile = TFile::Open(muonIsoFileName,"READ");
   if (!muonIsoFile) std::cout << "Muon iso file not found!" << std::endl;
-  _muonIsoSF = (TH2F*)muonIsoFile->Get(muonIsoHistName+"/pt_abseta_ratio")->Clone();
+  _muonIsoSF = (TH2F*)muonIsoFile->Get(muonIsoHistName)->Clone();
+  _isoEtaIsX = muonIsoHistName.Contains("abseta_pt");
   _muonIsoSF->SetDirectory(0);
   muonIsoFile->Close();
 
   TFile* muonTrigFile = TFile::Open(muonTrigFileName,"READ");
   if (!muonTrigFile) std::cout << "Muon trig file not found!" << std::endl;
-  _muonTrigSF = (TH2F*)muonTrigFile->Get(muonTrigHistName+"/pt_abseta_ratio")->Clone();
+  _muonTrigSF = (TH2F*)muonTrigFile->Get(muonTrigHistName)->Clone();
+  _trigEtaIsX = muonTrigHistName.Contains("abseta_pt");
   _muonTrigSF->SetDirectory(0);
   muonTrigFile->Close();
 
   TFile* muonTkFile = TFile::Open(muonTkFileName,"READ");
-  if (!muonTkFile) std::cout << "Muon tracker file not found!" << std::endl;
-  _muonTkSF = (TGraphAsymmErrors*)muonTkFile->Get("ratio_eff_aeta_dr030e030_corr")->Clone();
-  //  _muonTkSF->SetDirectory(0);
-  muonTkFile->Close();
+  if (!muonTkFile) {
+    std::cout << "Muon tracker file not found!" << std::endl;
+    _doMuonTk = kFALSE;
+  }
+  else{
+    _muonTkSF = (TGraphAsymmErrors*)muonTkFile->Get("ratio_eff_aeta_dr030e030_corr")->Clone();
+    _doMuonTk = kTRUE;
+    //  _muonTkSF->SetDirectory(0);
+    muonTkFile->Close();
+  }
 
   TFile* eleRecoFile = TFile::Open(eleRecoFileName,"READ");
   if (!eleRecoFile) std::cout << "Electron reco SF file not found!" << std::endl;
@@ -515,10 +529,16 @@ void EventWeight_nanoAOD::setLeptonHistograms(TString muonIDFileName, TString mu
   eleIDFile->Close();
 
   TFile* eleTrigFile = TFile::Open(eleTrigFileName,"READ");
-  if (!eleTrigFile) std::cout << "Electron Trig SF file not found!" << std::endl;
-  _eleTrigSF = (TH2F*)eleTrigFile->Get(eleTrigHistName)->Clone();
-  _eleTrigSF->SetDirectory(0);
-  eleTrigFile->Close();
+  if (!eleTrigFile) {
+    std::cout << "Electron Trig SF file not found!" << std::endl;
+    _doEleTrig = kFALSE;
+  }
+  else{
+    _eleTrigSF = (TH2F*)eleTrigFile->Get(eleTrigHistName)->Clone();
+    _eleTrigSF->SetDirectory(0);
+    _doEleTrig = kTRUE;
+    eleTrigFile->Close();
+  }
 
   delete muonIsoFile,muonIDFile,muonTrigFile,muonTkFile,eleRecoFile,eleIDFile,eleTrigFile;
 
@@ -540,27 +560,58 @@ std::tuple<Double_t,Double_t,Double_t,Double_t,Double_t,Double_t> EventWeight_na
 
   for (auto const & muon : *EventContainerObj->muonsToUsePtr){
     //Get the bin shared by iso and id SFs
-    Int_t xAxisBin = _muonIsoSF->GetXaxis()->FindBin(muon.Pt());
-    if (muon.Pt() > 120.) xAxisBin = _muonIsoSF->GetXaxis()->FindBin(119.);
-    Int_t yAxisBin = _muonIsoSF->GetYaxis()->FindBin(std::fabs(muon.Eta()));
-    if (std::fabs(muon.Eta()) > 2.4) yAxisBin = _muonIsoSF->GetYaxis()->FindBin(2.39);
+    Int_t xAxisBin,yAxisBin,xAxisBinTrig,yAxisBinTrig;
+    if (!_isoEtaIsX){
+      xAxisBin = _muonIsoSF->GetXaxis()->FindBin(muon.Pt());
+      if (muon.Pt() > 120.) xAxisBin = _muonIsoSF->GetXaxis()->FindBin(119.);
+      if (muon.Pt() < _muonIsoSF->GetXaxis()->GetBinLowEdge(1)) xAxisBin = 1;
+      yAxisBin = _muonIsoSF->GetYaxis()->FindBin(std::fabs(muon.Eta()));
+      if (std::fabs(muon.Eta()) > 2.4) yAxisBin = _muonIsoSF->GetYaxis()->FindBin(2.39);
+    }
+    else{
+      yAxisBin = _muonIsoSF->GetYaxis()->FindBin(muon.Pt());
+      if (muon.Pt() > 120.) yAxisBin = _muonIsoSF->GetYaxis()->FindBin(119.);
+      if (muon.Pt() < _muonIsoSF->GetYaxis()->GetBinLowEdge(1)) yAxisBin = 1;
+      xAxisBin = _muonIsoSF->GetXaxis()->FindBin(std::fabs(muon.Eta()));
+      if (std::fabs(muon.Eta()) > 2.4) xAxisBin = _muonIsoSF->GetXaxis()->FindBin(2.39);
+    }
     //And now get the iso and id SFs/uncs
     Float_t isoSF = _muonIsoSF->GetBinContent(xAxisBin,yAxisBin);
     Float_t isoUnc = _muonIsoSF->GetBinError(xAxisBin,yAxisBin);
     Float_t idSF = _muonIDSF->GetBinContent(xAxisBin,yAxisBin);
     Float_t idUnc = _muonIDSF->GetBinError(xAxisBin,yAxisBin);
     
-    //Get the bin for trigger SF
-    Int_t xAxisBinTrig = _muonTrigSF->GetXaxis()->FindBin(muon.Pt());
-    if (muon.Pt() > 500.) xAxisBinTrig = _muonTrigSF->GetXaxis()->FindBin(499.);
-    Int_t yAxisBinTrig = _muonTrigSF->GetYaxis()->FindBin(std::fabs(muon.Eta()));
-    if (std::fabs(muon.Eta()) > 2.4) yAxisBinTrig = _muonTrigSF->GetYaxis()->FindBin(2.39);
-    //Get the trigSF
-    Float_t trigSF = _muonTrigSF->GetBinContent(xAxisBinTrig,yAxisBinTrig);
-    Float_t trigUnc = _muonTrigSF->GetBinError(xAxisBinTrig,yAxisBinTrig);
+    Float_t trigSF = 1.0;
+    Float_t trigUnc = 0.0;
+
+    //Get the bin for trigger SF, but only if the muon in question is the triggering muon
+    if (muon.isTriggerMatchedMu()){
+      if (!_trigEtaIsX){
+	xAxisBinTrig = _muonTrigSF->GetXaxis()->FindBin(muon.Pt());
+	if (muon.Pt() > 500.) xAxisBinTrig = _muonTrigSF->GetXaxis()->FindBin(499.);
+	if (muon.Pt() < _muonTrigSF->GetXaxis()->GetBinLowEdge(1)) xAxisBinTrig = -1;
+	yAxisBinTrig = _muonTrigSF->GetYaxis()->FindBin(std::fabs(muon.Eta()));
+	if (std::fabs(muon.Eta()) > 2.4) yAxisBinTrig = _muonTrigSF->GetYaxis()->FindBin(2.39);
+      }
+      else{
+	yAxisBinTrig = _muonTrigSF->GetYaxis()->FindBin(muon.Pt());
+	if (muon.Pt() > 500.) yAxisBinTrig = _muonTrigSF->GetYaxis()->FindBin(499.);
+	if (muon.Pt() < _muonTrigSF->GetYaxis()->GetBinLowEdge(1)) yAxisBinTrig = -1;
+	xAxisBinTrig = _muonTrigSF->GetXaxis()->FindBin(std::fabs(muon.Eta()));
+	if (std::fabs(muon.Eta()) > 2.4) xAxisBinTrig = _muonTrigSF->GetXaxis()->FindBin(2.39);      
+      }
+      //Get the trigSF
+      Float_t trigSF = _muonTrigSF->GetBinContent(xAxisBinTrig,yAxisBinTrig);
+      Float_t trigUnc = _muonTrigSF->GetBinError(xAxisBinTrig,yAxisBinTrig);
+      if (xAxisBinTrig < 0 || yAxisBinTrig < 0){
+	trigSF = 1.;
+      trigUnc = 0.;
+      }
+    }
 
     //Evaluate muon tk
-    Float_t tkSF = _muonTkSF->Eval(std::fabs(muon.Eta()));
+    Float_t tkSF = 1.0;
+    if (_doMuonTk) _muonTkSF->Eval(std::fabs(muon.Eta()));
 
     leptonWeight *= isoSF * idSF * tkSF;
     leptonWeightUp *= (isoSF + isoUnc) * (idSF + idUnc) * tkSF;
@@ -572,31 +623,37 @@ std::tuple<Double_t,Double_t,Double_t,Double_t,Double_t,Double_t> EventWeight_na
 
   }
 
-  for (auto const & ele : *EventContainerObj->electronsToUsePtr){
+ for (auto const & ele : *EventContainerObj->electronsToUsePtr){
     //Get which bins we're in need of for the reco SF
     Int_t xAxisBin = _eleRecoSF->GetXaxis()->FindBin(ele.scEta());
     if (ele.scEta() > 2.5) xAxisBin = _eleRecoSF->GetXaxis()->FindBin(2.49);
+    if (ele.scEta() < -2.5) xAxisBin = _eleRecoSF->GetXaxis()->FindBin(-2.49);
     Int_t yAxisBin = _eleRecoSF->GetYaxis()->FindBin(ele.Pt());
-    if (ele.Pt() > 500) xAxisBin = _eleRecoSF->GetYaxis()->FindBin(499.);
+    if (ele.Pt() > 500) yAxisBin = _eleRecoSF->GetYaxis()->FindBin(499.);
     //Now get the reco and id SFs
     Float_t recoSF = _eleRecoSF->GetBinContent(xAxisBin,yAxisBin);
     Float_t recoUnc = _eleRecoSF->GetBinError(xAxisBin,yAxisBin);
     //Now do ID
     xAxisBin = _eleIDSF->GetXaxis()->FindBin(ele.scEta());
     if (ele.scEta() > 2.5) xAxisBin = _eleIDSF->GetXaxis()->FindBin(2.49);
+    if (ele.scEta() > -2.5) xAxisBin = _eleIDSF->GetXaxis()->FindBin(-2.49);
     yAxisBin = _eleIDSF->GetYaxis()->FindBin(ele.Pt());
-    if (ele.Pt() > 500) xAxisBin = _eleIDSF->GetYaxis()->FindBin(499.);
+    if (ele.Pt() > 500) yAxisBin = _eleIDSF->GetYaxis()->FindBin(499.);
     Float_t idSF = _eleIDSF->GetBinContent(xAxisBin,yAxisBin);
     Float_t idUnc = _eleIDSF->GetBinError(xAxisBin,yAxisBin);
 
     //And finally trigger
-    yAxisBin = _eleTrigSF->GetYaxis()->FindBin(ele.scEta());
-    if (ele.scEta() > 2.5) yAxisBin = _eleTrigSF->GetYaxis()->FindBin(2.49);
-    if (ele.scEta() < -2.5) yAxisBin = _eleTrigSF->GetYaxis()->FindBin(-2.49);
-    xAxisBin = _eleTrigSF->GetXaxis()->FindBin(ele.Pt());
-    if (ele.Pt() > 200) xAxisBin = _eleTrigSF->GetXaxis()->FindBin(199.);
-    Float_t trigSF = _eleTrigSF->GetBinContent(xAxisBin,yAxisBin);
-    Float_t trigUnc = _eleTrigSF->GetBinError(xAxisBin,yAxisBin);
+    Float_t trigSF = 1.0;
+    Float_t trigUnc = 0.0;
+    if (_doEleTrig){
+      yAxisBin = _eleTrigSF->GetYaxis()->FindBin(ele.scEta());
+      if (ele.scEta() > 2.5) yAxisBin = _eleTrigSF->GetYaxis()->FindBin(2.49);
+      if (ele.scEta() < -2.5) yAxisBin = _eleTrigSF->GetYaxis()->FindBin(-2.49);
+      xAxisBin = _eleTrigSF->GetXaxis()->FindBin(ele.Pt());
+      if (ele.Pt() > 200) xAxisBin = _eleTrigSF->GetXaxis()->FindBin(199.);
+      Float_t trigSF = _eleTrigSF->GetBinContent(xAxisBin,yAxisBin);
+      Float_t trigUnc = _eleTrigSF->GetBinError(xAxisBin,yAxisBin);
+    }
 
     triggerWeight = trigSF;              
     triggerWeightUp = trigSF + trigUnc;  

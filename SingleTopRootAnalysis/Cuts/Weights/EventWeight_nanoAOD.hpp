@@ -105,12 +105,17 @@ private:
 
   //Histograms that are used for applying scale factors to leptons
   TH2F* _muonIsoSF;
+  Bool_t _isoEtaIsX; //Need this because sometimes the eta and pt are swapped
   TH2F* _muonIDSF;
+  Bool_t _idEtaIsX;
   TH2F* _muonTrigSF;
+  Bool_t _trigEtaIsX;
   TGraphAsymmErrors* _muonTkSF;
+  Bool_t _doMuonTk;
   TH2F* _eleRecoSF;
   TH2F* _eleIDSF;
   TH2F* _eleTrigSF;
+  Bool_t _doEleTrig;
 
   //Pileup reweighting hisotgrams
   TH1F* _dataPV;
