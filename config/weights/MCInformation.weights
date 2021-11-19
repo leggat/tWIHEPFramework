@@ -305,6 +305,12 @@ Events.Source.500030: 258502250
 Weight.Sourch.500031: 88.4
 Events.Source.500031: 61382166
 
+#600000 - met samples
+
+#600000 = dy 50->
+Weight.Source.600000: 5765.4
+Events.Source.600000: 96004933
+
 #700000 - systematic samples
 
 #700000 = tW_antitop_DS
