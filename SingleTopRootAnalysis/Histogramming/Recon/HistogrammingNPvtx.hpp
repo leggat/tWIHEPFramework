@@ -50,12 +50,15 @@ public:
   Bool_t Apply();
   
 private:
-  // Histograms declarations 
+  // Histograms declarations
   myTH1F* _hNPvtx;       // Histogram of number of Primary Vetex
-  myTH1F* _hNPvtx_pre;       // Histogram of number of Primary Vetex before weighting
+  myTH1F* _hNPvtx_pre;       // Histogram of number of Primary Vetex before weighting 
   myTH2F* _hNPvtx_nJet;  // Histogram of NPvtx vs Jet number
   myTH2F* _hNPvtx_nElectron;  // Histogram of NPvtx vs Electron number
   myTH2F* _hNPvtx_nMuon;  // Histogram of NPvtx vs Muon number
+
+  myTH1F* _hNPvtx_good;       // Histogram of number of good Primary Vetex
+  myTH1F* _hNPvtx_good_pre;       // Histogram of number of good Primary Vetex before weighting
 
   myTH1F* _hNTrueInteractions; //Number of true interactions in the event
   myTH1F* _hNTrueInteractions_pre; //Number of true interactions in the event before reweighting
