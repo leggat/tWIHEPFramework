@@ -53,5 +53,5 @@ samplesSyst = [
 "ttbar_hdampup",
 "ttbar_hdampdown"
 ]
-for sample in samplesSyst:
+for sample in listOfDirs:
     print sample,totalEvents[sample]
