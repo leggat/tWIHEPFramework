@@ -21,3 +21,5 @@ more
 whatevs
 utils/bkgFit/logs/
 config/weights/jsonWeights/
+*~
+*pyc
