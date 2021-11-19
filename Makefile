@@ -164,6 +164,7 @@ BINS_Matching= bin/Matching/MatchQuality.x
 BINS_ParticleStudies= bin/ParticleStudies/electron_study.x bin/ParticleStudies/jet_study.x bin/ParticleStudies/MCParticle_study.x bin/ParticleStudies/muon_study.x
 BINS_Wt= bin/Wt/Wt_generic.x
 BINS_Nano= bin/nanoTest/nanoTest.x
+BINS_Met= bin/metPaper/metPlots.x
 BINS_Dilepton= bin/Wt/Wt_dilepton.x
 BINS_Vertex= bin/Wt/Wt_nVertOnly.x
 BINS_Synch= bin/Wt/Wt_synch.x
@@ -193,8 +194,9 @@ help:
 	@echo "  make  all             -->  Make all executables"
 	@echo "  make  St              -->  St executables"
 	@echo "  make  Wt              -->  Wt executables"
-	@echo "  make  Nano              -->  NanoAOD executables"
-	@echo "  make  Skimming              -->  Skimming executables"
+	@echo "  make  Nano            -->  NanoAOD executables"
+	@echo "  make  Met             -->  metPaper executables"
+	@echo "  make  Skimming        -->  Skimming executables"
 	@echo "  make  Example         -->  Example executable"
 	@echo "  make  Matching        -->  Matching executables"
 	@echo "  make  ParticleStudies -->  Particle study executables"
@@ -210,6 +212,7 @@ help:
 	@echo "  make cleanSt              -->  Removes St executables"
 	@echo "  make cleanWt              -->  Removes Wt executables"
 	@echo "  make cleanAOD              -->  Removes NanoAOD executables"
+	@echo "  make cleanMet              -->  Removes metPaper executables"
 	@echo "  make cleanSkimming              -->  Removes Skimming executables"
 	@echo "  make cleanExample         -->  Removes Example executables"
 	@echo "  make cleanMatching        -->  Removes Matching executables"
@@ -237,13 +240,15 @@ dbg:
 # Target: Executable categories
 # Make executables belonging to a certain category
 ####################################################################################
-all: lib St Wt Nano Skimming FER2 Matching ParticleStudies MCStudies EventComparison BTag
+all: lib St Wt Nano Met Skimming FER2 Matching ParticleStudies MCStudies EventComparison BTag
 
 St: lib $(BINS_St)
 
 Wt: lib $(BINS_Wt)
 
 Nano: lib $(BINS_Nano)
+
+Met: lib $(BINS_Met)
 
 Dilepton: lib $(BINS_Dilepton)
 
@@ -409,6 +414,8 @@ cleanWt:
 	rm -f $(BINS_Wt)
 cleanNano:
 	rm -f $(BINS_Nano)
+cleanMet:
+	rm -f $(BINS_Met)
 cleanDilepton:
 	rm -f $(BINS_Dilepton)
 cleanSynch:
@@ -418,11 +425,11 @@ cleanSkimming:
 cleanSt:
 	rm -f $(BINS_St)
 
-cleanExe: cleanSt cleanWt cleanNano cleanDilepton cleanSynch cleanSkimming cleanEventComparison cleanExample cleanParticleStudies cleanMCStudies
+cleanExe: cleanSt cleanWt cleanNano cleanMet cleanDilepton cleanSynch cleanSkimming cleanEventComparison cleanExample cleanParticleStudies cleanMCStudies
 
 cleanall: clean
 
-clean:  cleanSt cleanWt cleanNano cleanDilepton cleanSynch cleanSkimming cleanEventComparison cleanExample cleanParticleStudies cleanMCStudies
+clean:  cleanSt cleanWt cleanNano cleanMet cleanDilepton cleanSynch cleanSkimming cleanEventComparison cleanExample cleanParticleStudies cleanMCStudies
 	rm -rf ti_files
 	rm -rf $(DIR_OBJ)/*
 	rm -rf $(DIR_TMP)/*
