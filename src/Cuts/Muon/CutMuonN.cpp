@@ -42,9 +42,10 @@ CutMuonN::CutMuonN(EventContainer *EventContainerObj, TString muonTypePassed)
 {
   // Check muonType parameter
   if( muonTypePassed.CompareTo("All") && muonTypePassed.CompareTo("UnIsolated") && muonTypePassed.CompareTo("Isolated") && 
-      muonTypePassed.CompareTo("Tight") && muonTypePassed.CompareTo("PtEtaCut") && muonTypePassed.CompareTo("Veto") ){
+      muonTypePassed.CompareTo("Tight") && muonTypePassed.CompareTo("PtEtaCut") && muonTypePassed.CompareTo("Veto") &&
+      muonTypePassed.CompareTo("MetMu") && muonTypePassed.CompareTo("TriggerMatch") ){
     std::cout << "ERROR " << "<CutMuonN::CutMuonN()> " 
-	      << "Must pass All, Tight, PtEtaCut, Veto, Isolated, or UnIsolated to constructor" << std::endl;
+	      << "Must pass All, Tight, PtEtaCut, Veto, Isolated, MetMu, TriggerMatch or UnIsolated to constructor" << std::endl;
     exit(8);
   } //if
   muonType = muonTypePassed;
@@ -205,12 +206,14 @@ Bool_t CutMuonN::Apply()
   EventContainer *EventContainerObj = GetEventContainer();
 
   // Get variables from EventContainerObj - Depens on muon Type
-  if(      ! muonType.CompareTo("Veto") )       MuonNumber = EventContainerObj -> vetoMuons.size();
-  else if( ! muonType.CompareTo("Tight") )      MuonNumber = EventContainerObj -> tightMuons.size();
-  else if( ! muonType.CompareTo("PtEtaCut") )   MuonNumber = EventContainerObj -> ptetaMuons.size();
-  else if( ! muonType.CompareTo("UnIsolated") ) MuonNumber = EventContainerObj -> unIsolatedMuons.size();
-  else if( ! muonType.CompareTo("Isolated") )   MuonNumber = EventContainerObj -> isolatedMuons.size();
-  else if( ! muonType.CompareTo("All") )        MuonNumber = EventContainerObj -> muons.size();
+  if(      ! muonType.CompareTo("Veto") )         MuonNumber = EventContainerObj -> vetoMuons.size();
+  else if( ! muonType.CompareTo("Tight") )        MuonNumber = EventContainerObj -> tightMuons.size();
+  else if( ! muonType.CompareTo("PtEtaCut") )     MuonNumber = EventContainerObj -> ptetaMuons.size();
+  else if( ! muonType.CompareTo("UnIsolated") )   MuonNumber = EventContainerObj -> unIsolatedMuons.size();
+  else if( ! muonType.CompareTo("Isolated") )     MuonNumber = EventContainerObj -> isolatedMuons.size();
+  else if( ! muonType.CompareTo("MetMu") )        MuonNumber = EventContainerObj -> metMuons.size();
+  else if( ! muonType.CompareTo("TriggerMatch") ) MuonNumber = EventContainerObj -> triggerMatchMuons.size();
+  else if( ! muonType.CompareTo("All") )          MuonNumber = EventContainerObj -> muons.size();
   else{
     std::cout << "ERROR " << "<CutMuonN::Apply()> " << "muonType has an incorrect value of: " << muonType.Data() << std::endl;
     exit(8);
