@@ -13,7 +13,9 @@ import weightProcesses
 
 weights = ""
 
-comp = AnalysisComponents()
+customWeights = ""
+
+comp = AnalysisComponents("met")
 
 #Global variables
 latex = TLatex()
@@ -265,6 +267,10 @@ def makeASingleStackPlot(histMap,name,doData=True,dataHistName="data_obs",xAxisL
             scaleFactor = histMap[sample].getDatasetWeight(name,regionStr)
             histMap[sample].Scale(scaleFactor)
         
+        if customWeights and sample in customWeights.keys():
+            scaleFactor = customWeights[sample]
+            histMap[sample].Scale(scaleFactor)
+
         if nBinsPerPlots > 0:
             rebin = int(histMap[sample].GetXaxis().GetNbins() / nBinsForPlots)
             histMap[sample].Rebin(rebin)
@@ -366,6 +372,10 @@ def makeASingleStackPlot(histMap,name,doData=True,dataHistName="data_obs",xAxisL
 
     canvy.SaveAs(outDir+name+".png")
     canvy.SaveAs(outDir+name+".root")
+
+def customWeightObj(weights):
+    global customWeights
+    customWeights = weights
 
 def initLatexFile():
     return
