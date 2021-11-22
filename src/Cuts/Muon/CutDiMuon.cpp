@@ -123,6 +123,25 @@ void CutDiMuon::BookHistogram(){
   histTitleAfterStreamMass << muonType << "Muon pair mass after cut";
   TString histTitleAfterMass = histTitleAfterStreamMass.str().c_str();
 
+  // Pt before cut
+  std::ostringstream histNameBeforeStreamPt;                          
+  histNameBeforeStreamPt << muonType << "DiMuonPtBefore";           
+  TString histNameBeforePt = histNameBeforeStreamPt.str().c_str();  
+                                                                      
+  std::ostringstream histTitleBeforeStreamPt;                         
+  histTitleBeforeStreamPt << muonType << "Muon pair pt before cut"; 
+  TString histTitleBeforePt = histTitleBeforeStreamPt.str().c_str();
+                                                                      
+  // Pt After Cut                                                     
+  std::ostringstream histNameAfterStreamPt;                           
+  histNameAfterStreamPt << muonType << "DiMuonPtAfter";             
+  TString histNameAfterPt = histNameAfterStreamPt.str().c_str();    
+                                                                      
+  std::ostringstream histTitleAfterStreamPt;                          
+  histTitleAfterStreamPt << muonType << "Muon pair pt after cut";   
+  TString histTitleAfterPt = histTitleAfterStreamPt.str().c_str();  
+
+
   // ***********************************************
   // Book Histograms
   // ***********************************************  
@@ -147,6 +166,16 @@ void CutDiMuon::BookHistogram(){
   _hDiMuonMassAfter =  DeclareTH1F(histNameAfterMass.Data(), histTitleAfterMass.Data(), 100, 0.0, 150);
   _hDiMuonMassAfter -> SetXAxisTitle("m_{#mu#mu}");
   _hDiMuonMassAfter -> SetYAxisTitle("Events");
+
+  // mass Histogram before cut
+  _hDiMuonPtBefore =  DeclareTH1F(histNameBeforePt.Data(), histTitleBeforePt.Data(), 100, 0.0, 150.0);
+  _hDiMuonPtBefore -> SetXAxisTitle("Pt_{#mu#mu}");
+  _hDiMuonPtBefore -> SetYAxisTitle("Events");
+
+  // mass Histogram after cut
+  _hDiMuonPtAfter =  DeclareTH1F(histNameAfterPt.Data(), histTitleAfterPt.Data(), 100, 0.0, 150);
+  _hDiMuonPtAfter -> SetXAxisTitle("Pt_{#mu#mu}");
+  _hDiMuonPtAfter -> SetYAxisTitle("Events");
 
   // ***********************************************
   // Get cuts from configuration file
@@ -288,6 +317,9 @@ Bool_t CutDiMuon::Apply()
   Float_t DiMuonDR  = 0.;       
   Float_t DiMuonMass = 0.;
 
+  // Extra parameters to plot only
+  Float_t DiMuonPt = 0.;
+
   // Flags 
   Bool_t MuonDRMinPass = kTRUE;   // Event passes min pT muon cuts
   Bool_t MuonDRMaxPass = kTRUE;   // Event passes max pT muon cuts
@@ -306,11 +338,13 @@ Bool_t CutDiMuon::Apply()
     Muon tmpMuon = muons[0];
     tmpMuon+= muons[1];
     DiMuonMass = (tmpMuon).M();
+    DiMuonPt = tmpMuon.Pt();
   }
 
   // Fill the histograms before the cuts
-  _hDiMuonDRBefore    -> Fill(DiMuonDR);
-  _hDiMuonDRAfter     -> Fill(DiMuonMass);
+  _hDiMuonDRBefore     -> Fill(DiMuonDR);
+  _hDiMuonMassBefore   -> Fill(DiMuonMass);
+  _hDiMuonPtBefore     -> Fill(DiMuonPt);
 
   // Evaluate cuts
   MuonDRMinPass = DiMuonDR > _DiMuonDRMin;
@@ -405,6 +439,7 @@ Bool_t CutDiMuon::Apply()
     GetCutFlowTable() -> PassCut(cutFlowName.Data());
     _hDiMuonMassAfter -> Fill(DiMuonMass);
     _hDiMuonDRAfter   -> Fill(DiMuonDR);
+    _hDiMuonPtAfter   -> Fill(DiMuonPt);
   }
   else{
     GetCutFlowTable() -> FailCut(cutFlowName.Data());

@@ -70,6 +70,8 @@ private:
   myTH1F* _hDiMuonDRAfter;     // Hist mu pair delta r after cut 
   myTH1F* _hDiMuonMassBefore;    // Hist mu pair mass before cut 
   myTH1F* _hDiMuonMassAfter;     // Hist mu pair mass after cut  
+  myTH1F* _hDiMuonPtBefore;    // Hist mu pair pt before cut 
+  myTH1F* _hDiMuonPtAfter;     // Hist mu pair pt after cut  
 
   // Cut parameters
   Float_t _DiMuonDRMin;            // Minimum delta r between mu pair
