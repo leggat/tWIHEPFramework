@@ -55,6 +55,8 @@ private:
   myTH1F* _hZEta; 
   myTH1F* _hZPhi;
 
+  myTH2F* _hZQt_nVertex; //Zqt as a function of nVertex
+
   // Histograms declarations 
   myTH1F* _hMET;  // Histogram of MET
   myTH1F* _hMEX;  // Histogram of MEX
@@ -64,6 +66,21 @@ private:
   myTH1F* _hMET_u_perp; // u_perp for MET
   myTH1F* _hMET_u_par; // u_par for MET
   myTH1F* _hMET_u_parPqt; // u_par minus qt for MET
+
+  //no xy corrections applied
+  myTH1F* _hMET_uncorr;  // Histogram of MET
+  myTH1F* _hMEX_uncorr;  // Histogram of MEX
+  myTH1F* _hMEY_uncorr;  // Histogram of MEY
+  myTH1F* _hMETPhi_uncorr;  // Histogram of MET phi
+
+  myTH2F* _hMET_u_par_qt; // 2D plot of u_par vs Z qt for PF MET
+  myTH2F* _hMET_u_perp_qt; // 2D plot of u_perp vs Z qt for Puppi MET
+  myTH2F* _hMET_u_par_nVtx; // 2D plot of u_par vs nVtx for Puppi MET
+  myTH2F* _hMET_u_perp_nVtx; // 2D plot of u_perp vs nVtx for Puppi MET
+  myTH2F* _hMET_u_parPqt_nVtx; // 2D plot of u_par + Z qt s nVtx for Puppi MET
+
+  myTH1F* _hMET_significance; //met significance
+  myTH1F* _hMET_significance_blowup; //met significance
 
   // CaloMET
   myTH1F* _hCaloMET;  // Histogram of MET
@@ -91,6 +108,18 @@ private:
   myTH1F* _hPuppiMET_u_par; // u_par for MET
   myTH1F* _hPuppiMET_u_parPqt; // u_par minus qt for MET
 
+  //no xy corrections applied
+  myTH1F* _hPuppiMET_uncorr;  // Histogram of MET
+  myTH1F* _hPuppiMEX_uncorr;  // Histogram of MEX
+  myTH1F* _hPuppiMEY_uncorr;  // Histogram of MEY
+  myTH1F* _hPuppiMETPhi_uncorr;  // Histogram of MET phi
+
+  myTH2F* _hPuppiMET_u_par_qt; // 2D plot of u_par vs Z qt for Puppi MET
+  myTH2F* _hPuppiMET_u_perp_qt; // 2D plot of u_perp vs Z qt for Puppi MET
+  myTH2F* _hPuppiMET_u_par_nVtx; // 2D plot of u_par vs nVtx for Puppi MET
+  myTH2F* _hPuppiMET_u_perp_nVtx; // 2D plot of u_perp vs nVtx for Puppi MET
+  myTH2F* _hPuppiMET_u_parPqt_nVtx; // 2D plot of u_par + Z qt s nVtx for Puppi MET
+
   // RawMET
   myTH1F* _hRawMET;  // Histogram of MET
   myTH1F* _hRawMEX;  // Histogram of MEX
@@ -101,6 +130,12 @@ private:
   myTH1F* _hRawMET_u_perp; // u_perp for MET
   myTH1F* _hRawMET_u_par; // u_par for MET  
   myTH1F* _hRawMET_u_parPqt; // u_par minus qt for MET
+  
+  myTH2F* _hRawMET_u_par_qt; // 2D plot of u_par vs Z qt for Raw MET
+  myTH2F* _hRawMET_u_perp_qt; // 2D plot of u_perp vs Z qt for Puppi MET
+  myTH2F* _hRawMET_u_par_nVtx; // 2D plot of u_par vs nVtx for Puppi MET
+  myTH2F* _hRawMET_u_perp_nVtx; // 2D plot of u_perp vs nVtx for Puppi MET
+  myTH2F* _hRawMET_u_parPqt_nVtx; // 2D plot of u_par + Z qt s nVtx for Puppi MET
 
   // RawPuppiMET
   myTH1F* _hRawPuppiMET;  // Histogram of MET

@@ -95,6 +95,14 @@ void HistogrammingMETPaper::BookHistogram(){
   Float_t sumEtMin = 0.;
   Float_t sumEtMax = 2000.;
 
+  Int_t significanceBins = 50;
+  Float_t sigMin = 0.;
+  Float_t sigMax = 50.;
+
+  Int_t vertexBins = 80;
+  Float_t vertexMin = 0.;
+  Float_t vertexMax = 80.;
+
   //Histogramming for Z qt
   _hZQt = DeclareTH1F("ZQt","Z qt",ptBins,minPt,maxPt);
   _hZQt->SetXAxisTitle("Z_{q_T}");
@@ -109,6 +117,11 @@ void HistogrammingMETPaper::BookHistogram(){
   _hZPhi = DeclareTH1F("ZPhi","Z phi",phiBins,phiMin,phiMax);
   _hZPhi->SetXAxisTitle("#phi_{q_T}");
   _hZPhi->SetYAxisTitle("Events");
+
+  //Histogramming for Z qt versus nVertex
+  _hZQt_nVertex = DeclareTH2F("ZQt_nVertex","Z qt vs nVertex",ptBins,minPt,maxPt,vertexBins,vertexMin,vertexMax);
+  _hZQt_nVertex->SetXAxisTitle("Z_{q_T}");
+  _hZQt_nVertex->SetYAxisTitle("n_{vertex}");
   
   // Histogram of MET
   _hMET = DeclareTH1F("MET","Missing transverse energy",metBins,metMin,metMax);
@@ -154,6 +167,62 @@ void HistogrammingMETPaper::BookHistogram(){
   _hMET_u_parPqt = DeclareTH1F("MET_u_parPqt","u_par of PF MET plus Z qt",u_parBins,min_u_par,max_u_par);
   _hMET_u_parPqt->SetXAxisTitle("u_{par} + q_{T}[PF MET]");
   _hMET_u_parPqt->SetYAxisTitle("Events");
+
+  // Histogram of MET uncorr
+  _hMET_uncorr = DeclareTH1F("MET_uncorr","Missing transverse energy no xy corrections",metBins,metMin,metMax);
+  _hMET_uncorr->SetXAxisTitle("MET uncorr [GeV]");
+  _hMET_uncorr->SetYAxisTitle("Events");
+
+  // Histogram of MEX  uncorr
+  _hMEX_uncorr = DeclareTH1F("MEX_uncorr","X component of missing transverse energy no xy corrections",metXYBins,metXYMin,metXYMax);
+  _hMEX_uncorr->SetXAxisTitle("MEX uncorr [GeV]");
+  _hMEX_uncorr->SetYAxisTitle("Events");
+
+  // Histogram of MEY uncorr
+  _hMEY_uncorr = DeclareTH1F("MEY_uncorr","Y component of missing transverse energy no xy corrections",metXYBins,metXYMin,metXYMax);
+  _hMEY_uncorr->SetXAxisTitle("MEY uncorr [GeV]");
+  _hMEY_uncorr->SetYAxisTitle("Events");
+
+  // Histogram of MET phi uncorr
+  _hMETPhi_uncorr = DeclareTH1F("METPhi_uncorr","Phi of missing transverse energy no xy corrections",phiBins,phiMin,phiMin);
+  _hMETPhi_uncorr->SetXAxisTitle("#Phi uncorr_{MET} [GeV]");
+  _hMETPhi_uncorr->SetYAxisTitle("Events");
+
+
+  // 2D plot of u_par vs Z qt for PF MET
+  _hMET_u_par_qt = DeclareTH2F("MET_u_par_qt","u_par vs Z qt PF MET",u_parBins,min_u_par,max_u_par,ptBins,minPt,maxPt);
+  _hMET_u_par_qt->SetXAxisTitle("u_{par} [PF MET][");
+  _hMET_u_par_qt->SetYAxisTitle("Z q_T");
+
+  // 2D plot of u_par vs Z qt for PF MET
+  _hMET_u_perp_qt = DeclareTH2F("MET_u_perp_qt","u_perp vs Z qt PF MET",u_perpBins,min_u_perp,max_u_perp,ptBins,minPt,maxPt);
+  _hMET_u_perp_qt->SetXAxisTitle("u_{perp} [PF MET][");
+  _hMET_u_perp_qt->SetYAxisTitle("Z q_T");
+
+  // 2D plot of u_par vs nVtx for PF MET
+  _hMET_u_par_nVtx = DeclareTH2F("MET_u_par_nVtx","u_par vs nVtx PF MET",u_parBins,min_u_par,max_u_par,vertexBins,vertexMin,vertexMax);
+  _hMET_u_par_nVtx->SetXAxisTitle("u_{par} [PF MET][");
+  _hMET_u_par_nVtx->SetYAxisTitle("N_{vtx}");
+
+  // 2D plot of u_par vs Z nVtx for PF MET
+  _hMET_u_perp_nVtx = DeclareTH2F("MET_u_perp_nVtx","u_perp vs nVtx PF MET",u_perpBins,min_u_perp,max_u_perp,vertexBins,vertexMin,vertexMax);
+  _hMET_u_perp_nVtx->SetXAxisTitle("u_{perp} [PF MET][");
+  _hMET_u_perp_nVtx->SetYAxisTitle("N_{vtx}");
+
+  // 2D plot of u_par + Z qt vs nVtx for PF MET
+  _hMET_u_parPqt_nVtx = DeclareTH2F("MET_u_parPqt_nVtx","u_par + Z qt vs nVtx PF MET",u_parBins,min_u_par,max_u_par,vertexBins,vertexMin,vertexMax);
+  _hMET_u_parPqt_nVtx->SetXAxisTitle("u_{par} + Z q_T [PF MET][");
+  _hMET_u_parPqt_nVtx->SetYAxisTitle("N_{vtx}");
+
+  //Met significance
+  _hMET_significance = DeclareTH1F("MET_significance","MET significance",significanceBins,sigMin,sigMax);
+  _hMET_significance->SetXAxisTitle("Significance");
+  _hMET_significance-> SetYAxisTitle("Events");
+
+  //Met significance_blowup
+  _hMET_significance_blowup = DeclareTH1F("MET_significance_blowup","MET significance englarged",100,0.,10.);
+  _hMET_significance_blowup->SetXAxisTitle("Significance_blowup");
+  _hMET_significance_blowup-> SetYAxisTitle("Events");
 
   //Calo MET
   
@@ -261,6 +330,51 @@ void HistogrammingMETPaper::BookHistogram(){
   _hPuppiMET_u_parPqt->SetXAxisTitle("u_{par} + q_{T}[PF PuppiMET]");
   _hPuppiMET_u_parPqt->SetYAxisTitle("Events");
 
+  // Histogram of PuppiMET uncorr
+  _hPuppiMET_uncorr = DeclareTH1F("PuppiMET_uncorr","Missing transverse energy no xy corrections",metBins,metMin,metMax);
+  _hPuppiMET_uncorr->SetXAxisTitle("PuppiMET uncorr [GeV]");
+  _hPuppiMET_uncorr->SetYAxisTitle("Events");
+
+  // Histogram of PuppiMEX  uncorr
+  _hPuppiMEX_uncorr = DeclareTH1F("PuppiMEX_uncorr","X component of missing transverse energy no xy corrections",metXYBins,metXYMin,metXYMax);
+  _hPuppiMEX_uncorr->SetXAxisTitle("PuppiMEX uncorr [GeV]");
+  _hPuppiMEX_uncorr->SetYAxisTitle("Events");
+
+  // Histogram of PuppiMEY uncorr
+  _hPuppiMEY_uncorr = DeclareTH1F("PuppiMEY_uncorr","Y component of missing transverse energy no xy corrections",metXYBins,metXYMin,metXYMax);
+  _hPuppiMEY_uncorr->SetXAxisTitle("PuppiMEY uncorr [GeV]");
+  _hPuppiMEY_uncorr->SetYAxisTitle("Events");
+
+  // Histogram of PuppiMET phi uncorr
+  _hPuppiMETPhi_uncorr = DeclareTH1F("PuppiMETPhi_uncorr","Phi of missing transverse energy no xy corrections",phiBins,phiMin,phiMin);
+  _hPuppiMETPhi_uncorr->SetXAxisTitle("#Phi uncorr_{PuppiMET} [GeV]");
+  _hPuppiMETPhi_uncorr->SetYAxisTitle("Events");
+
+  // 2D plot of u_par vs Z qt for  PuppiMET
+  _hPuppiMET_u_par_qt = DeclareTH2F("PuppiMET_u_par_qt","u_par vs Z qt  PuppiMET",u_parBins,min_u_par,max_u_par,ptBins,minPt,maxPt);
+  _hPuppiMET_u_par_qt->SetXAxisTitle("u_{par} [PuppiMET][");
+  _hPuppiMET_u_parPqt->SetYAxisTitle("Z q_T");
+
+  // 2D plot of u_par vs Z qtMET for PuppiMET
+  _hPuppiMET_u_perp_qt = DeclareTH2F("PuppiMET_u_perp_qt","u_perp vs Z qt PuppiMET",u_perpBins,min_u_perp,max_u_perp,ptBins,minPt,maxPt);
+  _hPuppiMET_u_perp_qt->SetXAxisTitle("u_{perp} [PuppiMET][");
+  _hPuppiMET_u_perp_qt->SetYAxisTitle("Z q_T");
+
+  // 2D plot of u_par vs nVtx for PuppiMET
+  _hPuppiMET_u_par_nVtx = DeclareTH2F("PuppiMET_u_par_nVtx","u_par vs nVtx PuppiMET",u_parBins,min_u_par,max_u_par,vertexBins,vertexMin,vertexMax);
+  _hPuppiMET_u_par_nVtx->SetXAxisTitle("u_{par} [PuppiMET][");
+  _hPuppiMET_u_par_nVtx->SetYAxisTitle("N_{vtx}");
+
+  // 2D plot of u_par vs Z nVtx for PuppiMET
+  _hPuppiMET_u_perp_nVtx = DeclareTH2F("PuppiMET_u_perp_nVtx","u_perp vs nVtx PuppiMET",u_perpBins,min_u_perp,max_u_perp,vertexBins,vertexMin,vertexMax);
+  _hPuppiMET_u_perp_nVtx->SetXAxisTitle("u_{perp} [PuppiMET][");
+  _hPuppiMET_u_perp_nVtx->SetYAxisTitle("N_{vtx}");
+
+  // 2D plot of u_par + Z qt vs nVtx for PuppiMET
+  _hPuppiMET_u_parPqt_nVtx = DeclareTH2F("PuppiMET_u_parPqt_nVtx","u_par + Z qt vs nVtx PuppiMET",u_parBins,min_u_par,max_u_par,vertexBins,vertexMin,vertexMax);
+  _hPuppiMET_u_parPqt_nVtx->SetXAxisTitle("u_{par} + Z q_T [PuppiMET][");
+  _hPuppiMET_u_parPqt_nVtx->SetYAxisTitle("N_{vtx}");
+
   //Raw MET
   
   // Histogram of RawMET
@@ -307,6 +421,31 @@ void HistogrammingMETPaper::BookHistogram(){
   _hRawMET_u_parPqt = DeclareTH1F("RawMET_u_parPqt","u_par of PF RawMET plus Z qt",u_parBins,min_u_par,max_u_par);
   _hRawMET_u_parPqt->SetXAxisTitle("u_{par} + q_{T}[PF RawMET]");
   _hRawMET_u_parPqt->SetYAxisTitle("Events");
+
+  // 2D plot of u_par vs Z qt for  RawMET
+  _hRawMET_u_par_qt = DeclareTH2F("RawMET_u_par_qt","u_par vs Z qt  RawMET",u_parBins,min_u_par,max_u_par,ptBins,minPt,maxPt);
+  _hRawMET_u_par_qt->SetXAxisTitle("u_{par} [RawMET][");
+  _hRawMET_u_parPqt->SetYAxisTitle("Z q_T");
+
+  // 2D plot of u_par vs Z qtMET for RawMET
+  _hRawMET_u_perp_qt = DeclareTH2F("RawMET_u_perp_qt","u_perp vs Z qt RawMET",u_perpBins,min_u_perp,max_u_perp,ptBins,minPt,maxPt);
+  _hRawMET_u_perp_qt->SetXAxisTitle("u_{perp} [RawMET][");
+  _hRawMET_u_perp_qt->SetYAxisTitle("Z q_T");
+
+  // 2D plot of u_par vs nVtx for RawMET
+  _hRawMET_u_par_nVtx = DeclareTH2F("RawMET_u_par_nVtx","u_par vs nVtx RawMET",u_parBins,min_u_par,max_u_par,vertexBins,vertexMin,vertexMax);
+  _hRawMET_u_par_nVtx->SetXAxisTitle("u_{par} [RawMET][");
+  _hRawMET_u_par_nVtx->SetYAxisTitle("N_{vtx}");
+
+  // 2D plot of u_par vs Z nVtx for RawMET
+  _hRawMET_u_perp_nVtx = DeclareTH2F("RawMET_u_perp_nVtx","u_perp vs nVtx RawMET",u_perpBins,min_u_perp,max_u_perp,vertexBins,vertexMin,vertexMax);
+  _hRawMET_u_perp_nVtx->SetXAxisTitle("u_{perp} [RawMET][");
+  _hRawMET_u_perp_nVtx->SetYAxisTitle("N_{vtx}");
+
+  // 2D plot of u_par + Z qt vs nVtx for RawMET
+  _hRawMET_u_parPqt_nVtx = DeclareTH2F("RawMET_u_parPqt_nVtx","u_par + Z qt vs nVtx RawMET",u_parBins,min_u_par,max_u_par,vertexBins,vertexMin,vertexMax);
+  _hRawMET_u_parPqt_nVtx->SetXAxisTitle("u_{par} + Z q_T [RawMET][");
+  _hRawMET_u_parPqt_nVtx->SetYAxisTitle("N_{vtx}");
 
   //RawPuppi MET
   
@@ -391,6 +530,8 @@ Bool_t HistogrammingMETPaper::Apply()
   //Get the muon collection
   std::vector<Muon> muons = evc->GetMuonCollection(_muonType); //should make this metmu
 
+  Int_t nVertex = evc->pv_npvsGood;
+
     // Fill Histograms
   //  if((evc->tightElectrons.size() >0)||(evc->tightMuons.size() >0)){
   _hMET    -> Fill(evc->missingEt);
@@ -400,10 +541,19 @@ Bool_t HistogrammingMETPaper::Apply()
 
   _hSumEt  -> Fill(evc->sumETs["met"]);
 
+  _hMET_significance -> Fill(evc->met_significance);
+  _hMET_significance_blowup -> Fill(evc->met_significance);
 
   //If we are doing the larger number of METs, fill the histograms here.
   if (evc->DoManyMETs()){
     TLorentzVector tempMet;
+
+    //Met without xy corrections
+    tempMet = evc->missingEtVecs["met_uncorr"];
+    _hMET_uncorr->Fill(tempMet.Pt());    
+    _hMEX_uncorr->Fill(tempMet.Px());    
+    _hMEY_uncorr->Fill(tempMet.Py());    
+    _hMETPhi_uncorr->Fill(tempMet.Phi());
     
     //Calo met
     tempMet = evc->missingEtVecs["calo"];
@@ -429,6 +579,13 @@ Bool_t HistogrammingMETPaper::Apply()
     _hPuppiMEY->Fill(tempMet.Py());
     _hPuppiMETPhi->Fill(tempMet.Phi());
     _hPuppiSumEt->Fill(evc->sumETs["puppi"]);
+
+    //Puppi met no xy corrections
+    tempMet = evc->missingEtVecs["puppi_uncorr"];
+    _hPuppiMET_uncorr->Fill(tempMet.Pt());
+    _hPuppiMEX_uncorr->Fill(tempMet.Px());
+    _hPuppiMEY_uncorr->Fill(tempMet.Py());
+    _hPuppiMETPhi_uncorr->Fill(tempMet.Phi());
 
     //Raw met
     tempMet = evc->missingEtVecs["raw"];
@@ -460,6 +617,8 @@ Bool_t HistogrammingMETPaper::Apply()
   _hZQt  -> Fill(zCand.Pt());
   _hZEta -> Fill(zCand.Eta());
   _hZPhi -> Fill(zCand.Phi());
+
+  _hZQt_nVertex -> Fill(zCand.Pt(),nVertex);
 
   //Make the Z candidate in the transverse plane
   TVector3 zCand_t;  
@@ -493,6 +652,12 @@ Bool_t HistogrammingMETPaper::Apply()
   _hMET_u_perp->Fill(u_perp);
   _hMET_u_parPqt->Fill(u_par+zCand_t.Pt());
 
+  _hMET_u_par_qt->Fill(u_par,zCand_t.Pt());
+  _hMET_u_perp_qt->Fill(u_perp,zCand_t.Pt());
+  _hMET_u_par_nVtx->Fill(u_par,nVertex);
+  _hMET_u_perp_nVtx->Fill(u_perp,nVertex);
+  _hMET_u_parPqt_nVtx->Fill(u_par+zCand_t.Pt(),nVertex);
+
   if (evc->DoManyMETs()){
     met.SetPtEtaPhi(evc->missingEtVecs["puppi"].Pt(),0.,evc->missingEtVecs["puppi"].Phi());
     
@@ -505,6 +670,13 @@ Bool_t HistogrammingMETPaper::Apply()
     _hPuppiMET_u_par->Fill(u_par);
     _hPuppiMET_u_perp->Fill(u_perp);
     _hPuppiMET_u_parPqt->Fill(u_par+zCand_t.Pt());
+    
+    //2D plots
+    _hPuppiMET_u_par_qt->Fill(u_par,zCand_t.Pt());
+    _hPuppiMET_u_perp_qt->Fill(u_perp,zCand_t.Pt());
+    _hPuppiMET_u_par_nVtx->Fill(u_par,nVertex);
+    _hPuppiMET_u_perp_nVtx->Fill(u_perp,nVertex);
+    _hPuppiMET_u_parPqt_nVtx->Fill(u_par+zCand_t.Pt(),nVertex);
 
     met.SetPtEtaPhi(evc->missingEtVecs["raw"].Pt(),0.,evc->missingEtVecs["raw"].Phi());
     
@@ -518,6 +690,13 @@ Bool_t HistogrammingMETPaper::Apply()
     _hRawMET_u_perp->Fill(u_perp);
     _hRawMET_u_parPqt->Fill(u_par+zCand_t.Pt());
 
+    //2D plots
+    _hRawMET_u_par_qt->Fill(u_par,zCand_t.Pt());
+    _hRawMET_u_perp_qt->Fill(u_perp,zCand_t.Pt());
+    _hRawMET_u_par_nVtx->Fill(u_par,nVertex);
+    _hRawMET_u_perp_nVtx->Fill(u_perp,nVertex);
+    _hRawMET_u_parPqt_nVtx->Fill(u_par+zCand_t.Pt(),nVertex);
+    
   }
 
   //  std::cout << met.X() << "," << met.Y() << " " << zCand_t.X() << "," << zCand_t.Y() << " " << recoil.X() << "," << recoil.Y() << " " << recoil.Pt() << " " << u_par << " " << u_perp << " mag: " << sqrt(u_par*u_par + u_perp*u_perp) << " zTest: " << zCandTest.X() << "," << zCandTest.Y() << " recoil: " << recoilTest.X() <<"," << recoilTest.Y() <<  std::endl;
