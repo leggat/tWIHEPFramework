@@ -68,7 +68,7 @@ void CutMETFilters::BookHistogram(){
   // Book Histograms
   // ***********************************************  
 
-  // Histogram before cut
+  // histogram before cut
   _hMETFilterBefore =  DeclareTH1F("METFilterBefore","MET Filters Before", 2, 0.0, 2.);
   _hMETFilterBefore -> SetXAxisTitle("MET Filter");
   _hMETFilterBefore -> SetYAxisTitle("Events");
@@ -77,6 +77,16 @@ void CutMETFilters::BookHistogram(){
   _hMETFilterAfter=  DeclareTH1F("METFilterAfter", "MET Filters After", 2, 0.0, 2.);
   _hMETFilterAfter-> SetXAxisTitle("MET Filter");
   _hMETFilterAfter-> SetYAxisTitle("Events");
+
+  // histogram before cut
+  _hMETAllFilterBefore =  DeclareTH1F("METAllFilterBefore","MET AllFilters Before", 2, 0.0, 2.);
+  _hMETAllFilterBefore -> SetXAxisTitle("MET AllFilter");
+  _hMETAllFilterBefore -> SetYAxisTitle("Events");
+
+  // Histogram after cut
+  _hMETAllFilterAfter=  DeclareTH1F("METAllFilterAfter", "MET AllFilters After", 2, 0.0, 2.);
+  _hMETAllFilterAfter-> SetXAxisTitle("MET AllFilter");
+  _hMETAllFilterAfter-> SetYAxisTitle("Events");
 
 
   // ***********************************************
@@ -105,10 +115,12 @@ Bool_t CutMETFilters::Apply()
   Bool_t passesMETFilter = EventContainerObj->passesMETFilters;
 
   _hMETFilterBefore->Fill(passesMETFilter);
+  _hMETAllFilterBefore->Fill(EventContainerObj->passesAllMETFilters);
 
   if (passesMETFilter){
     GetCutFlowTable()->PassCut("MET.Filters");
     _hMETFilterAfter->Fill(passesMETFilter);
+    _hMETAllFilterAfter->Fill(EventContainerObj->passesAllMETFilters);
   }
   else {
     GetCutFlowTable()->FailCut("MET.Filters");

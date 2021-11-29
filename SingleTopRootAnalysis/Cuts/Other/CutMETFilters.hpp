@@ -57,6 +57,8 @@ private:
   // Histograms
   myTH1F* _hMETFilterBefore;    // Histogram Missing Et
   myTH1F* _hMETFilterAfter;     // Histogram Missing Et
+  myTH1F* _hMETAllFilterBefore;    // Histogram Missing Et
+  myTH1F* _hMETAllFilterAfter;    // Histogram Missing Et
 
 };
 
