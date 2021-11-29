@@ -159,10 +159,27 @@ class EventContainer
   //Destructor
   ~EventContainer();
 
+  //enum for the run era - used originally for the met correction, but maybe for other stuff later too?
+  enum TheRunEra{
+    y2016B,y2016C,y2016D,y2016E,y2016F,y2016G,y2016H,
+    y2017B,y2017C,y2017D,y2017E,y2017F,
+    y2018A,y2018B,y2018C,y2018D,
+    y2016MC,
+    y2017MC,
+    y2018MC,
+    yUL2016B,yUL2016C,yUL2016D,yUL2016E,yUL2016F,yUL2016Flate,yUL2016G,yUL2016H,
+    yUL2017B,yUL2017C,yUL2017D,yUL2017E,yUL2017F,
+    yUL2018A,yUL2018B,yUL2018C,yUL2018D,
+    yUL2016MCAPV,
+    yUL2016MCnonAPV,
+    yUL2017MC,
+    yUL2018MC
+  };
+
   // Get and Set the NAME of the source being run over
   inline void SetSourceName(const TString& name) { _sourceName = name; };
   inline TString GetSourceName() const { return _sourceName; };
-
+  
   // Get and Set the NUMBER for the source being run over
   inline void SetSourceNumber(Int_t number) { _sourceNumber = number; };
   inline Int_t GetSourceNumber() const { return _sourceNumber; };
@@ -510,8 +527,10 @@ class EventContainer
   //CalibrationDataInterfaceROOT CalibROOT;
 
   // Information for partons
+  TString yearName;             // Useful for MET corrections, and probably other things?
   Int_t runNumber;              // run number from the root tree
   Int_t eventNumber;            // event number from the root tree
+  Int_t lumiBlock;              // lumi block for event
   Bool_t larError;
   Float_t actualIntPerXing;
   Float_t averageIntPerXing;
@@ -592,6 +611,7 @@ class EventContainer
   Double_t missingPhi;
   Double_t missingEy;
   TLorentzVector missingEtVec;
+  Float_t met_significance;
 
   //Gonna make a map to store a number of missingET vectors
   std::map<TString,TLorentzVector> missingEtVecs;
@@ -614,7 +634,8 @@ class EventContainer
 
   //Track whterh it passes the MET filters
   Int_t passesMETFilters;
-
+  Int_t passesAllMETFilters;
+  
   //Primary vertex information
   Float_t pv_chi2;
   Float_t pv_ndof;
@@ -805,6 +826,8 @@ private:
   Jet newJet;
   TriggerObj newTriggerObj;
   GenPart newGenPart;
+
+  std::pair<double,double> METXYCorr_Met_MetPhi(double uncormet, double uncormet_phi, int runnb, TString year, bool isMC, int npv, bool isUL =false,bool ispuppi=false);
 
   std::vector<std::vector<std::string> > _resolution;
   std::vector<std::vector<std::string> > _resSFs;
