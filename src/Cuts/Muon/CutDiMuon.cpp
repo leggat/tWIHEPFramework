@@ -162,11 +162,6 @@ void CutDiMuon::BookHistogram(){
   _hDiMuonMassBefore -> SetXAxisTitle("m_{#mu#mu}");
   _hDiMuonMassBefore -> SetYAxisTitle("Events");
 
-  // mass Histogram after cut
-  _hDiMuonMassAfter =  DeclareTH1F(histNameAfterMass.Data(), histTitleAfterMass.Data(), 100, 0.0, 150);
-  _hDiMuonMassAfter -> SetXAxisTitle("m_{#mu#mu}");
-  _hDiMuonMassAfter -> SetYAxisTitle("Events");
-
   // mass Histogram before cut
   _hDiMuonPtBefore =  DeclareTH1F(histNameBeforePt.Data(), histTitleBeforePt.Data(), 100, 0.0, 150.0);
   _hDiMuonPtBefore -> SetXAxisTitle("Pt_{#mu#mu}");
@@ -208,6 +203,15 @@ void CutDiMuon::BookHistogram(){
   _DiMuonDRMax   = config -> GetValue(configMaxDR.Data(),   999.);
   _DiMuonMassMin = config -> GetValue(configMinMass.Data(), 999.);
   _DiMuonMassMax = config -> GetValue(configMaxMass.Data(), 999.);
+
+
+  //Defining the after histograms after the cuts so that we can use that information in the binning
+  // mass Histogram after cut
+  _hDiMuonMassAfter =  DeclareTH1F(histNameAfterMass.Data(), histTitleAfterMass.Data(), 100, float(_DiMuonMassMin), float(_DiMuonMassMax));
+  _hDiMuonMassAfter -> SetXAxisTitle("m_{#mu#mu}");
+  _hDiMuonMassAfter -> SetYAxisTitle("Events");
+
+
 
   // ***********************************************
   // Add these cuts to the cut flow table
