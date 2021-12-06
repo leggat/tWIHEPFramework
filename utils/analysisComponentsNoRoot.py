@@ -11,7 +11,7 @@ class AnalysisComponents:
     histoGramOrder = []
     histNameInLegend = {}
     jetShiftDict = {}
-    def __init__(self,analysis="tW",era="2018"):
+    def __init__(self,analysis="tW",era="2018",lepton="muon"):
         #defaults for if we are doing the tW
         if analysis=="tW":
             self.regions = ["3j1t","3j2t","2j1t","4j1t","4j2t"]
