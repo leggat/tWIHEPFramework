@@ -17,7 +17,7 @@ for obj in inFile.GetListOfKeys():
             if not temp2.ClassName().find("TH1") == -1:
                 plotPaths.append(tempThing.GetName() + "/"+ temp2.GetName())
 
-plotsToConsider = ["01_HistogrammingNPvtx/nTrueInteractions_pre"]
+plotsToConsider = ["03_HistogrammingNPvtx/nTrueInteractions_pre"]
 for plotName in plotPaths:
     print plotName
     considerPlot = False
