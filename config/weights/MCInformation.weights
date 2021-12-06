@@ -6,8 +6,9 @@
 #########################################
 
 # The luminosity of the sample to be processed. For some reason before it was already in all of the weights, which is not ideal.
+#This has been moved to the overall config so that it can be different in each run period.
 #Weight.Lumi: 27217.
-Weight.Lumi: 35900.
+#Weight.Lumi: 35900.
 
 # 100000 - tW_top_5fs inclusive
 Weight.Source.100000: 35.85
@@ -307,9 +308,50 @@ Events.Source.500031: 61382166
 
 #600000 - met samples
 
+#2018 samples
+
 #600000 = dy 50->
 Weight.Source.600000: 5765.4
-Events.Source.600000: 96004933
+Events.Source.600000: 197649078
+
+#600001 = ttbar_2l
+Weight.Source.600001: 88.29
+Events.Source.600001: 145020000
+
+#600002 = ww
+Weight.Source.600002: 118.7
+Events.Source.600002: 14938000
+
+#600002 = wz
+Weight.Source.600002: 22.82
+Events.Source.600002: 7883000
+
+#600003 = zz
+Weight.Source.600003: 10.32
+Events.Source.600003: 3907000
+
+#2017 samples
+
+#600100 = dy 50->
+Weight.Source.600100: 6077.22
+Events.Source.600100: 203729540
+
+#600101 = ttbar_2l
+Weight.Source.600101: 88.29
+Events.Source.600101: 106724000
+
+#600102 = ww
+Weight.Source.600102: 75.8
+Events.Source.600102: 15634000
+
+#600102 = wz
+Weight.Source.600102: 27.6
+Events.Source.600102: 7889000
+
+#600103 = zz
+Weight.Source.600103: 12.14
+Events.Source.600103: 2706000
+
 
 #700000 - systematic samples
 
