@@ -1,0 +1,76 @@
+###############################################################################
+#
+# nanoAOD_Example.cuts
+#
+###############################################################################
+# 
+# A set of example cuts that can be made in the analysis. Cuts below correspond to nObject cuts (e.g. number of electrons, muons, etc.) and cuts on specific values (MET, mTW). These are defined in the (SingleTopRootAnalysis|src)/Cuts directory.
+#
+###############################################################################
+
+# ############ Trigger Cuts ###############
+# A comma separated list of triggers to include as ORs or NOTs in the trigger selection. Invalid names not in the TTree will be ignored
+Trigger.Name.Or: HLT_Ele35_WPTight_Gsf,HLT_Ele32_WPTight_Gsf
+################# Electron Cuts #########################
+# Number of Electrons
+Cut.Electron.Tight.Number.Min:  0
+Cut.Electron.Tight.Number.Max:  0
+Cut.Electron.Tight.LeadingPt:  26
+Cut.Electron.Tight.SubLeadingPt:  20
+################# MetEle cuts #####################
+CutElectron.MetEle.Number.Min: 2
+CutElectron.MetEle.Number.Max: 2
+################ Di-Electron Cuts #########################
+Cut.DiElectron.MetMu.DR.Min:  0.3                          
+Cut.DiElectron.MetMu.Mass.Min: 80                          
+Cut.DiElectron.MetMu.Mass.Max: 100                         
+################# Veto Electron Cuts #########################
+# Number of Electrons
+Cut.Electron.Veto.Number.Min:  0
+Cut.Electron.Veto.Number.Max:  0
+################# Muon Cuts #########################
+# Number of  Muons
+Cut.Muon.MetMu.Number.Min:  0
+Cut.Muon.MetMu.Number.Max:  0
+Cut.Muon.MetMu.LeadingPt:  26
+Cut.Muon.MetMu.SubLeadingPt:  20
+################ Trigger Matched Muons ################
+Cut.Muon.Trigger.Number.Min: 0
+Cut.Muon.Trigger.Number.Max: 0
+################ Di-Muon Cuts #########################
+Cut.DiMuon.MetMu.DR.Min:  0.3
+Cut.DiMuon.MetMu.Mass.Min: 80
+Cut.DiMuon.MetMu.Mass.Max: 100
+################ Veto Muon Cuts ########################
+# Number of Veto Muons
+Cut.Muon.Veto.Number.Min:  0
+Cut.Muon.Veto.Number.Max:  0
+# ############## Jet Cuts ##############################
+# Jet multiplicity cuts
+Cut.Jet.Number.Min:  2
+Cut.Jet.Number.Max:  4
+Cut.Jet.Pt.1.Min:  30
+Cut.Jet.Pt.1.Max: 999
+# ############## Tagged Jet Cuts #################
+# Tagged Jet multiplicity cuts
+Cut.Tagged.Jet.Number.Min: 1
+Cut.Tagged.Jet.Number.Max: 2
+
+################ Global Event Cuts #####################
+# Missing ET
+Cut.Event.MissingEt.Min:  0.0
+Cut.Event.MissingEt.Max: 999.0
+
+# mTW
+Cut.Event.MtW.Min:  0.0
+Cut.Event.MtW.Max: 999.0
+
+# ############## SumDeltaPhiLepMET #################
+# SumDeltaPhiLepMET cuts
+Triangular.SumDeltaPhiLepMET.Min:  2.5
+Triangular.SumDeltaPhiLepMET.Max: 999
+
+################ Global Event Cuts #####################
+# HTJet1
+Cut.Event.HTJET1.Min:  999.0
+Cut.Event.HTJET1.Max: 999.0
