@@ -35,7 +35,7 @@ class HistogrammingMETPaper : public HistoCut
 public:
 
   // Parameterized Constructor
-  HistogrammingMETPaper(EventContainer *obj, TString muonType);
+  HistogrammingMETPaper(EventContainer *obj, TString leptonName, TString muonType);
   
   // Destructor
   ~HistogrammingMETPaper();
@@ -160,6 +160,7 @@ private:
   Float_t _integral;
 
   TString _muonType;
+  TString _leptonName;
 
 };
 

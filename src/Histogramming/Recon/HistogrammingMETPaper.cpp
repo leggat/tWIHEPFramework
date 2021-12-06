@@ -35,10 +35,11 @@ using namespace std;
  * Input:  Particle class                                                     *
  * Output: None                                                               *
  ******************************************************************************/
-HistogrammingMETPaper::HistogrammingMETPaper(EventContainer *obj, TString muonType)
+HistogrammingMETPaper::HistogrammingMETPaper(EventContainer *obj, TString leptonName, TString muonType)
 {
   SetEventContainer(obj);
-  obj->IsValidCollection("Muon",muonType);
+  obj->IsValidCollection(leptonName,muonType);
+  _leptonName = leptonName;
   _muonType = muonType;
   _nTimesRun = 0;
   _integral = 0.;
@@ -528,7 +529,14 @@ Bool_t HistogrammingMETPaper::Apply()
   //cout<<"missing et is "<<MissingEt<<endl;
 
   //Get the muon collection
-  std::vector<Muon> muons = evc->GetMuonCollection(_muonType); //should make this metmu
+  std::vector<Particle> leptons;
+
+  if (_leptonName == "Muon"){
+    for (auto muon: evc->GetMuonCollection(_muonType)) leptons.push_back(muon); //should make this metmu
+  }
+  else if (_leptonName == "Electron"){
+    for (auto electron: evc->GetElectronCollection(_muonType)) leptons.push_back(electron);
+  }
 
   Int_t nVertex = evc->pv_npvsGood;
 
@@ -609,10 +617,10 @@ Bool_t HistogrammingMETPaper::Apply()
   _integral+=evc->GetEventWeight();
 
   //The rest of the plots will rely on a muon collection with at least 2 muons
-  if (muons.size() < 2) return kFALSE; //Shouldn't be called if muon is too small
+  if (leptons.size() < 2) return kFALSE; //Shouldn't be called if muon is too small
   
-  Particle zCand = muons[0];
-  zCand += muons[1];
+  Particle zCand = leptons[0];
+  zCand += leptons[1];
 
   _hZQt  -> Fill(zCand.Pt());
   _hZEta -> Fill(zCand.Eta());
