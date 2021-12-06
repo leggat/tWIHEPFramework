@@ -5,183 +5,137 @@ import string
 import subprocess
 from analysisComponentsNoRoot import AnalysisComponents
 
-comp = AnalysisComponents(analysis="met")
+from optparse import OptionParser
 
-
-#####
-##   Parameters to be specified by the user
-#####
-#analysis and task
-analysis = "met"
-taskname = "EvtSel"
-frameworkDir = "/publicfs/cms/user/duncanleg/metPaper/tWIHEPFramework/"
-executable = "bin/metPaper/metPlots.x"
-#executable = "Wt_nVertOnly.x"
-configFile = "config/overall/metPaper.config"
-#configFile = "config/overall/lhcNomMinBias.config"
-invPostfix = ""
-mcPostfix = " -mc -lepSFs -PileUpWgt"
-#mcPostfix = " -mc -PileUpWgt"
-fileListDirectory = "config/files/metFiles/"
-fileListSearchTerm = ""
-#fileListDirectory = "config/files/abbrevLists20180216/"
-useIterFitbTag = False
-makeSkims = True
-doHists = True
-samplesMC = comp.sample
-samplesData = comp.dataSamples
-
-#debugging
-onlyOne = False
-
-#default to MC
-sample = samplesMC
-
-if "data" in sys.argv:
-	mcPostfix = ""
-	analysis += "Data"
-	sample = samplesData
-if "systs" in sys.argv:
-	analysis += "Systs"
-	sample = samplesSyst
-	#fileListDirectory = "config/files/systSamples/"
-	fileListSearchTerm = "Systs"
-if "skims" in sys.argv:
-	makeSkims = True 
-if "electron" in sys.argv:
-	configFile = configFile.split("overall/")[0] + "overall/electron" + configFile.split("overall/")[-1]
-	triggerName = "Electron "
-#	if not "data" in sys.argv:
-	analysis += "Ele"
-	fileListSearchTerm += "Ele"
-if "jesTest" in sys.argv:
-	sample = jesTestSamples
-	analysis += "JESTest"
-if "tWNLO" in sys.argv:
-	sample = tWmcAtNLOSamples
-	fileListSearchTerm = "Systs"
-if "bTag" in sys.argv:
-	sample = bTagSamples
-	analysis += "bTag"
-	executable = "bin/Wt/Wt_efficiencies.x"
-fileListPath = frameworkDir+fileListDirectory
-if "fileListDir" in sys.argv:
-	fileListPath = sys.argv[sys.argv.index("fileListDir") + 1]
-if "bdtSkim" in sys.argv:
-	print "Is bdt skim"
-	executable = "bin/Wt/Wt_bdtSkim.x"
-	doHists = False
-	makeSkims = True
-#executable = "Wt_generic.x"
-#for the queue
-
-workpath    = os.getcwd()+"/"+analysis +"/"
-jobDir      = workpath+"/"+"Jobs"
-smallerJobs = True
-AnalyzerDir = workpath+"/"+"Analyzer"
-task        = analysis+"_"+taskname
-rootplizer  = "Rootplizer_"+task+".cc"
-headplizer  = "Rootplizer_"+task+".h"
-#Directory of input files
-
-
-allJobFileName = analysis+"Submit.sh"
-allJobFile      = file(allJobFileName,"w")
-print >> allJobFile, "#!/bin/bash"
-print >> allJobFile, "cd ",analysis
-
-MergeFileName = analysis+"merge.sh"
-MergeFile      = file(MergeFileName,"w")
-MergeSourceFile = " "
-def prepareSubmitJob(submitFileName,cshFileName, outPutFileName, errorFileName):
-	cshFile      = file(submitFileName,"w")
-	print >> cshFile, "Universe     = vanilla"
-	print >> cshFile, "getenv       = true"
-	print >> cshFile, "Executable   = ",cshFileName
-	print >> cshFile, "Output       = ",outPutFileName
-	print >> cshFile, "Error        = ",errorFileName
-	print >> cshFile, "Queue"
-
-def prepareCshJob(sample,shFile,frameworkDir,workpath,samplePost="",fileListPost="",inListPostFix=""):
+def prepareCshJob(sample,shFile,frameworkDir,workpath,samplePost,fileListPath,inListPostFix,executable,configFile,doHists,makeSkims,additionalString):
         subFile      = file(shFile,"w")
 	print >> subFile, "#!/bin/bash"
 	print >> subFile, "/bin/hostname"
 	print >> subFile, "gcc -v"
-	print >> subFile, "pwd"
-	#print >> subFile, "cd /publicfs/cms/data/TopQuark/cms13TeV/software/root/bin/"
-	#print >> subFile, "source thisroot.csh"
-	#print >> subFile, "cd /publicfs/cms/user/libh/CMSSW_5_3_9/src/ttH_13Tev"
-	#print >> subFile, "setenv SCRAM_ARCH slc5_amd64_gcc462"
-	#print >> subFile, "source /cvmfs/cms.cern.ch/cmsset_default.csh"
 	print >> subFile, "source  /afs/ihep.ac.cn/soft/CMS/64bit/root/profile/rootenv-entry 5.34.18"
         print >> subFile, "source /cvmfs/sft.cern.ch/lcg/views/LCG_93/x86_64-slc6-gcc62-opt/setup.sh"
-        #print >> subFile, "eval \`scramv1 runtime -sh\`"
         print >> subFile, "cd "+frameworkDir
         print >> subFile, "export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"+frameworkDir+"/lib/"
-	#print >> subFile, "cp ${jobDir}/getAhist.C ."
-#	print >> subFile, frameworkDir+"bin/Wt/Wt_generic.x -config "+frameworkDir+"SingleTop.Wt.LP.mm1+j.muonMSSmeardown.config -inlist "+frameworkDir+"config/files/"+fileListDirectory+sample+samplePost+".list -hfile "+workpath+"/"+sample+"/hists/"+sample+samplePost+"hists.root -skimfile "+workpath+"/"+sample+"/skims/"+sample+samplePost+"Skim.root -mc -BkgdTreeName DiElectronPreTagTree  -UseTotalEvtFromFile -MCatNLO -mc -SelectTrigger Muon -PileUpWgt -BWgt"
+
 	skimString = ""
 	histString = ""
 	if makeSkims: skimString = " -skimfile "+workpath+"/"+sample+"/skims/"+sample+samplePost+"Skim.root "
 	if doHists: histString = " -hfile "+workpath+"/"+sample+"/hists/"+sample+samplePost+"hists.root "
-	print >> subFile, frameworkDir+executable+" -config "+frameworkDir+configFile+" -inlist "+fileListPath+sample+inListPostFix+".list -UseTotalEvtFromFile " + invPostfix + mcPostfix + skimString + histString #+ " -nJets {0} -nbJets {1}".format(nJets,nbJets) we don't do this anymore.
-        #print >> subFile, "root -b -q -l "+rootplizer+"'(\""+input+"\",\""+output+"\")'"
+	print >> subFile, frameworkDir+executable+" -config "+frameworkDir+configFile+" -inlist "+fileListPath+sample+inListPostFix+".list -UseTotalEvtFromFile " + skimString + histString + additionalString
+
 	subprocess.call("chmod 777 "+shFile, shell=True)
 
 #for iroot in range(nroot):
-for k in sample:
-	print k
-	sampleName = k
-	
-	#First, let's get rid of any 
+def makeSubmitInOneDir(analysis,workpath,samples,fileListPath,frameworkDir,executable,configFile,doHists,makeSkims,additionalString):
+        
+        allJobFileName = analysis+"Submit.sh"
+        allJobFile      = file(allJobFileName,"w")
+        print >> allJobFile, "#!/bin/bash"
+        print >> allJobFile, "cd ",analysis
+        
+        MergeFileName = analysis+"merge.sh"
+        MergeFile      = file(MergeFileName,"w")
+        MergeSourceFile = " "
 
-	os.popen('mkdir -p '+workpath + sampleName)
-	os.popen('mkdir -p '+workpath + sampleName + "/scripts")
-	os.popen('mkdir -p '+workpath + sampleName + "/hists")
-	os.popen('mkdir -p '+workpath + sampleName + "/skims")
-	os.popen('mkdir -p '+workpath + sampleName + "/logs")
 
-	if not smallerJobs:
-
-		submitFileName = workpath + sampleName + "/scripts/" + sampleName + ".submit"
-		shFileName = workpath + sampleName + "/scripts/" + sampleName +  ".sh"
-		logFileName = workpath + sampleName + "/logs/" + sampleName + ".log"
-		errorFileName = workpath + sampleName + "/logs/" + sampleName + ".error"
-		
-#		prepareSubmitJob(submitFileName, shFileName, logFileName, errorFileName)
-		prepareCshJob(sampleName,shFileName,frameworkDir,workpath)
-		
-		submitPath = sampleName + "/scripts/" + sampleName + ".submit"
-		
-		#print >> allJobFile, "condor_submit "+ submitPath + " -group cms -name job@schedd01.ihep.ac.cn"
-		print >> allJobFile, "hep_sub "+ shFileName + " -o "+logFileName+ " -e "+errorFileName
-
-	else:
+        for sampleName in samples:
+               
+                print sampleName
+                               
+                os.popen('mkdir -p '+workpath + sampleName)
+                os.popen('mkdir -p '+workpath + sampleName + "/scripts")
+                os.popen('mkdir -p '+workpath + sampleName + "/hists")
+                os.popen('mkdir -p '+workpath + sampleName + "/skims")
+                os.popen('mkdir -p '+workpath + sampleName + "/logs")
+                
                 print fileListPath
-		inputFiles = [f for f in os.listdir(fileListPath) if sampleName in f and f.split(sampleName)[-1][:1].isdigit()]
-#		if isBDTSkim: inputFiles  = [f for f in os.listdir(fileListPath) if sampleName in f and f.split(sampleName)[-1][:1].isdigit() and fileListSearchTerm in f]
-		for j in range(len(inputFiles)):
-			submissionName = sampleName + "_" + analysis + "_" + str(j)
-			subPostfix = "_" + analysis + "_" + str(j)
-			fileListPostFix = str(j)
-#			submitFileName = workpath + sampleName + "/scripts/" + sampleName + str(j) + ".submit"
-			shFileName = workpath + sampleName + "/scripts/" + submissionName + ".sh"
-			logFileName = workpath + sampleName + "/logs/" + submissionName + ".log"
-			errorFileName = workpath + sampleName + "/logs/" + submissionName + ".error"
-			
-#			prepareSubmitJob(submitFileName, shFileName, logFileName, errorFileName)
-#			if isBDTSkim: prepareCshJob(sampleName,shFileName,frameworkDir,workpath,subPostfix,fileListSearchTerm,fileListPostFix)
-			prepareCshJob(sampleName,shFileName,frameworkDir,workpath,subPostfix,fileListSearchTerm,fileListPostFix)
-
-			submitPath = sampleName + "/scripts/" + submissionName + ".submit"
-			
-#			print >> allJobFile, "hep_sub "+ submitPath + " -name job@schedd01.ihep.ac.cn"
-			print >> allJobFile, "hep_sub "+ shFileName + " -o "+logFileName+ " -e "+errorFileName
+                inputFiles = [f for f in os.listdir(fileListPath) if sampleName in f and f.split(sampleName)[-1][:1].isdigit()]
+                
+                for j in range(len(inputFiles)):
+                        submissionName = sampleName + "_" + analysis + "_" + str(j)
+                        subPostfix = "_" + analysis + "_" + str(j)
+                        fileListPostFix = str(j)
                         
-                        if onlyOne: break
-#			print >> allJobFile, "condor_submit "+ submitPath + " -group cms -name job@schedd01.ihep.ac.cn"
+                        shFileName = workpath + sampleName + "/scripts/" + submissionName + ".sh"
+                        logFileName = workpath + sampleName + "/logs/" + submissionName + ".log"
+                        errorFileName = workpath + sampleName + "/logs/" + submissionName + ".error"
+                        
+                        prepareCshJob(sampleName,shFileName,frameworkDir,workpath,subPostfix,fileListPath,fileListPostFix,executable,configFile,doHists,makeSkims,additionalString)
+                        
+                        submitPath = sampleName + "/scripts/" + submissionName + ".submit"
 
-	print >> MergeFile, "hadd -f "+analysis+"/"+sampleName + "/hists/merged"+sampleName+".root  "+analysis+"/"+sampleName + "/hists/"+sampleName+"*hists.root"
+                        print >> allJobFile, "hep_sub "+ shFileName + " -o "+logFileName+ " -e "+errorFileName
 
-print >> allJobFile, "cd -"
-print "Finished",analysis
+
+                print >> MergeFile, "hadd -f "+analysis+"/"+sampleName + "/hists/merged"+sampleName+".root  "+analysis+"/"+sampleName + "/hists/"+sampleName+"*hists.root"
+                
+        print "Finished",analysis
+
+
+def addToOverallJob(analysis):
+        allSubmit = 0
+        allMerge = 0
+        if not os.path.exists(os.getcwd()+"/all.sh"):
+                allSubmit = open(os.getcwd()+"/all.sh","w")
+                allMerge = open(os.getcwd()+"/mergeAll.sh","w")
+                allSubmit.write("#!/bin/bash\n")
+                allMerge.write("#!/bin/bash\n")
+                allSubmit.close()
+                allMerge.close()
+        allSubmit = open(os.getcwd()+"/all.sh","a+")
+        allMerge = open(os.getcwd()+"/mergeAll.sh","a+")
+        addAnalysis = True
+        for line in allSubmit:
+                if "bash "+analysis+"S" in line: addAnalysis = False
+
+        if addAnalysis:
+                allSubmit.write("bash "+analysis+"Submit.sh\n")
+                allMerge.write("bash "+analysis+"merge.sh\n")
+        allSubmit.close()
+        allMerge.close()
+
+if __name__ == "__main__":
+
+        parser = OptionParser(usage="usage: %prog [options] \nrun with --help to get list of options")
+        parser.add_option("-b","--baseDirName",dest="baseDirName",default="met",type="string",help="The base name of the directory structure")
+        parser.add_option("-c","--compName",dest="compName",default="met",type="string",help="The name to pass to analysisComponents")
+        parser.add_option("--lepton",dest="lepton",default="muon",type="string",help="Lepton to use")
+        parser.add_option("-y","--year",dest="year",default="2018",type="string",help="Which year to run on")
+        parser.add_option("--hists",dest="doHists",default=False,action="store_true",help="Make histogram output")
+        parser.add_option("-s","--skims",dest="makeSkims",default=False,action="store_true",help="Make skim output")
+        parser.add_option("-x","--executable",dest="executable",default="bin/metPaper/metPlots.x",type="string",help="The executable to use")
+        parser.add_option("-f","--frameworkDir",dest="frameworkDir",default="/publicfs/cms/user/duncanleg/metPaper/tWIHEPFramework/",type="string",help="Address of the framework to use")
+        parser.add_option("--fileLists",dest="fileListDirectory",default="/publicfs/cms/user/duncanleg/metPaper/tWIHEPFramework/config/files/ul2018/",type="string",help="The directory containing the file lists")
+        parser.add_option("-p","--noPileup",dest="noPileup",default=False,action="store_true",help="Flag to not run pileup")
+        parser.add_option("-l","--lepSFs",dest="noLepSFs",default=False,action="store_true",help="Flag to not run lepton SFs")
+        parser.add_option("--configFile",dest="configFile",default="config/overall/met_2018_dimu.config",help="The configuration file to run on")
+        parser.add_option("-d","--data",dest="isData",default=False,action="store_true",help="Flag for if running on data")
+
+        (options, args) = parser.parse_args()
+
+        comp = AnalysisComponents(options.compName,lepton=options.lepton,era=options.year)
+
+        analysis = options.baseDirName + options.year[-2:]
+
+        if options.lepton == "electron":
+                analysis+="Ele"
+
+        samples = comp.samples
+        additionalString = ""
+
+        if options.isData: 
+                samples = comp.dataSamples
+                analysis+="Data"
+        else:
+                additionalString += " -mc"
+                if not options.noPileup: additionalString += " -PileUpWgt"
+                if not options.noLepSFs: additionalString += " -lepSFs"
+                
+
+        workpath = os.getcwd()+"/"+analysis +"/"
+        
+        fileListDir = "/publicfs/cms/user/duncanleg/metPaper/tWIHEPFramework/config/files/ul{0}/".format(options.year)
+
+        makeSubmitInOneDir(analysis,workpath,samples,fileListDir,options.frameworkDir,options.executable,options.configFile,options.doHists,options.makeSkims,additionalString)
+
+        addToOverallJob(analysis)
