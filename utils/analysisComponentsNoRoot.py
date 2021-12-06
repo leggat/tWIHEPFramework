@@ -25,16 +25,38 @@ class AnalysisComponents:
             self.jetShiftDict = {"jetShift0" : "JES_AbsoluteStat","jetShift1" : "JES_AbsoluteScale","jetShift2" : "JES_AbsoluteMPFBias","jetShift3" : "JES_Fragmentation","jetShift4" : "JES_SinglePionECAL","jetShift5" : "JES_SinglePionHCAL","jetShift6" : "JES_FlavorQCD","jetShift7" : "JES_TimePtEta","jetShift8" : "JES_RelativeJEREC1","jetShift9" : "JES_RelativeJEREC2","jetShift10" : "JES_RelativeJERHF","jetShift11" : "JES_RelativePtBB","jetShift12" : "JES_RelativePtEC1","jetShift13" : "JES_RelativePtEC2","jetShift14" : "JES_RelativePtHF","jetShift15" : "JES_RelativeBal","jetShift16" : "JES_RelativeFSR","jetShift17" : "JES_RelativeStatEC","jetShift18" : "JES_RelativeStatHF","jetShift19" : "JES_PileUpPtRef","jetShift20" :  "JES_PileUpPtBB","jetShift21" : "JES_PileUpPtEC1","jetShift22" : "JES_PileUpPtEC2","jetShift23" : "JES_PileUpPtHF","jetShift24" : "JER_stat","jetShift25" : "JER_syst","jetShift26" : "ptmiss_uncert"
                              }
         if analysis=="met":
-            self.sample = ["dy"]
+            self.sample = ["dy","ttbar_2l","ww","wz","zz"]]
             self.samples= self.sample
-            self.histoGramOrder = ["dy"]
-            self.histNameInLegend = {"dy":"DY"}
+            self.histoGramOrder = ["dy","VV","ttbar"]
+            self.histNameInLegend = {"dy":"DY","ttbar":"t#bar{t}","VV":"VV"}}
             if era == "2018":
-                self.dataSamples = ["doubleMu_2018a",
-                                    "doubleMu_2018b",
-                                    "doubleMu_2018c",
-                                    "doubleMu_2018d"
+                if lepton == "muon":
+                    self.dataSamples = ["doubleMu_2018a",
+                                        "doubleMu_2018b",
+                                        "doubleMu_2018c",
+                                        "doubleMu_2018d"
                                     ]
+                if lepton == "electron":
+                    self.dataSamples = ["eGamma_2018a",
+                                        "eGamma_2018b",
+                                        "eGamma_2018c",
+                                        "eGamma_2018d"
+                                    ]
+            if era == "2017":
+                if lepton == "muon":
+                    self.dataSamples = ["doubleMu_2017b",
+                                        "doubleMu_2017c",
+                                        "doubleMu_2017d",
+                                        "doubleMu_2017e",
+                                        "doubleMu_2017f"
+                                    ]
+                if lepton == "electron":
+                    self.dataSamples = ["doubleEG_2017b",
+                                        "doubleEG_2017c",
+                                        "doubleEG_2017d",
+                                        "doubleEG_2017e",
+                                        "doubleEG_2017f"
+                                        ]
         #Generic ones
         self.xAxisLabels = {
             "lightJet1CSV":"CSV_{light jet 1}",
