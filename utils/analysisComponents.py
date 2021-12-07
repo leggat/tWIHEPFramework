@@ -34,7 +34,7 @@ class AnalysisComponents:
             self.samples = self.sample
             self.histoColours = {"dy":ROOT.kBlue,"ttbar":ROOT.kRed,"VV":"kYellow"}
             self.histoGramPerSample = {"dy":"dy","ttbar_2l":"ttbar","ww":"VV","wz":"VV","zz":"VV"}
-            self.histoGramOrder = ["dy",,"VV","ttbar"]
+            self.histoGramOrder = ["dy","VV","ttbar"]
             self.histNameInLegend = {"dy":"DY","ttbar":"t#bar{t}","VV":"VV"}
             if era == "2018":
                 if lepton == "muon":
