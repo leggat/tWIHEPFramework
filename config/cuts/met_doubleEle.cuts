@@ -18,12 +18,12 @@ Cut.Electron.Tight.Number.Max:  0
 Cut.Electron.Tight.LeadingPt:  26
 Cut.Electron.Tight.SubLeadingPt:  20
 ################# MetEle cuts #####################
-CutElectron.MetEle.Number.Min: 2
-CutElectron.MetEle.Number.Max: 2
+Cut.Electron.MetEle.Number.Min: 2
+Cut.Electron.MetEle.Number.Max: 2
 ################ Di-Electron Cuts #########################
-Cut.DiElectron.MetMu.DR.Min:  0.3                          
-Cut.DiElectron.MetMu.Mass.Min: 80                          
-Cut.DiElectron.MetMu.Mass.Max: 100                         
+Cut.DiElectron.MetEle.DR.Min:  0.3                          
+Cut.DiElectron.MetEle.Mass.Min: 80                          
+Cut.DiElectron.MetEle.Mass.Max: 100                         
 ################# Veto Electron Cuts #########################
 # Number of Electrons
 Cut.Electron.Veto.Number.Min:  0
