@@ -44,11 +44,13 @@ using namespace std;
  * Input:  Particle class                                                     *
  * Output: None                                                               *
  ******************************************************************************/
-EventWeight_nanoAOD::EventWeight_nanoAOD(EventContainer *EventContainerObj,Double_t TotalMCatNLOEvents,const std::string& MCtype, Bool_t pileup, Bool_t bWeight, Bool_t useLeptonSFs, Bool_t usebTagReshape, Bool_t doIterFitbTag, Bool_t verbose ):
+EventWeight_nanoAOD::EventWeight_nanoAOD(EventContainer *EventContainerObj,Double_t TotalMCatNLOEvents,const std::string& MCtype, Bool_t pileup, Bool_t bWeight, Bool_t useLeptonSFs, Bool_t usebTagReshape, Bool_t doIterFitbTag, Bool_t verbose, TString muonsToUse, TString electronsToUse ):
   _useLeptonSFs(useLeptonSFs),
   _usebTagReshape(usebTagReshape),
   _verbose(verbose),
-  _doIterFitbTag(doIterFitbTag)
+  _doIterFitbTag(doIterFitbTag),
+  _muonsForLepWeight(muonsToUse),
+  _electronsForLepWeight(electronsToUse)
 {
 
   TEnv* conf = EventContainerObj -> GetConfig();
@@ -558,7 +560,7 @@ std::tuple<Double_t,Double_t,Double_t,Double_t,Double_t,Double_t> EventWeight_na
   Double_t leptonWeight = 1.0, leptonWeightUp = 1.0, leptonWeightDown = 1.0;
   Double_t triggerWeight = 1.0, triggerWeightUp = 1.0, triggerWeightDown = 1.0;
 
-  for (auto const & muon : *EventContainerObj->muonsToUsePtr){
+  for (auto const & muon : EventContainerObj->GetMuonCollection(_muonsForLepWeight)){
     //Get the bin shared by iso and id SFs
     Int_t xAxisBin,yAxisBin,xAxisBinTrig,yAxisBinTrig;
     if (!_isoEtaIsX){
@@ -601,8 +603,8 @@ std::tuple<Double_t,Double_t,Double_t,Double_t,Double_t,Double_t> EventWeight_na
 	if (std::fabs(muon.Eta()) > 2.4) xAxisBinTrig = _muonTrigSF->GetXaxis()->FindBin(2.39);      
       }
       //Get the trigSF
-      Float_t trigSF = _muonTrigSF->GetBinContent(xAxisBinTrig,yAxisBinTrig);
-      Float_t trigUnc = _muonTrigSF->GetBinError(xAxisBinTrig,yAxisBinTrig);
+      trigSF = _muonTrigSF->GetBinContent(xAxisBinTrig,yAxisBinTrig);
+      trigUnc = _muonTrigSF->GetBinError(xAxisBinTrig,yAxisBinTrig);
       if (xAxisBinTrig < 0 || yAxisBinTrig < 0){
 	trigSF = 1.;
       trigUnc = 0.;
@@ -617,13 +619,13 @@ std::tuple<Double_t,Double_t,Double_t,Double_t,Double_t,Double_t> EventWeight_na
     leptonWeightUp *= (isoSF + isoUnc) * (idSF + idUnc) * tkSF;
     leptonWeightDown *= (isoSF - isoUnc) * (idSF - idUnc) * tkSF;
 
-    triggerWeight = trigSF;
-    triggerWeightUp = trigSF + trigUnc;
-    triggerWeightDown = trigSF - trigUnc;
+    triggerWeight *= trigSF;
+    triggerWeightUp *= trigSF + trigUnc;
+    triggerWeightDown *= trigSF - trigUnc;
 
   }
 
- for (auto const & ele : *EventContainerObj->electronsToUsePtr){
+  for (auto const & ele : EventContainerObj->GetElectronCollection(_electronsForLepWeight)){
     //Get which bins we're in need of for the reco SF
     Int_t xAxisBin = _eleRecoSF->GetXaxis()->FindBin(ele.scEta());
     if (ele.scEta() > 2.5) xAxisBin = _eleRecoSF->GetXaxis()->FindBin(2.49);

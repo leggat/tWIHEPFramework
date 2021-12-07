@@ -290,6 +290,7 @@ void EventContainer::Initialize( EventTree* eventTree, nanoAODTree* nanoAODTree,
   electrons.clear();
   tightElectrons.clear();
   vetoElectrons.clear();
+  metElectrons.clear();
   ptetaElectrons.clear();
   isolatedElectrons.clear();
   unIsolatedElectrons.clear();
@@ -442,6 +443,7 @@ void EventContainer::SetupObjectDefinitions(){
   newElectron.SetCuts(GetConfig(),"Tight");
   newElectron.SetCuts(GetConfig(),"All");
   newElectron.SetCuts(GetConfig(),"Veto");
+  newElectron.SetCuts(GetConfig(),"MetEle");
   newElectron.SetCuts(GetConfig(),"UnIsolated");
 
   newJet.SetCuts(GetConfig());
@@ -559,6 +561,7 @@ Int_t EventContainer::ReadEvent()
   // Reset all of the particle vectors
   electrons.clear();
   tightElectrons.clear();
+  metElectrons.clear();
   vetoElectrons.clear();
   ptetaElectrons.clear();
   isolatedElectrons.clear();
@@ -727,14 +730,15 @@ Int_t EventContainer::ReadEvent()
 
 
     /////////Gen///////
-    for (Int_t io = 0; io < _nanoAODTree->nGenPart; io++) {
-      //cout<<"Begin of gen fill event"<<endl;
-      newGenPart.Clear();
-      useObj=newGenPart.Fill(_nanoAODTree, io,isSimulation);
-      genparts.push_back(newGenPart);
-      //cout<<"End of gen fill event"<<endl;
+    if (isSimulation){
+      for (Int_t io = 0; io < _nanoAODTree->nGenPart; io++) {
+	//cout<<"Begin of gen fill event"<<endl;
+	newGenPart.Clear();
+	useObj=newGenPart.Fill(_nanoAODTree, io,isSimulation);
+	genparts.push_back(newGenPart);
+	//cout<<"End of gen fill event"<<endl;
+      }
     }
-      
       ////
       
     ///////////////////////////////////////////                          
@@ -750,8 +754,11 @@ Int_t EventContainer::ReadEvent()
       }                                                                  
       if (newElectron.isTightEle()) {
         tightElectrons.push_back(newElectron);                           
-      }                                                                  
-    if(newElectron.isVetoEle()) {                                                       
+      }                 
+      if (newElectron.isMetEle()) {
+	metElectrons.push_back(newElectron);
+      }
+      if(newElectron.isVetoEle()) {                                                       
         vetoElectrons.push_back(newElectron);                            
       }                                                                  
     } //for                                    
@@ -1295,6 +1302,22 @@ std::vector<Muon> EventContainer::GetMuonCollection(TString muonType){
   return vec;
 }
 
+std::vector<Electron> EventContainer::GetElectronCollection(TString electronType){
+  std::vector<Electron> vec;
+  if(      ! electronType.CompareTo("Veto") )         return vetoElectrons;
+  else if( ! electronType.CompareTo("Tight") )        return tightElectrons;
+  else if( ! electronType.CompareTo("PtEtaCut") )     return ptetaElectrons;
+  else if( ! electronType.CompareTo("UnIsolated") )   return unIsolatedElectrons;
+  else if( ! electronType.CompareTo("Isolated") )     return isolatedElectrons;
+  else if( ! electronType.CompareTo("MetEle") )       return metElectrons;
+  else if( ! electronType.CompareTo("All") )          return electrons;
+  else{
+    std::cout << "ERROR in getting electron collection of type: " << electronType.Data() << std::endl;;;
+
+  }
+  return vec;
+}
+
 //A way to check that your choice of particle and collection is valid
 Bool_t EventContainer::IsValidCollection(TString particleName, TString collectionName){
 
@@ -1312,6 +1335,18 @@ Bool_t EventContainer::IsValidCollection(TString particleName, TString collectio
       exit(8);
     }
   }
+  else if (!particleName.CompareTo("Electron") ){
+    if ( ! ( collectionName.CompareTo("All")        && collectionName.CompareTo("Veto")     &&
+	     collectionName.CompareTo("Tight")      && collectionName.CompareTo("Isolated") &&
+	     collectionName.CompareTo("UnIsolated") && collectionName.CompareTo("PtEtaCut") &&
+	     collectionName.CompareTo("MetEle") ) ){
+      returnValue = kTRUE;
+    }
+    else {
+      std::cout << "Electron collection "<< collectionName << " not valid!" << std::endl;
+      exit(8);
+    }
+  }
 
   return returnValue;
 
@@ -1322,6 +1357,11 @@ void EventContainer::SetObjectIsTrigger(TString particleName, TString collection
   if (particleName == "Muon"){
     if (collectionName == "MetMu") {
       metMuons[index].SetisTriggerMatchedMu();
+    }
+  }
+  else if (particleName == "Electron"){
+    if (collectionName == "MetEle") {
+      metElectrons[index].SetisTriggerMatchedEle();
     }
   }
   //std::cout << "after "<< metMuons.size() << std::endl;

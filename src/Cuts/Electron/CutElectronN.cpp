@@ -40,13 +40,8 @@ using namespace std;
  ******************************************************************************/
 CutElectronN::CutElectronN(EventContainer *EventContainerObj, TString electronTypePassed)
 {
-  // Check electronType parameter
-  if( electronTypePassed.CompareTo("All") && electronTypePassed.CompareTo("UnIsolated") && electronTypePassed.CompareTo("Isolated") && 
-      electronTypePassed.CompareTo("Tight") && electronTypePassed.CompareTo("PtEtaCut") && electronTypePassed.CompareTo("Veto") ){
-    std::cout << "ERROR " << "<CutElectronN::CutElectronN()> " 
-	      << "Must pass Tight, PtEtaCut, Veto, All, UnIsolated, or Isolated to constructor" << std::endl;
-    exit(8);
-  } //if
+  EventContainerObj->IsValidCollection("Electron",electronTypePassed);
+
   electronType = electronTypePassed;
 
   // Set Event Container
@@ -204,17 +199,9 @@ Bool_t CutElectronN::Apply()
   // Get Event Container
   EventContainer *EventContainerObj = GetEventContainer();
 
+  ElectronNumber = (EventContainerObj->GetElectronCollection(electronType)).size();
+
   // Get variables from EventContainerObj - Depens on electron Type
-  if(      ! electronType.CompareTo("Veto") )       ElectronNumber = EventContainerObj -> vetoElectrons.size();
-  else if( ! electronType.CompareTo("Tight") )      ElectronNumber = EventContainerObj -> tightElectrons.size();
-  else if( ! electronType.CompareTo("PtEtaCut") )   ElectronNumber = EventContainerObj -> ptetaElectrons.size();
-  else if( ! electronType.CompareTo("UnIsolated") ) ElectronNumber = EventContainerObj -> unIsolatedElectrons.size();
-  else if( ! electronType.CompareTo("Isolated") )   ElectronNumber = EventContainerObj -> isolatedElectrons.size();
-  else if( ! electronType.CompareTo("All") )        ElectronNumber = EventContainerObj -> electrons.size();
-  else{
-    std::cout << "ERROR " << "<CutElectronN::Apply()> " << "electronType has an incorrect value of: " << electronType.Data() << std::endl;
-    exit(8);
-  } //else
 
   // Fill the histograms before the cuts
   _hElectronNumberBefore    -> Fill(ElectronNumber);

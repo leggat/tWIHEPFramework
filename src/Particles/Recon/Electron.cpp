@@ -41,7 +41,7 @@ ClassImp(Electron)
  * Input:  None                                                               *
  * Output: None                                                               *
  ******************************************************************************/
-Electron::Electron() : Particle::Particle(),_passVetoId(0), _passLooseId(0), _passMediumId(0), _passTightId(0), _passHEEPId(0), _passConversionVeto(0), _expectedMissingInnerHits(0), _patElectron_d0(0.0),  _patElectron_dz(0.0),  _isoChargedHadrons(0.0),  _isoNeutralHadrons(0.0), _isoPhotons(0.0),  _isoPU(0.0), _charge(0.0), _scEta(0.0), _inCrack(0), _sigmaEtaEta(0.), _dEtaInSeed(0.), _dPhiIn(0.), _hOverE(0.), _ooEmooP(0.), _relIsoPFRhoEA(0.), _relIsoPFBeta(0.), _missingHits(0.)
+Electron::Electron() : Particle::Particle(),_passVetoId(0), _passLooseId(0), _passMediumId(0), _passTightId(0), _passHEEPId(0), _passConversionVeto(0), _expectedMissingInnerHits(0), _patElectron_d0(0.0),  _patElectron_dz(0.0),  _isoChargedHadrons(0.0),  _isoNeutralHadrons(0.0), _isoPhotons(0.0),  _isoPU(0.0), _charge(0.0), _scEta(0.0), _inCrack(0), _sigmaEtaEta(0.), _dEtaInSeed(0.), _dPhiIn(0.), _hOverE(0.), _ooEmooP(0.), _relIsoPFRhoEA(0.), _relIsoPFBeta(0.), _missingHits(0.), _isTightEle(kFALSE), _isVetoEle(kFALSE), _isUnIsolatedEle(kFALSE), _isMetEle(kFALSE), _isTriggerMatchedEle(kFALSE), _mvaFall17V2Iso_WP90(kFALSE)
 {
 } //Electron()
 
@@ -91,7 +91,13 @@ _isoPhotons(other.GetisoPhotons()),
 					   _ooEmooP(other.ooEmooP()), 
 					   _relIsoPFRhoEA(other.relIsoPFRhoEA()), 
   _relIsoPFBeta(other.relIsoPFBeta()),
-					   _missingHits(other.missingHits())
+  _missingHits(other.missingHits()),
+  _isTightEle(other.isTightEle()),
+  _isVetoEle(other.isVetoEle()),
+  _isUnIsolatedEle(other.isUnIsolatedEle()),
+  _isMetEle(other.isMetEle()),
+  _isTriggerMatchedEle(other.isTriggerMatchedEle()),
+  _mvaFall17V2Iso_WP90(other.mvaFall17V2Iso_WP90())
 {
 } //Electron()
 
@@ -103,7 +109,7 @@ _isoPhotons(other.GetisoPhotons()),
  * Input:  Particle                                                           *
  * Output: None                                                               *
  ******************************************************************************/
-Electron::Electron(const Particle& other) : Particle(other),_passVetoId(0), _passLooseId(0), _passMediumId(0), _passTightId(0), _passHEEPId(0), _passConversionVeto(0), _expectedMissingInnerHits(0), _patElectron_d0(0.0),  _patElectron_dz(0.0),  _isoChargedHadrons(0.0),  _isoNeutralHadrons(0.0), _isoPhotons(0.0),  _isoPU(0.0), _charge(0.0), _scEta(0.0), _inCrack(0), _sigmaEtaEta(0.), _dEtaInSeed(0.), _dPhiIn(0.), _hOverE(0.), _ooEmooP(0.), _relIsoPFRhoEA(0.), _relIsoPFBeta(0.),_missingHits(0.)
+Electron::Electron(const Particle& other) : Particle(other),_passVetoId(0), _passLooseId(0), _passMediumId(0), _passTightId(0), _passHEEPId(0), _passConversionVeto(0), _expectedMissingInnerHits(0), _patElectron_d0(0.0),  _patElectron_dz(0.0),  _isoChargedHadrons(0.0),  _isoNeutralHadrons(0.0), _isoPhotons(0.0),  _isoPU(0.0), _charge(0.0), _scEta(0.0), _inCrack(0), _sigmaEtaEta(0.), _dEtaInSeed(0.), _dPhiIn(0.), _hOverE(0.), _ooEmooP(0.), _relIsoPFRhoEA(0.), _relIsoPFBeta(0.),_missingHits(0.), _isTightEle(kFALSE), _isVetoEle(kFALSE), _isUnIsolatedEle(kFALSE), _isMetEle(kFALSE), _isTriggerMatchedEle(kFALSE), _mvaFall17V2Iso_WP90(kFALSE)
 { 
 } //Electron()
 
@@ -176,6 +182,12 @@ Electron& Electron::operator=(const Particle& other)
   SetRelIsoPFRhoEA(0.);
   SetRelIsoPFBeta(0.);
   SetMissingHits(0);
+  SetisTightEle(kFALSE);
+  SetisVetoEle(kFALSE);
+  SetisUnIsolatedEle(kFALSE);
+  SetisMetEle(kFALSE);
+  SetisTriggerMatchedEle(kFALSE);
+  SetmvaFall17V2Iso_WP90(kFALSE);
 
   return *this;
 } // = Particle
@@ -216,6 +228,13 @@ Electron& Electron::operator=(const Electron& other)
   SetRelIsoPFRhoEA(other.relIsoPFRhoEA());
   SetRelIsoPFBeta(other.relIsoPFBeta());
   SetMissingHits(other.missingHits());
+  SetisTightEle(other.GetisTightEle());
+  SetisVetoEle(other.GetisVetoEle());
+  SetisUnIsolatedEle(other.GetisUnIsolatedEle());
+  SetisMetEle(other.GetisMetEle());
+  SetisTriggerMatchedEle(other.GetisTriggerMatchedEle());
+  SetmvaFall17V2Iso_WP90(other.GetmvaFall17V2Iso_WP90());
+
   return *this;
 } //= const Electron
 
@@ -255,6 +274,12 @@ Electron& Electron::operator=(Electron& other)
   SetRelIsoPFRhoEA(other.relIsoPFRhoEA());
   SetRelIsoPFBeta(other.relIsoPFBeta());
   SetMissingHits(other.missingHits());
+  SetisTightEle(other.GetisTightEle());
+  SetisVetoEle(other.GetisVetoEle());
+  SetisUnIsolatedEle(other.GetisUnIsolatedEle());
+  SetisMetEle(other.GetisMetEle());
+  SetisTriggerMatchedEle(other.GetisTriggerMatchedEle());
+  SetmvaFall17V2Iso_WP90(other.GetmvaFall17V2Iso_WP90());
   return *this;
 } //= non-const Electron
 
@@ -269,14 +294,20 @@ Electron& Electron::operator=(Electron& other)
  ******************************************************************************/
 void Electron::SetCuts(TEnv* config, TString electronType)
 {
-  _maxEtaCuts[electronType] =    config -> GetValue("ObjectID.Electron." + electronType + ".MaxEta", 100.);
-  _minPtCuts[electronType] =   	 config -> GetValue("ObjectID.Electron." + electronType + ".MinPt", 0.);
-  _minEtaGapCuts[electronType] = config -> GetValue("ObjectID.Electron." + electronType + ".MinEtaGap", 100.);
-  _maxEtaGapCuts[electronType] = config -> GetValue("ObjectID.Electron." + electronType + ".MaxEtaGap", -100.);
-  _dZCutEndcap[electronType] = config -> GetValue("ObjectID.Electron." + electronType + ".dZEndcap", 100.);
-  _dZCutBarrel[electronType] = config -> GetValue("ObjectID.Electron." + electronType + ".dZBarrel", 100.);
-  _d0CutEndcap[electronType] = config -> GetValue("ObjectID.Electron." + electronType + ".d0Endcap", 100.);
-  _d0CutBarrel[electronType] = config -> GetValue("ObjectID.Electron." + electronType + ".d0Barrel", 100.);
+  _maxEtaCuts[electronType] =     config -> GetValue("ObjectID.Electron." + electronType + ".MaxEta",        100.);
+  _minPtCuts[electronType] =   	  config -> GetValue("ObjectID.Electron." + electronType + ".MinPt",           0.);
+  _minEtaGapCuts[electronType] =  config -> GetValue("ObjectID.Electron." + electronType + ".MinEtaGap",     100.);
+  _maxEtaGapCuts[electronType] =  config -> GetValue("ObjectID.Electron." + electronType + ".MaxEtaGap",    -100.);
+  _dZCutEndcap[electronType] =    config -> GetValue("ObjectID.Electron." + electronType + ".dZEndcap",      100.);
+  _dZCutBarrel[electronType] =    config -> GetValue("ObjectID.Electron." + electronType + ".dZBarrel",      100.);
+  _d0CutEndcap[electronType] =    config -> GetValue("ObjectID.Electron." + electronType + ".d0Endcap",      100.);
+  _d0CutBarrel[electronType] =    config -> GetValue("ObjectID.Electron." + electronType + ".d0Barrel",      100.);
+  _minMissingHits[electronType] = config -> GetValue("ObjectID.Electron." + electronType + ".minMissingHits",  0.);
+  _maxMissingHits[electronType] = config -> GetValue("ObjectID.Electron." + electronType + ".maxMissingHits", 20.);
+  _minRelIso[electronType] =      config -> GetValue("ObjectID.Electron." + electronType + ".minRelIso",       0.);
+  _maxRelIso[electronType] =      config -> GetValue("ObjectID.Electron." + electronType + ".maxRelIso",     100.);
+
+  
 
 } // End SetCuts
 
@@ -299,6 +330,8 @@ Bool_t Electron::Fill(nanoAODTree *evtr, Int_t iE, Bool_t isSimulation)
 
   SetPtEtaPhiM(elPt, elEta, elPhi, elM);
 
+  SetSCeta   ( elEta ); //For the gap cut
+
   SetCharge             ( evtr -> Electron_charge [iE] );
 
   //Cut based ID. Can be changed to MVA if required.
@@ -309,14 +342,19 @@ Bool_t Electron::Fill(nanoAODTree *evtr, Int_t iE, Bool_t isSimulation)
   SetpassMediumId       ( idBit > 2 );
   SetpassTightId        ( idBit > 3 );
 
+  SetmvaFall17V2Iso_WP90 ( evtr -> Electron_mvaFall17V2Iso_WP90 [iE] );
   
   SetpassHEEPId         ( evtr -> Electron_cutBased_HEEP   [iE] );
   SetpatElectron_d0     ( evtr -> Electron_dxy             [iE] );
   SetpatElectron_dz     ( evtr -> Electron_dz              [iE] );
+  SetMissingHits        ( evtr -> Electron_lostHits        [iE] );
+  SetRelIsoPFRhoEA      ( evtr -> Electron_pfRelIso03_all  [iE] );
+  SetpassConversionVeto ( evtr -> Electron_convVeto        [iE] );
 
   SetisTightEle      ( ApplyCuts ( "Tight"      ) );
   SetisVetoEle       ( ApplyCuts ( "Veto"       ) );
   SetisUnIsolatedEle ( ApplyCuts ( "UnIsolated" ) );
+  SetisMetEle        ( ApplyCuts ( "MetEle"     ) );
 
   return kTRUE;
 
@@ -459,12 +497,13 @@ Bool_t Electron::ApplyCuts(TString electronType){
   // Pt and Eta Cuts
   // **************************************************************
   // If event passes or fails requirements
-  Bool_t passMinPt      = kTRUE;
-  Bool_t passMaxEta     = kTRUE;
-  Bool_t passTight      = kTRUE;
-  Bool_t passUnIsolated = kTRUE;
-  Bool_t passd0dZ       = kTRUE;
-
+  Bool_t passMinPt       = kTRUE;
+  Bool_t passMaxEta      = kTRUE;
+  Bool_t passTight       = kTRUE;
+  Bool_t passUnIsolated  = kTRUE;
+  Bool_t passd0dZ        = kTRUE;
+  Bool_t passMissingHits = kTRUE;
+  Bool_t passRelIsoCuts  = kTRUE;
 
   // Test requirements
   if(Pt() <= _minPtCuts[electronType])               passMinPt      = kFALSE;
@@ -476,6 +515,8 @@ Bool_t Electron::ApplyCuts(TString electronType){
   if(TMath::Abs(Eta()) < 1.4442) passd0dZ = ((GetpatElectron_d0() < _d0CutBarrel[electronType]) && (GetpatElectron_dz() < _dZCutBarrel[electronType])); //barrel
   else passd0dZ = ((GetpatElectron_d0() < _d0CutEndcap[electronType]) && (GetpatElectron_dz() < _dZCutEndcap[electronType])); //endcap
 
+  //Missing hit cut
+  passMissingHits = ((missingHits() <= _maxMissingHits[electronType]) && (missingHits() >= _minMissingHits[electronType]));
 
 
   // **************************************************************
@@ -487,6 +528,12 @@ Bool_t Electron::ApplyCuts(TString electronType){
   // Test requirements and set variable
   if( (TMath::Abs(scEta()) >= _minEtaGapCuts[electronType]) && (TMath::Abs(scEta()) <= _maxEtaGapCuts[electronType]) ) passNoGapElectron = kFALSE;
 
+
+  // **************************************************************
+  // Isolation cuts                                                
+  // **************************************************************
+  passRelIsoCuts = ((relIsoPFRhoEA() <= _maxRelIso[electronType]) && (relIsoPFRhoEA() >= _minRelIso[electronType]));
+
   
   // **************************************************************
   // Return value according to electron type passed to Fill
@@ -495,6 +542,7 @@ Bool_t Electron::ApplyCuts(TString electronType){
   if ( electronType == "Tight"      ) return ( passMinPt && passMaxEta && passTight && passNoGapElectron && passd0dZ);
   if ( electronType == "Veto"       ) return ( passMinPt && passMaxEta);//no tight or isolation req.
   if ( electronType == "UnIsolated" ) return ( passMinPt && passMaxEta && passUnIsolated && passNoGapElectron && passd0dZ);
+  if ( electronType == "MetEle"     ) return ( passMinPt && passMaxEta && passNoGapElectron && passd0dZ && passMissingHits && mvaFall17V2Iso_WP90() && passConversionVeto() && passRelIsoCuts);
 
   return kTRUE;
   

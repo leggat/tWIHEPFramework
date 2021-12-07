@@ -266,6 +266,13 @@ class EventContainer
   //Use this to make sure that various bits of code will use the met muons 
   inline void SetUseMetMuons(const Bool_t& a = true){muonsToUsePtr = &metMuons;};
 
+  //Allow the setting and getting of the nominal particle collection names
+  inline void SetNominalMuonCollection(TString muonCollectionName = "Tight"){nominalMuons=muonCollectionName;};
+  std::vector<Muon> GetNominalMuonCollection() {return GetMuonCollection(nominalMuons);}
+
+  inline void SetNominalElectronCollection(TString electronCollectionName = "Tight"){nominalElectrons=electronCollectionName;};
+  std::vector<Electron> GetNominalElectronCollection() {return GetElectronCollection(nominalElectrons);};
+
   // Set the global event weight
   inline void SetGlobalEventWeight(const Double_t& wt) { _globalEventWeight=wt; };
   // set the output event weight.
@@ -470,7 +477,9 @@ class EventContainer
 
   inline std::vector<std::vector<std::string> > GetJetResObj(){return _resolution;};
 
+  //Get the various different collections
   std::vector<Muon> GetMuonCollection(TString muonType);
+  std::vector<Electron> GetElectronCollection(TString electronType);
 
   Bool_t IsValidCollection(TString particleName, TString collectionName);
 
@@ -570,6 +579,7 @@ class EventContainer
   std::vector<Electron>   electrons;
   std::vector<Electron>   tightElectrons;
   std::vector<Electron>   vetoElectrons;
+  std::vector<Electron>   metElectrons;
   std::vector<Electron>   ptetaElectrons;
   std::vector<Electron>   isolatedElectrons;
   std::vector<Electron>   unIsolatedElectrons;
@@ -602,6 +612,10 @@ class EventContainer
   //Pointers to collections
   std::vector<Electron> * electronsToUsePtr;
   std::vector<Muon>     * muonsToUsePtr;
+
+  //Names of nominal collections
+  TString nominalMuons;
+  TString nominalElectrons;
 
   std::vector<TLorentzVector>      jetmsSpecial;//MET tool
   

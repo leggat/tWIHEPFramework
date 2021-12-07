@@ -48,11 +48,13 @@ CutJsonFilter::CutJsonFilter(EventContainer *EventContainerObj)
     TString processString = readLine;
     TString segment;
     Ssiz_t from = 0;
+    //    std::cout << processString << std::endl;
     while(processString.Tokenize(segment,from,", \"")){
+      //      std::cout << "Processed..." << std::endl;
       TObjArray *mapItem = segment.Tokenize("\"");
       Int_t key = (((TObjString *)(mapItem->At(0)))->String()).Atoi();
       TString value = ((TObjString *)(mapItem->At(1)))->String();
-      TObjArray *values = value.Tokenize("[], :");
+      TObjArray *values = value.Tokenize("[], :}");
       std::vector<Int_t> valueVec;
       for (Int_t i = 0; i < values->GetEntries(); i++){
 	valueVec.push_back( (((TObjString *)(values->At(i)))->String()).Atoi());

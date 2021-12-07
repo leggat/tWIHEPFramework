@@ -39,13 +39,9 @@ using namespace std;
 HistogrammingElectron::HistogrammingElectron(EventContainer *obj, TString electronTypePassed, Bool_t unisolated)
 {
   _unisolated = unisolated;
-  // Check electronType parameter
-  if( electronTypePassed.CompareTo("All") && electronTypePassed.CompareTo("Isolated") && electronTypePassed.CompareTo("UnIsolated") &&
-      electronTypePassed.CompareTo("Tight") && electronTypePassed.CompareTo("Veto") && electronTypePassed.CompareTo("PtEtaCut") ){
-    std::cout << "ERROR " << "<HistogrammingElectron::HistogrammingElectron()> " 
-              << "Must pass Tight, Veto, or UnIsolated, PtEtaCut to constructor" << std::endl;
-    exit(8);
-  } //if
+
+  obj->IsValidCollection("Electron",electronTypePassed);
+
   electronType = electronTypePassed;
 
   _nTimesRun = 0;
@@ -254,19 +250,9 @@ Bool_t HistogrammingElectron::Apply()
   EventContainer *evc = GetEventContainer();
   
   // Electrons class depends on 
-  std::vector<Electron> electronVector;
-  if(     "All"        == electronType) electronVector.assign(evc -> electrons.begin(),           evc -> electrons.end());
-  else if("Veto"       == electronType) electronVector.assign(evc -> vetoElectrons.begin(),       evc -> vetoElectrons.end());
-  else if("PtEtaCut"   == electronType) electronVector.assign(evc -> ptetaElectrons.begin(),      evc -> ptetaElectrons.end());
-  else if("Tight"      == electronType) electronVector.assign(evc -> tightElectrons.begin(),      evc -> tightElectrons.end());
-  else if("Isolated"   == electronType) electronVector.assign(evc -> isolatedElectrons.begin(),   evc -> isolatedElectrons.end());
-  else if("UnIsolated" == electronType) electronVector.assign(evc -> unIsolatedElectrons.begin(), evc -> unIsolatedElectrons.end());
-  else{
-    std::cout << "ERROR " << "<HistogramminElectron::Apply()> " 
-	      << "electronType must be All, Tight, Isolated, UnIsolated, or Veto, PtEtaCut" << std::endl;
-    exit(8);
-  } //else
+  std::vector<Electron> electronVector = evc->GetElectronCollection(electronType);
 
+  //Legacy support for tW analysis
   if ("Tight" == electronType && _unisolated) electronVector = evc->unIsolatedElectrons;
 
   // Fill Histograms

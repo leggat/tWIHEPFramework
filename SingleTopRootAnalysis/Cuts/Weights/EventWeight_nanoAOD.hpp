@@ -44,7 +44,7 @@ class EventWeight_nanoAOD : public HistoCut
 public:
 
   // Parameterized Constructor
-  EventWeight_nanoAOD(EventContainer *obj, Double_t TotalMCatNLOEvents = 0,const std::string& MCtype="none", Bool_t pileup = false, Bool_t bWeight = false, Bool_t useLeptonSFs = kFALSE, Bool_t usebTagReshape = kFALSE, Bool_t doIterFitbTag = kTRUE, Bool_t verbose = kFALSE);
+  EventWeight_nanoAOD(EventContainer *obj, Double_t TotalMCatNLOEvents = 0,const std::string& MCtype="none", Bool_t pileup = false, Bool_t bWeight = false, Bool_t useLeptonSFs = kFALSE, Bool_t usebTagReshape = kFALSE, Bool_t doIterFitbTag = kTRUE, Bool_t verbose = kFALSE, TString muonsForLepWeight = "Tight",TString electronsForLepWeight = "Tight");
   
   // Default Destructor
   ~EventWeight_nanoAOD();
@@ -102,6 +102,9 @@ private:
   Double_t _totalMCatNLOEvents;
   BTagCalibration _bTagCalib;
   BTagCalibrationReader _bTagCalibReader;
+
+  TString _muonsForLepWeight;
+  TString _electronsForLepWeight;
 
   //Histograms that are used for applying scale factors to leptons
   TH2F* _muonIsoSF;

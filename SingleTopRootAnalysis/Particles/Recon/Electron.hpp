@@ -197,6 +197,19 @@ class Electron: public Particle
   inline Bool_t GetisUnIsolatedEle() const {return _isUnIsolatedEle;};
   inline Bool_t isUnIsolatedEle() const {return _isUnIsolatedEle;};
 
+  inline void SetisMetEle(Bool_t isMetEle){_isMetEle = isMetEle;};
+  inline Bool_t GetisMetEle() const {return _isMetEle;};
+  inline Bool_t isMetEle() const {return _isMetEle;};
+
+  inline void SetisTriggerMatchedEle(Bool_t isTriggerMatchedEle = kTRUE){_isTriggerMatchedEle = isTriggerMatchedEle;};
+  inline Bool_t GetisTriggerMatchedEle() const {return _isTriggerMatchedEle;};
+  inline Bool_t isTriggerMatchedEle() const {return _isTriggerMatchedEle;};
+
+  inline void SetmvaFall17V2Iso_WP90(Bool_t mvaFall17V2Iso_WP90){_mvaFall17V2Iso_WP90 = mvaFall17V2Iso_WP90;};
+  inline Bool_t GetmvaFall17V2Iso_WP90() const {return _mvaFall17V2Iso_WP90;};
+  inline Bool_t mvaFall17V2Iso_WP90() const {return _mvaFall17V2Iso_WP90;};
+
+
 
   double get_effarea(double eta);
 
@@ -209,6 +222,7 @@ class Electron: public Particle
   Int_t _passUnIsolatedId;
   Int_t _passHEEPId;
   Int_t _passConversionVeto;
+  Bool_t _mvaFall17V2Iso_WP90;
 
   Int_t _expectedMissingInnerHits;
 
@@ -222,9 +236,12 @@ class Electron: public Particle
   Double_t _scEta;
   Int_t _inCrack;
 
+
   Bool_t _isTightEle;
   Bool_t _isVetoEle;
   Bool_t _isUnIsolatedEle;
+  Bool_t _isMetEle;
+  Bool_t _isTriggerMatchedEle;
 
   //The ID values
   Double_t _sigmaEtaEta;
@@ -248,6 +265,10 @@ class Electron: public Particle
   std::map<TString,Double_t> _dZCutBarrel;
   std::map<TString,Double_t> _d0CutEndcap;
   std::map<TString,Double_t> _d0CutBarrel;
+  std::map<TString,Int_t>    _minMissingHits;
+  std::map<TString,Int_t>    _maxMissingHits;
+  std::map<TString,Double_t> _minRelIso;
+  std::map<TString,Double_t> _maxRelIso;
   
   //Apply the cuts 
   Bool_t ApplyCuts(TString electronType = "");
