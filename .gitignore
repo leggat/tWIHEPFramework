@@ -23,3 +23,5 @@ utils/bkgFit/logs/
 config/weights/jsonWeights/
 *~
 *pyc
+lib/
+obj/
