@@ -38,6 +38,38 @@ datasetsAllYears = {"2018":[
 "doubleEG_2017d",
 "doubleEG_2017e",
 "doubleEG_2017f",
+],
+"2016":[
+"ww",
+"wz",
+"zz",
+"ttbar_2l",
+"dy",
+"doubleMu_2016f",
+"doubleMu_2016g",
+"doubleMu_2016h",
+"doubleEG_2016f",
+"doubleEG_2016g",
+"doubleEG_2016h"
+],
+"2016APV":[
+"ww",
+"wz",
+"zz",
+"ttbar_2l",
+"dy",
+"doubleMu_2016b_v1",
+"doubleMu_2016b_v2",
+"doubleMu_2016c",
+"doubleMu_2016d",
+"doubleMu_2016e",
+"doubleMu_2016f_hipm",
+"doubleEG_2016b_v1",
+"doubleEG_2016b_v2",
+"doubleEG_2016c",
+"doubleEG_2016d",
+"doubleEG_2016e",
+"doubleEG_2016f_hipm",
 ]
 }
 
@@ -74,8 +106,39 @@ datasetIDAllYears = {"2018":{
 "doubleEG_2017d":400107,
 "doubleEG_2017e":400108,
 "doubleEG_2017f":400109
+},
+"2016":{
+"dy":600200,
+"ttbar_2l":600201,
+"ww":600202,
+"wz":600203,
+"zz":600204,
+"doubleMu_2016f":400200,
+"doubleMu_2016g":400201,
+"doubleMu_2016h":400202,
+"doubleEG_2016f":400203,
+"doubleEG_2016g":400204,
+"doubleEG_2016h":400205
+},
+"2016APV":{
+"ww":600302,
+"wz":600303,
+"zz":600304,
+"ttbar_2l":600301,
+"dy":600300,
+"doubleMu_2016b_v1":400300,
+"doubleMu_2016b_v2":400301,
+"doubleMu_2016c":400302,
+"doubleMu_2016d":400303,
+"doubleMu_2016e":400304,
+"doubleMu_2016f_hipm":400305,
+"doubleEG_2016b_v1":400306,
+"doubleEG_2016b_v2":400307,
+"doubleEG_2016c":400308,
+"doubleEG_2016d":400308,
+"doubleEG_2016e":400310,
+"doubleEG_2016f_hipm":400311,
 }
-
 }
 
 #A map of a list of directories containing files to be associated by the sample name
@@ -112,6 +175,42 @@ datasetDirsAllYears = {"2018":{
 "doubleEG_2017e":["/publicfs/cms/data/TopQuark/nanoAOD/2017/data/doubleEG_2017e/"],
 "doubleEG_2017f":["/publicfs/cms/data/TopQuark/nanoAOD/2017/data/doubleEG_2017f/"],
 
+},
+
+"2016":{
+"dy":["/publicfs/cms/data/TopQuark/nanoAOD/2016/mc/dy/"],
+"ww":["/publicfs/cms/data/TopQuark/nanoAOD/2016/mc/ww/"],
+"wz":["/publicfs/cms/data/TopQuark/nanoAOD/2016/mc/wz/"],
+"zz":["/publicfs/cms/data/TopQuark/nanoAOD/2016/mc/zz/"],
+"ttbar_2l":["/publicfs/cms/data/TopQuark/nanoAOD/2016/mc/ttbar_2l/"],
+"doubleMu_2016f":["/publicfs/cms/data/TopQuark/nanoAOD/2016/data/doubleMu_2016f/"],
+"doubleMu_2016g":["/publicfs/cms/data/TopQuark/nanoAOD/2016/data/doubleMu_2016g/"],
+"doubleMu_2016h":["/publicfs/cms/data/TopQuark/nanoAOD/2016/data/doubleMu_2016h/"],
+"doubleEG_2016f":["/publicfs/cms/data/TopQuark/nanoAOD/2016/data/doubleEG_2016f/"],
+"doubleEG_2016g":["/publicfs/cms/data/TopQuark/nanoAOD/2016/data/doubleEG_2016g/"],
+"doubleEG_2016h":["/publicfs/cms/data/TopQuark/nanoAOD/2016/data/doubleEG_2016h/"],
+
+},
+
+"2016APV":{
+"ww":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/mc/ww/"],
+"wz":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/mc/wz/"],
+"zz":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/mc/zz/"],
+"ttbar_2l":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/mc/ttbar_2l/"],
+"dy":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/mc/dy/"],
+"doubleMu_2016b_v1":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/data/doubleMu_2016b_v1/"],
+"doubleMu_2016b_v2":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/data/doubleMu_2016b_v2/"],
+"doubleMu_2016c":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/data/doubleMu_2016c/"],
+"doubleMu_2016d":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/data/doubleMu_2016d/"],
+"doubleMu_2016e":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/data/doubleMu_2016e/"],
+"doubleMu_2016f_hipm":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/data/doubleMu_2016f_hipm/"],
+"doubleEG_2016b_v1":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/data/doubleEG_2016b_v1/"],
+"doubleEG_2016b_v2":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/data/doubleEG_2016b_v2/"],
+"doubleEG_2016c":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/data/doubleEG_2016c/"],
+"doubleEG_2016d":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/data/doubleEG_2016d/"],
+"doubleEG_2016e":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/data/doubleEG_2016e/"],
+"doubleEG_2016f_hipm":["/publicfs/cms/data/TopQuark/nanoAOD/2016APV/data/doubleEG_2016f_hipm/"],
+
 }
 
 #"tW_antitop":["/publicfs/cms/data/TopQuark/cms13TeV/tWlJetSamples/mc/updatedEleJets/ST_tW_antitop_5f_NoFullyHadronicDecays_13TeV-powheg_TuneCUETP8M1/crab_tW_antitop_NFHext1updatedEleJets/180508_154320/0000/","/publicfs/cms/data/TopQuark/cms13TeV/tWlJetSamples/mc/updatedEleJets/ST_tW_antitop_5f_NoFullyHadronicDecays_13TeV-powheg_TuneCUETP8M1/crab_tW_antitop_NFHext2updatedEleJets/180517_145622/0000/","/publicfs/cms/data/TopQuark/cms13TeV/tWlJetSamples/mc/updatedEleJets/ST_tW_antitop_5f_NoFullyHadronicDecays_13TeV-powheg_TuneCUETP8M1/crab_tW_antitop_NFHupdatedEleJets/180508_154202/0000/"],
@@ -121,7 +220,8 @@ datasetDirsAllYears = {"2018":{
 #The number of files to be put into each file list. A smaller number means each condor job will take less time, at the expense of more required jobs
 namesPerFile = 1
 
-for year in ["2018","2017"]:
+for year in ["2018","2017","2016","2016APV"]:
+#for year in ["2016","2016APV"]:
     datasets = datasetsAllYears[year]
     datasetID = datasetIDAllYears[year]
     datasetDirs = datasetDirsAllYears[year]

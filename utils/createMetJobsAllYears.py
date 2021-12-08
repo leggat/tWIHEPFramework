@@ -1,9 +1,12 @@
 import subprocess
 
-years = ["2018","2017"]
-#years = ["2018"]                                                                                                                                                                                                                                                                                                             
+years = ["2018","2017","2016","2016APV"]
+#years = ["2016APV"]
+
 lepton = ["muon", "electron"]
-#lepton = [""]                                                                                                                                                                                                                                                                                                                
+
+#lepton = ["muon"]
+
 data = [""," -d"]
 
 for dataMC in data:

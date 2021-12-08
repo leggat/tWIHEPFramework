@@ -115,7 +115,7 @@ if __name__ == "__main__":
 
         comp = AnalysisComponents(options.compName,lepton=options.lepton,era=options.year)
 
-        analysis = options.baseDirName + options.year[-2:]
+        analysis = options.baseDirName + options.year[2:]
 
         if options.lepton == "electron":
                 analysis+="Ele"

@@ -57,6 +57,35 @@ class AnalysisComponents:
                                         "doubleEG_2017e",
                                         "doubleEG_2017f"
                                         ]
+            if era == "2016":
+                if lepton == "muon":
+                    self.dataSamples = ["doubleMu_2016f",
+                                        "doubleMu_2016g",
+                                        "doubleMu_2016h",
+                                        ]
+                if lepton == "electron":
+                    self.dataSamples = ["doubleEG_2016f",
+                                        "doubleEG_2016g",
+                                        "doubleEG_2016h"
+                                        ]
+            if era == "2016APV":
+                if lepton == "muon":
+                    self.dataSamples = ["doubleMu_2016b_v1",
+                                        "doubleMu_2016b_v2",
+                                        "doubleMu_2016c",
+                                        "doubleMu_2016d",
+                                        "doubleMu_2016e",
+                                        "doubleMu_2016f_hipm",
+                               ]
+                if lepton == "electron":
+                    self.dataSamples = ["doubleEG_2016b_v1",
+                                        "doubleEG_2016b_v2",
+                                        "doubleEG_2016c",
+                                        "doubleEG_2016d",
+                                        "doubleEG_2016e",
+                                        "doubleEG_2016f_hipm"
+                               ]
+
         #Generic ones
         self.xAxisLabels = {
             "lightJet1CSV":"CSV_{light jet 1}",

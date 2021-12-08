@@ -352,6 +352,49 @@ Events.Source.600102: 7889000
 Weight.Source.600103: 12.14
 Events.Source.600103: 2706000
 
+#2016 samples
+
+#600200 = dy 50->
+Weight.Source.600200: 6077.22
+Events.Source.600200: 104072004
+
+#600201 = ttbar_2l
+Weight.Source.600201: 88.29
+Events.Source.600201: 43546000
+
+#600202 = ww
+Weight.Source.600202: 75.8
+Events.Source.600202: 15821000
+
+#600202 = wz
+Weight.Source.600202: 27.6
+Events.Source.600202: 7584000
+
+#600203 = zz
+Weight.Source.600203: 12.14
+Events.Source.600203: 1151000
+
+#2016APV samples
+
+#600300 = dy 50->
+Weight.Source.600300: 6077.22
+Events.Source.600300: 95170542
+
+#600301 = ttbar_2l
+Weight.Source.600301: 88.29
+Events.Source.600301: 37505000
+
+#600302 = ww
+Weight.Source.600302: 75.8
+Events.Source.600302: 15859000
+
+#600302 = wz
+Weight.Source.600302: 27.6
+Events.Source.600302: 7934000
+
+#600303 = zz
+Weight.Source.600303: 12.14
+Events.Source.600303: 1282000
 
 #700000 - systematic samples
 
