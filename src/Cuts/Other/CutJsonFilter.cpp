@@ -43,6 +43,10 @@ CutJsonFilter::CutJsonFilter(EventContainer *EventContainerObj)
   if (jsonInFile){
     std::cout << "Reading in a json filter " << jsonInFile << std::endl;
     std::ifstream cfgfile(jsonInFile);
+    if (!cfgfile.good()){
+      std::cout << "File " << jsonInFile << " not a correct file - please check configuration and JSON file.\nExiting." << std::endl;
+      exit(8);
+    }
     string readLine;
     getline(cfgfile,readLine);
     TString processString = readLine;
@@ -142,6 +146,11 @@ Bool_t CutJsonFilter::Apply(){
 	break;
       }
     }
+  }
+  else {
+    passesJsonFilter = kFALSE;
+    GetCutFlowTable()->FailCut("Json.Filter");
+    return kFALSE;
   }
 
   if (passesJsonFilter){
