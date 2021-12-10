@@ -68,17 +68,21 @@ HistogrammingMETPaper::~HistogrammingMETPaper()
  ******************************************************************************/
 void HistogrammingMETPaper::BookHistogram(){
   
-  Int_t ptBins = 200;
+  Int_t ptBins = 250;
   Float_t minPt = 0.;
-  Float_t maxPt  = 450.;
+  Float_t maxPt  = 500.;
 
   Int_t u_perpBins = 200;
   Float_t min_u_perp = -200.;
   Float_t max_u_perp = 200.;
 
-  Int_t u_parBins = 200;
-  Float_t min_u_par = -200.;
+  Int_t u_parBins = 800;
+  Float_t min_u_par = -600.;
   Float_t max_u_par = 200.;
+
+  Int_t u_par_qtBins = 200;
+  Int_t min_u_par_qt = -200.;
+  Int_t max_u_par_qt = 200.;
 
   Int_t metBins = 200;
   Float_t metMin = 0.;
@@ -89,8 +93,8 @@ void HistogrammingMETPaper::BookHistogram(){
   Float_t metXYMax = 100.;
   
   Int_t phiBins = 100;
-  Float_t phiMin = -TMath::Pi();
-  Float_t phiMax = TMath::Pi();
+  Float_t phiMin = -3.2;
+  Float_t phiMax = 3.2;
 
   Int_t sumEtBins = 200;
   Float_t sumEtMin = 0.;
@@ -100,9 +104,9 @@ void HistogrammingMETPaper::BookHistogram(){
   Float_t sigMin = 0.;
   Float_t sigMax = 50.;
 
-  Int_t vertexBins = 80;
+  Int_t vertexBins = 100;
   Float_t vertexMin = 0.;
-  Float_t vertexMax = 80.;
+  Float_t vertexMax = 100.;
 
   //Histogramming for Z qt
   _hZQt = DeclareTH1F("ZQt","Z qt",ptBins,minPt,maxPt);
@@ -165,7 +169,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hMET_u_par->SetYAxisTitle("Events");
 
     // u_par PF MET + Zqt
-  _hMET_u_parPqt = DeclareTH1F("MET_u_parPqt","u_par of PF MET plus Z qt",u_parBins,min_u_par,max_u_par);
+  _hMET_u_parPqt = DeclareTH1F("MET_u_parPqt","u_par of PF MET plus Z qt",u_par_qtBins,min_u_par_qt,max_u_par_qt);
   _hMET_u_parPqt->SetXAxisTitle("u_{par} + q_{T}[PF MET]");
   _hMET_u_parPqt->SetYAxisTitle("Events");
 
@@ -211,7 +215,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hMET_u_perp_nVtx->SetYAxisTitle("N_{vtx}");
 
   // 2D plot of u_par + Z qt vs nVtx for PF MET
-  _hMET_u_parPqt_nVtx = DeclareTH2F("MET_u_parPqt_nVtx","u_par + Z qt vs nVtx PF MET",u_parBins,min_u_par,max_u_par,vertexBins,vertexMin,vertexMax);
+  _hMET_u_parPqt_nVtx = DeclareTH2F("MET_u_parPqt_nVtx","u_par + Z qt vs nVtx PF MET",u_par_qtBins,min_u_par_qt,max_u_par_qt,vertexBins,vertexMin,vertexMax);
   _hMET_u_parPqt_nVtx->SetXAxisTitle("u_{par} + Z q_T [PF MET][");
   _hMET_u_parPqt_nVtx->SetYAxisTitle("N_{vtx}");
 
@@ -327,7 +331,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hPuppiMET_u_par->SetYAxisTitle("Events");
 
     // u_par PF PuppiMET + Zqt
-  _hPuppiMET_u_parPqt = DeclareTH1F("PuppiMET_u_parPqt","u_par of PF PuppiMET plus Z qt",u_parBins,min_u_par,max_u_par);
+  _hPuppiMET_u_parPqt = DeclareTH1F("PuppiMET_u_parPqt","u_par of PF PuppiMET plus Z qt",u_par_qtBins,min_u_par_qt,max_u_par_qt);
   _hPuppiMET_u_parPqt->SetXAxisTitle("u_{par} + q_{T}[PF PuppiMET]");
   _hPuppiMET_u_parPqt->SetYAxisTitle("Events");
 
@@ -372,7 +376,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hPuppiMET_u_perp_nVtx->SetYAxisTitle("N_{vtx}");
 
   // 2D plot of u_par + Z qt vs nVtx for PuppiMET
-  _hPuppiMET_u_parPqt_nVtx = DeclareTH2F("PuppiMET_u_parPqt_nVtx","u_par + Z qt vs nVtx PuppiMET",u_parBins,min_u_par,max_u_par,vertexBins,vertexMin,vertexMax);
+  _hPuppiMET_u_parPqt_nVtx = DeclareTH2F("PuppiMET_u_parPqt_nVtx","u_par + Z qt vs nVtx PuppiMET",u_par_qtBins,min_u_par_qt,max_u_par_qt,vertexBins,vertexMin,vertexMax);
   _hPuppiMET_u_parPqt_nVtx->SetXAxisTitle("u_{par} + Z q_T [PuppiMET][");
   _hPuppiMET_u_parPqt_nVtx->SetYAxisTitle("N_{vtx}");
 
@@ -419,14 +423,14 @@ void HistogrammingMETPaper::BookHistogram(){
   _hRawMET_u_par->SetYAxisTitle("Events");
 
     // u_par PF RawMET + Zqt
-  _hRawMET_u_parPqt = DeclareTH1F("RawMET_u_parPqt","u_par of PF RawMET plus Z qt",u_parBins,min_u_par,max_u_par);
+  _hRawMET_u_parPqt = DeclareTH1F("RawMET_u_parPqt","u_par of PF RawMET plus Z qt",u_par_qtBins,min_u_par_qt,max_u_par_qt);
   _hRawMET_u_parPqt->SetXAxisTitle("u_{par} + q_{T}[PF RawMET]");
   _hRawMET_u_parPqt->SetYAxisTitle("Events");
 
   // 2D plot of u_par vs Z qt for  RawMET
   _hRawMET_u_par_qt = DeclareTH2F("RawMET_u_par_qt","u_par vs Z qt  RawMET",u_parBins,min_u_par,max_u_par,ptBins,minPt,maxPt);
   _hRawMET_u_par_qt->SetXAxisTitle("u_{par} [RawMET][");
-  _hRawMET_u_parPqt->SetYAxisTitle("Z q_T");
+  _hRawMET_u_par_qt->SetYAxisTitle("Z q_T");
 
   // 2D plot of u_par vs Z qtMET for RawMET
   _hRawMET_u_perp_qt = DeclareTH2F("RawMET_u_perp_qt","u_perp vs Z qt RawMET",u_perpBins,min_u_perp,max_u_perp,ptBins,minPt,maxPt);
@@ -444,7 +448,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hRawMET_u_perp_nVtx->SetYAxisTitle("N_{vtx}");
 
   // 2D plot of u_par + Z qt vs nVtx for RawMET
-  _hRawMET_u_parPqt_nVtx = DeclareTH2F("RawMET_u_parPqt_nVtx","u_par + Z qt vs nVtx RawMET",u_parBins,min_u_par,max_u_par,vertexBins,vertexMin,vertexMax);
+  _hRawMET_u_parPqt_nVtx = DeclareTH2F("RawMET_u_parPqt_nVtx","u_par + Z qt vs nVtx RawMET",u_par_qtBins,min_u_par_qt,max_u_par_qt,vertexBins,vertexMin,vertexMax);
   _hRawMET_u_parPqt_nVtx->SetXAxisTitle("u_{par} + Z q_T [RawMET][");
   _hRawMET_u_parPqt_nVtx->SetYAxisTitle("N_{vtx}");
 
