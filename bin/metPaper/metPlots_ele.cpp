@@ -195,11 +195,11 @@ int main(int argc, char **argv)
   /////////////////////////////////////////////////////////////////////////////////
   // ******** Cuts and Histograms applied to all studies ********
 
-  mystudy.AddCut(new CutJsonFilter(particlesObj));
-
   mystudy.AddAction(new MatchTriggerElectron(particlesObj,"MetEle")); // This just sets up one muon as the trigger matched
 
   mystudy.AddAction(new EventWeight_nanoAOD(particlesObj,mystudy.GetTotalMCatNLOEvents(), mcStr, doPileup, dobWeight, useLeptonSFs, usebTagReweight, useIterFitbTag, verbose, "MetMu","MetEle"));
+
+  mystudy.AddCut(new CutJsonFilter(particlesObj));
 
   mystudy.AddHists(new HistogrammingNPvtx(particlesObj));
 
