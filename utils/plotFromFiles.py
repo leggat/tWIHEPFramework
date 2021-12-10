@@ -20,26 +20,100 @@ parser.add_option("-q","--quiet",dest="quiet",default=False,action="store_true",
 (options, args) = parser.parse_args()
 
 #Add a string if you want to ignore plots with that name. Useful to include numbers in the framework to skip out whole sections.
-ignorePlots = ["00_","JES","JER"] #Ignore the weight variables
+ignorePlots = ["00_","01_","02_","05_","06_","07_","08_","09_","Jet4","Jet5","Jet6","JES","JER","CutEff"] #Ignore the weight variables
 #ignorePlots = ["00_","01_","02_","03_",_] #Ignore the weight variables
 
-#Main loop
-if __name__ == "__main__":
+customWeightsAllYears={
+"2017":{
+ "muon":{
+  "data":0.818,
+  "ww":2.294,
+  "zz":1.000,
+  "dy":1.351,
+  "ttbar_2l":1.000,
+  "wz":1.072,
+   },
+ "electron":{
+  "data":0.817,
+  "ww":2.294,
+  "zz":1.000,
+  "dy":1.351,
+  "ttbar_2l":1.000,
+  "wz":1.072,
+   },
+ },
+"2016":{ "muon":{
+  "data":0.919,
+  "ww":2.334,
+  "zz":1.092,
+  "dy":1.019,
+  "ttbar_2l":1.000,
+  "wz":2.252,
+   },
+ "electron":{
+  "data":0.694,
+  "ww":2.334,
+  "zz":1.092,
+  "dy":1.007,
+  "ttbar_2l":1.000,
+  "wz":2.252,
+   },
+ },
+"2018":{
+ "muon":{
+  "data":0.921,
+  "ww":1.323,
+  "zz":1.000,
+  "dy":1.485,
+  "ttbar_2l":1.381,
+  "wz":1.423,
+   },
+ "electron":{
+  "data":0.956,
+  "ww":1.323,
+  "zz":1.000,
+  "dy":1.485,
+  "ttbar_2l":1.381,
+  "wz":1.423,
+   },
+ },
+"2016APV":{
+ "muon":{
+  "data":0.745,
+  "ww":1.523,
+  "zz":1.024,
+  "dy":1.090,
+  "ttbar_2l":1.923,
+  "wz":1.060,
+   },
+ "electron":{
+  "data":0.877,
+  "ww":1.523,
+  "zz":1.024,
+  "dy":1.090,
+  "ttbar_2l":1.923,
+  "wz":1.060,
+   },
+ },
+}
 
-    #make output directory
-    if not os.path.exists(options.outDir):
-        os.makedirs(options.outDir)
+lumiStrings = {
+"2018":"60",
+"2017":"41",
+"2016":"16",
+"2016APV":"20"
+}
+
     
-    #Get the analysis components from the central store
-    comps = AnalysisComponents("met")
-    
+def makePlotsInOneDir(inDir,outDir,samples,dataSamples,options,histoGramPerSample,customWeights):
+
     #collect together the MC files
     inFiles = {}
-    for sample in comps.sample:
-        if os.path.exists("{0}/{1}/hists/merged{1}.root".format(comps.dirName,sample)):
-            inFiles[sample] = TFile("{0}/{1}/hists/merged{1}.root".format(comps.dirName,sample),"READ")
+    for sample in samples:
+        if os.path.exists("{0}/{1}/hists/merged{1}.root".format(inDir,sample)):
+            inFiles[sample] = TFile("{0}/{1}/hists/merged{1}.root".format(inDir,sample),"READ")
         else:
-            print "Could not find {0}/{1}/hists/merged{1}.root\nExiting".format(comps.dirName,sample)
+            print "Could not find {0}/{1}/hists/merged{1}.root\nExiting".format(inDir,sample)
             sys.exit(0)
         
     #The list of plots in the file
@@ -57,28 +131,27 @@ if __name__ == "__main__":
     #get the data files in we are using data
     dataFiles = {}
     if not options.mcOnly:
-        for dataSample in comps.dataSamples:
-            if os.path.exists("{0}Data/{1}/hists/merged{1}.root".format(comps.dirName,dataSample)):                
-                dataFiles[dataSample] = TFile("{0}Data/{1}/hists/merged{1}.root".format(comps.dirName,dataSample),"READ")
+        for dataSample in dataSamples:
+            if os.path.exists("{0}Data/{1}/hists/merged{1}.root".format(inDir,dataSample)):                
+                dataFiles[dataSample] = TFile("{0}Data/{1}/hists/merged{1}.root".format(inDir,dataSample),"READ")
             else:                                                                                          
-                print "Could not find {0}Data/{1}/hists/merged{1}.root\nExiting".format(comps.dirName,dataSample)  
+                print "Could not find {0}Data/{1}/hists/merged{1}.root\nExiting".format(inDir,dataSample)  
                 sys.exit(0)                                                                                
     
 
-    #Set up plots environment
-    genericPlottingMacro.setupEnv()
-    genericPlottingMacro.setOutDir(options.outDir)
-    genericPlottingMacro.changeLabels(text2="Dimu channel")
 
     #define custom weights here
-    customWeights = {"dy":0.735}
-#    customWeights = {"dy":1.4}
-    genericPlottingMacro.customWeightObj(customWeights)
+
+    #    customWeights = {"dy":1.4}
+    if "data" in customWeights.keys():
+        for key in customWeights.keys():
+            if key == "data": continue
+            customWeights[key]*=customWeights["data"]
 
     #Set up a latex file to store all the plots in
     latexFile = ""
     if not options.noLatex:
-        latexFile = open(options.outDir+"combinedLatexFile.tex","w")
+        latexFile = open(outDir+"combinedLatexFile.tex","w")
         latexFile.write("\\documentclass{beamer}\n\\usetheme{Warsaw}\n\n\\usepackage{graphicx}\n\\useoutertheme{infolines}\n\\setbeamertemplate{headline}{}\n\n\\begin{document}\n\n")
 
     #Loop through the histograms
@@ -101,18 +174,30 @@ if __name__ == "__main__":
         histMap = {}
         
         #loop through simulated samples
-        for sample in comps.samples:
-            histMap[sample] = inFiles[sample].Get(plot)
+        for sample in samples:
+            tmpHist = inFiles[sample].Get(plot)
+            if sample in customWeights.keys(): tmpHist.Scale(customWeights[key])
+            if histoGramPerSample[sample] in histMap.keys():
+                histMap[histoGramPerSample[sample]].Add(tmpHist)
+            else:
+                histMap[histoGramPerSample[sample]] = tmpHist
 
         if not options.mcOnly:
-            for dataSample in comps.dataSamples:
+            for dataSample in dataSamples:
+#                print dataSample
                 if not "data_obs" in histMap.keys():
+#                    if not dataFiles[dataSample].Get(plot): continue
+#                    print dataSample
                     histMap["data_obs"] = dataFiles[dataSample].Get(plot)
                 else:
+#                    print dataFiles[dataSample].Get(plot).ClassName()
                     histMap["data_obs"].Add(dataFiles[dataSample].Get(plot))
 
         #make the plot
-        genericPlottingMacro.makeASingleStackPlot(histMap,saveName,doData=(not options.mcOnly),xAxisLabel=plot)
+        genericPlottingMacro.makeASingleStackPlot(histMap,saveName,doData=(not options.mcOnly))
+        
+        #make a log version
+        genericPlottingMacro.makeASingleStackPlot(histMap,saveName+"_log",doData=(not options.mcOnly),isLog=True,xAxisLabel=histMap[samples[0]].GetXaxis().GetTitle())
 
         #add the plot to the latex file
         latexFile.write("\\frame{\n\\frametitle{"+writtenName+"}\n")
@@ -120,3 +205,43 @@ if __name__ == "__main__":
         latexFile.write("}\n")
         
     latexFile.write("\\end{document}")
+
+
+#Main loop
+if __name__ == "__main__":
+
+    years = ["2018","2017","2016","2016APV"]
+#    years = ["2016"]
+    leptons =  ["muon","electron"]
+#    leptons =  ["electron"]
+
+    genericPlottingMacro.setupEnv()
+    genericPlottingMacro.setRatioWidth(1.)
+
+    for year in years:
+        for lepton in leptons:
+            comps = AnalysisComponents("met",era=year,lepton=lepton)
+
+            inDir = "met{0}{1}".format(year[2:],"" if lepton == "muon" else "Ele")
+            
+            outDir = "plots{0}/".format(inDir)
+#{0}{1}".format(year[2:],"" if lepton =="muon" else "Ele")
+            
+            if not os.path.exists(outDir): os.mkdir(outDir)
+
+            genericPlottingMacro.setOutDir(outDir)
+
+            #Set up plots environment
+            lepChanString = "#mu#mu"
+            lumiString = "{} fb^{{-1}} (13TeV)".format(lumiStrings[year])
+                
+            if lepton  == "electron": lepChanString = "ee"
+            genericPlottingMacro.changeLabels(latex2=lumiString,text2="{0} channel".format(lepChanString))
+
+
+            customWeights = customWeightsAllYears[year][lepton]
+
+            print "processing {0}".format(inDir)
+
+            makePlotsInOneDir(inDir,outDir,comps.sample,comps.dataSamples,options,comps.histoGramPerSample,customWeights)
+    
