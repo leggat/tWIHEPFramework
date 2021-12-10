@@ -36,6 +36,11 @@ outDir = ""
 ratioMin = 0.7
 ratioMax = 1.3
 
+def setRatioWidth(width):
+    global ratioMin
+    ratioMin = 1-width
+    global ratioMax
+    ratioMax = 1+width
 
 def setRebinNumber(nBins):
     global nBinsPerPlots
