@@ -10,7 +10,7 @@
 
 # ############ Trigger Cuts ###############
 # A comma separated list of triggers to include as ORs or NOTs in the trigger selection. Invalid names not in the TTree will be ignored
-Trigger.Name.Or: HLT_Ele35_WPTight_Gsf,HLT_Ele32_WPTight_Gsf
+#Trigger.Name.Or: HLT_Ele35_WPTight_Gsf,HLT_Ele32_WPTight_Gsf,HLT_Ele27_eta2p1_WPTight_Gsf
 ################# Electron Cuts #########################
 # Number of Electrons
 Cut.Electron.Tight.Number.Min:  0

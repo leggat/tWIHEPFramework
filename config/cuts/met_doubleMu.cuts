@@ -10,7 +10,8 @@
 
 # ############ Trigger Cuts ###############
 # A comma separated list of triggers to include as ORs or NOTs in the trigger selection. Invalid names not in the TTree will be ignored
-Trigger.Name.Or: HLT_IsoMu24,HLT_IsoMu27
+#Moving this to the overall config so that it can be done per year
+#Trigger.Name.Or: HLT_IsoMu24,HLT_IsoMu27,HLT_IsoTkMu24
 ################# Electron Cuts #########################
 # Number of Electrons
 Cut.Electron.Tight.Number.Min:  0
