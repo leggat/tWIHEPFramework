@@ -332,7 +332,7 @@ Bool_t EventWeight_nanoAOD::Apply()
   EventContainerObj->SeteventReweight(1.); //Reset the reweighting variable
 
   float genWeight(1.0);
-  if (EventContainerObj->GetGenEventWeight() < 0.) genWeight = -1.;
+  if (EventContainerObj->GetGenEventWeight() < 0. && EventContainerObj->GetIsSimulation()) genWeight = -1.;
 
   wgt *= genWeight;
 
@@ -346,7 +346,7 @@ Bool_t EventWeight_nanoAOD::Apply()
   //Do the pileup weight here, but commented out for now
      
   //only apply pileup weight if specified
-  if(isPileUpWgt()) {
+  if(isPileUpWgt() && EventContainerObj->GetIsSimulation()) {
     //Uncomment to use true interactions
     Int_t binOfInterest = _mcPV->GetXaxis()->FindBin(EventContainerObj->trueInteractions);
     //Uncomment to use number of reconstructed vertices
@@ -378,7 +378,7 @@ Bool_t EventWeight_nanoAOD::Apply()
  float lepSFWeight(1.0), lepSFWeightUp(1.0), lepSFWeightDown(1.0);
  float trigSFWeight(1.0), trigSFWeightUp(1.0), trigSFWeightDown(1.0);
 
- if(_useLeptonSFs){
+ if(_useLeptonSFs && EventContainerObj->GetIsSimulation()){
    std::tie(lepSFWeight,lepSFWeightUp,lepSFWeightDown,trigSFWeight,trigSFWeightUp,trigSFWeightDown) = getLeptonWeight(EventContainerObj);
    wgt *= lepSFWeight;
    wgt *= trigSFWeight;
