@@ -79,7 +79,7 @@ nEvents={"2017":{
 }
 }
 
-def readOutOneDirectory(dirName,samples):
+def readOutOneDirectory(dirName,samples,reRunFile=""):
     print "reading ",dirName
 
     totalCount = {}
@@ -89,11 +89,17 @@ def readOutOneDirectory(dirName,samples):
         logFiles = [f for f in os.listdir("{0}/{1}/logs/".format(inDir,sample)) if f.endswith(".log")]
         print sample, "{0} logs".format(len(logFiles)),
         for inLog in logFiles:
+            foundLog = False
             log = file("{0}/{1}/logs/{2}".format(inDir,sample,inLog),"r")
             for lin in log:
                 if "| Pass JSON filter" in lin:
 #                    print lin.split("|")
                     totalCount[sample] += int(lin.split("|")[2])
+                    foundLog = True
+            if not foundLog: 
+                print "Didn't find anything in {0}".format(inLog)
+                print "hep_sub {0}/{1}/{2}/scripts/{3}.sh -o {0}/{1}/{2}/logs/{3}.log -e {0}/{1}/{2}/logs/{3}.error".format(os.getcwd(),dirName,sample,inLog.split(".")[0])
+                if reRunFile: print >>reRunFile, "hep_sub {0}/{1}/{2}/scripts/{3}.sh -o {0}/{1}/{2}/logs/{3}.log -e {0}/{1}/{2}/logs/{3}.error".format(os.getcwd(),dirName,sample,inLog.split(".")[0])
 
         print totalCount[sample]
 
@@ -118,10 +124,12 @@ def writeAsMap(totalCounts):
 if __name__ == "__main__":
     
     years = ["2018","2017","2016","2016APV"]
-    years = ["2016"]
+#    years = ["2016","2016APV"]
     leptons = ["muon","electron"]
 
     totalCounts = {}
+
+    reRunFile = open("rerunFiles.sh","w")
 
     for year in years:
         totalCounts[year] = {}
@@ -137,7 +145,7 @@ if __name__ == "__main__":
                 samples =  comp.samples
                 if dmc: samples = comp.dataSamples
 
-                tmpCounts = readOutOneDirectory(inDir,samples)
+                tmpCounts = readOutOneDirectory(inDir,samples,reRunFile)
                 
                 if dmc == "":
                     totalCounts[year][lepton] = tmpCounts
@@ -148,3 +156,5 @@ if __name__ == "__main__":
                     totalCounts[year][lepton]["data"+lepton] = totalData
 #
     writeAsMap(totalCounts)
+
+    reRunFile.close()
