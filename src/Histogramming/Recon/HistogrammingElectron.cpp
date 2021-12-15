@@ -72,15 +72,15 @@ HistogrammingElectron::~HistogrammingElectron()
  ******************************************************************************/
 void HistogrammingElectron::BookHistogram(){
   
-  Int_t ptBin    = 25;
+  Int_t ptBin    = 100;
   Int_t ptBin2D  = 10;
   Double_t ptMin = 0.0;
   Double_t ptMax = 100.0;
 
-  Int_t etaBin    = 24;
+  Int_t etaBin    = 100;
   Int_t etaBin2D  = 10;
-  Double_t etaMin = -3.0;
-  Double_t etaMax = 3.0;
+  Double_t etaMin = 0;
+  Double_t etaMax = 6.;
 
   Int_t phiBin    = 16;
   Int_t phiBin2D  = 10;
@@ -280,15 +280,15 @@ Bool_t HistogrammingElectron::Apply()
 
 
     _hPtObj1  -> Fill(electronVector[0].Pt());
-    _hEtaObj1 -> Fill(electronVector[0].Eta());
+    _hEtaObj1 -> Fill(fabs(electronVector[0].Eta()));
     _hPhiObj1 -> Fill(electronVector[0].Phi());
     _hIsoObj1 -> Fill(electronVector[0].relIsoPFRhoEA());
     _hIsoHiObj1 -> Fill(electronVector[0].relIsoPFRhoEA());
     _hPtBlowupObj1  -> Fill(electronVector[0].Pt());
     
-    _hPtEtaObj1  -> Fill(electronVector[0].Pt(),  electronVector[0].Eta());
+    _hPtEtaObj1  -> Fill(electronVector[0].Pt(),  fabs(electronVector[0].Eta()));
     _hPtPhiObj1  -> Fill(electronVector[0].Pt(),  electronVector[0].Phi());
-    _hEtaPhiObj1 -> Fill(electronVector[0].Eta(), electronVector[0].Phi());
+    _hEtaPhiObj1 -> Fill(fabs(electronVector[0].Eta()), electronVector[0].Phi());
     
     if(evc->jets.size()>0){
       _hJetDeltaR-> Fill(fabs(evc->jets[0].DeltaR(electronVector[0])));
@@ -313,12 +313,12 @@ Bool_t HistogrammingElectron::Apply()
   // now loop over all electrons and histogram their properties
   for(int io=0;io<electronVector.size();io++) {
     _hPt  -> Fill(electronVector[io].Pt());
-    _hEta -> Fill(electronVector[io].Eta());
+    _hEta -> Fill(fabs(electronVector[io].Eta()));
     _hPhi -> Fill(electronVector[io].Phi());
     
-    _hPtEta  -> Fill(electronVector[io].Pt(),  electronVector[io].Eta());
+    _hPtEta  -> Fill(electronVector[io].Pt(),  fabs(electronVector[io].Eta()));
     _hPtPhi  -> Fill(electronVector[io].Pt(),  electronVector[io].Phi());
-    _hEtaPhi -> Fill(electronVector[io].Eta(), electronVector[io].Phi());
+    _hEtaPhi -> Fill(fabs(electronVector[io].Eta()), electronVector[io].Phi());
 
     _hCharge->Fill(electronVector[io].GetCharge());
     //_hEoverP->Fill(electronVector[io].GetEoverP());

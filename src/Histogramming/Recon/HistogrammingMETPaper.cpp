@@ -144,7 +144,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hMEY->SetYAxisTitle("Events");
 
   // Histogram of MET phi
-  _hMETPhi = DeclareTH1F("METPhi","Phi of missing transverse energy",phiBins,phiMin,phiMin);
+  _hMETPhi = DeclareTH1F("METPhi","Phi of missing transverse energy",phiBins,phiMin,phiMax);
   _hMETPhi->SetXAxisTitle("#Phi_{MET} [GeV]");
   _hMETPhi->SetYAxisTitle("Events");
 
@@ -189,7 +189,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hMEY_uncorr->SetYAxisTitle("Events");
 
   // Histogram of MET phi uncorr
-  _hMETPhi_uncorr = DeclareTH1F("METPhi_uncorr","Phi of missing transverse energy no xy corrections",phiBins,phiMin,phiMin);
+  _hMETPhi_uncorr = DeclareTH1F("METPhi_uncorr","Phi of missing transverse energy no xy corrections",phiBins,phiMin,phiMax);
   _hMETPhi_uncorr->SetXAxisTitle("#Phi uncorr_{MET} [GeV]");
   _hMETPhi_uncorr->SetYAxisTitle("Events");
 
@@ -252,7 +252,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hCaloMEY->SetYAxisTitle("Events");
 
   // Histogram of CaloMET phi
-  _hCaloMETPhi = DeclareTH1F("CaloMETPhi","Phi of missing transverse energy [Calo]",phiBins,phiMin,phiMin);
+  _hCaloMETPhi = DeclareTH1F("CaloMETPhi","Phi of missing transverse energy [Calo]",phiBins,phiMin,phiMax);
   _hCaloMETPhi->SetXAxisTitle("#Phi_{CaloMET} [GeV]");
   _hCaloMETPhi->SetYAxisTitle("Events");
 
@@ -279,7 +279,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hChsMEY->SetYAxisTitle("Events");
 
   // Histogram of ChsMET phi
-  _hChsMETPhi = DeclareTH1F("ChsMETPhi","Phi of missing transverse energy [Chs]",phiBins,phiMin,phiMin);
+  _hChsMETPhi = DeclareTH1F("ChsMETPhi","Phi of missing transverse energy [Chs]",phiBins,phiMin,phiMax);
   _hChsMETPhi->SetXAxisTitle("#Phi_{ChsMET} [GeV]");
   _hChsMETPhi->SetYAxisTitle("Events");
 
@@ -306,7 +306,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hPuppiMEY->SetYAxisTitle("Events");
 
   // Histogram of PuppiMET phi
-  _hPuppiMETPhi = DeclareTH1F("PuppiMETPhi","Phi of missing transverse energy [Puppi]",phiBins,phiMin,phiMin);
+  _hPuppiMETPhi = DeclareTH1F("PuppiMETPhi","Phi of missing transverse energy [Puppi]",phiBins,phiMin,phiMax);
   _hPuppiMETPhi->SetXAxisTitle("#Phi_{PuppiMET} [GeV]");
   _hPuppiMETPhi->SetYAxisTitle("Events");
 
@@ -351,7 +351,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hPuppiMEY_uncorr->SetYAxisTitle("Events");
 
   // Histogram of PuppiMET phi uncorr
-  _hPuppiMETPhi_uncorr = DeclareTH1F("PuppiMETPhi_uncorr","Phi of missing transverse energy no xy corrections",phiBins,phiMin,phiMin);
+  _hPuppiMETPhi_uncorr = DeclareTH1F("PuppiMETPhi_uncorr","Phi of missing transverse energy no xy corrections",phiBins,phiMin,phiMax);
   _hPuppiMETPhi_uncorr->SetXAxisTitle("#Phi uncorr_{PuppiMET} [GeV]");
   _hPuppiMETPhi_uncorr->SetYAxisTitle("Events");
 
@@ -398,7 +398,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hRawMEY->SetYAxisTitle("Events");
 
   // Histogram of RawMET phi
-  _hRawMETPhi = DeclareTH1F("RawMETPhi","Phi of missing transverse energy [Raw]",phiBins,phiMin,phiMin);
+  _hRawMETPhi = DeclareTH1F("RawMETPhi","Phi of missing transverse energy [Raw]",phiBins,phiMin,phiMax);
   _hRawMETPhi->SetXAxisTitle("#Phi_{RawMET} [GeV]");
   _hRawMETPhi->SetYAxisTitle("Events");
 
@@ -470,7 +470,7 @@ void HistogrammingMETPaper::BookHistogram(){
   _hRawPuppiMEY->SetYAxisTitle("Events");
 
   // Histogram of RawPuppiMET phi
-  _hRawPuppiMETPhi = DeclareTH1F("RawPuppiMETPhi","Phi of missing transverse energy [RawPuppi]",phiBins,phiMin,phiMin);
+  _hRawPuppiMETPhi = DeclareTH1F("RawPuppiMETPhi","Phi of missing transverse energy [RawPuppi]",phiBins,phiMin,phiMax);
   _hRawPuppiMETPhi->SetXAxisTitle("#Phi_{RawPuppiMET} [GeV]");
   _hRawPuppiMETPhi->SetYAxisTitle("Events");
 

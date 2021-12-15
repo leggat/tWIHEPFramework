@@ -620,8 +620,8 @@ std::tuple<Double_t,Double_t,Double_t,Double_t,Double_t,Double_t> EventWeight_na
     leptonWeightDown *= (isoSF - isoUnc) * (idSF - idUnc) * tkSF;
 
     triggerWeight *= trigSF;
-    triggerWeightUp *= trigSF + trigUnc;
-    triggerWeightDown *= trigSF - trigUnc;
+    triggerWeightUp *= (trigSF + trigUnc) * (trigSF + trigUnc);
+    triggerWeightDown *= (trigSF - trigUnc) * (trigSF - trigUnc);
 
   }
 
@@ -632,6 +632,7 @@ std::tuple<Double_t,Double_t,Double_t,Double_t,Double_t,Double_t> EventWeight_na
     if (ele.scEta() < -2.5) xAxisBin = _eleRecoSF->GetXaxis()->FindBin(-2.49);
     Int_t yAxisBin = _eleRecoSF->GetYaxis()->FindBin(ele.Pt());
     if (ele.Pt() > 500) yAxisBin = _eleRecoSF->GetYaxis()->FindBin(499.);
+    if (ele.Pt() < _eleRecoSF->GetYaxis()->GetBinLowEdge(1)) yAxisBin = 1;
     //Now get the reco and id SFs
     Float_t recoSF = _eleRecoSF->GetBinContent(xAxisBin,yAxisBin);
     Float_t recoUnc = _eleRecoSF->GetBinError(xAxisBin,yAxisBin);
@@ -641,6 +642,7 @@ std::tuple<Double_t,Double_t,Double_t,Double_t,Double_t,Double_t> EventWeight_na
     if (ele.scEta() > -2.5) xAxisBin = _eleIDSF->GetXaxis()->FindBin(-2.49);
     yAxisBin = _eleIDSF->GetYaxis()->FindBin(ele.Pt());
     if (ele.Pt() > 500) yAxisBin = _eleIDSF->GetYaxis()->FindBin(499.);
+    if (ele.Pt() < _eleIDSF->GetYaxis()->GetBinLowEdge(1)) yAxisBin = 1;
     Float_t idSF = _eleIDSF->GetBinContent(xAxisBin,yAxisBin);
     Float_t idUnc = _eleIDSF->GetBinError(xAxisBin,yAxisBin);
 
@@ -657,9 +659,9 @@ std::tuple<Double_t,Double_t,Double_t,Double_t,Double_t,Double_t> EventWeight_na
       Float_t trigUnc = _eleTrigSF->GetBinError(xAxisBin,yAxisBin);
     }
 
-    triggerWeight = trigSF;              
-    triggerWeightUp = trigSF + trigUnc;  
-    triggerWeightDown = trigSF - trigUnc;
+    triggerWeight *= trigSF;              
+    triggerWeightUp *= (trigSF + trigUnc) *  (trigSF + trigUnc);  
+    triggerWeightDown *= (trigSF - trigUnc) * (trigSF - trigUnc);
 
     leptonWeight *= recoSF * idSF;
     leptonWeightUp *= (recoSF + recoUnc) * (idSF + idUnc);

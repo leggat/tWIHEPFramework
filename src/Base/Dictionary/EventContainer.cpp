@@ -655,7 +655,7 @@ Int_t EventContainer::ReadEvent()
     
     //Get the phi-corrected MET
     
-    std::pair<double,double> met_xyCorrectedPair = METXYCorr_Met_MetPhi(met_pt,met_phi,runNumber,yearName,GetIsSimulation(),pv_npvsGood,true,false);
+    std::pair<double,double> met_xyCorrectedPair = METXYCorr_Met_MetPhi(met_pt,met_phi,runNumber,yearName,GetIsSimulation(),pv_npvs,true,false);
 
     missingEtVec.SetPtEtaPhiM(met_pt,0.,met_phi,0.);
     missingEtVecs["met_uncorr"] = missingEtVec;
@@ -687,7 +687,7 @@ Int_t EventContainer::ReadEvent()
       //puppi met
       tempMet.SetPtEtaPhiM(_nanoAODTree->PuppiMET_pt,0.,_nanoAODTree->PuppiMET_phi,0.);
       missingEtVecs["puppi_uncorr"] = tempMet;
-      std::pair<double,double> puppiMET_phiCorrectedPair =  METXYCorr_Met_MetPhi(_nanoAODTree->PuppiMET_pt,_nanoAODTree->PuppiMET_phi,runNumber,yearName,GetIsSimulation(),pv_npvsGood,true,true);
+      std::pair<double,double> puppiMET_phiCorrectedPair =  METXYCorr_Met_MetPhi(_nanoAODTree->PuppiMET_pt,_nanoAODTree->PuppiMET_phi,runNumber,yearName,GetIsSimulation(),pv_npvs,true,true);
       tempMet.SetPtEtaPhiM(puppiMET_phiCorrectedPair.first,0.,puppiMET_phiCorrectedPair.second,0.);
       missingEtVecs["puppi"] = tempMet;
       sumETs["puppi"] = _nanoAODTree->PuppiMET_sumEt;
@@ -711,7 +711,7 @@ Int_t EventContainer::ReadEvent()
 		       _nanoAODTree->Flag_HBHENoiseIsoFilter &&
 		       _nanoAODTree->Flag_EcalDeadCellTriggerPrimitiveFilter &&
 		       _nanoAODTree->Flag_BadPFMuonFilter &&
-		       _nanoAODTree->Flag_BadPFMuonDzFilter &&
+			//_nanoAODTree->Flag_BadPFMuonDzFilter &&
 		       _nanoAODTree->Flag_eeBadScFilter &&
 		       _nanoAODTree->Flag_ecalBadCalibFilter);
 		       
