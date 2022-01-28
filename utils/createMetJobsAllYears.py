@@ -1,5 +1,7 @@
 import subprocess
 
+frameworkDir = "/publicfs/cms/user/duncanleg/metPaper/tWIHEPFramework/"
+
 years = ["2018","2017","2016","2016APV"]
 #years = ["2016APV"]
 
@@ -17,8 +19,8 @@ for dataMC in data:
             print "ele" if lep=="electron" else "mu"
             config = "config/overall/met_{0}_di{1}.config".format(year,"ele" if lep=="electron" else "mu")
             executable = "bin/metPaper/metPlots{0}.x".format("" if lep == "muon" else "_ele")
-            print "python createCondorJobs.py --hists {0} -y {1} --lepton {2} --configFile {3} -x {4}{5}".format(dataMC,year,lep,config,executable," -p -l" if not dataMC == "" else "")
-            subprocess.call("python ../../tWIHEPFramework/utils/createCondorJobs.py --hists {0} -y {1} --lepton {2} --configFile {3} -x {4}{5}".format(dataMC,year,lep,config,executable," -p -l" if not dataMC == "" else ""),shell=True)
+            print "python createCondorJobs.py --hists {0} -y {1} --lepton {2} --configFile {3} -x {4}{5} -f {6}".format(dataMC,year,lep,config,executable," -p -l" if not dataMC == "" else "",frameworkDir)
+            subprocess.call("python ../../tWIHEPFramework/utils/createCondorJobs.py --hists {0} -y {1} --lepton {2} --configFile {3} -x {4}{5} -f {6}".format(dataMC,year,lep,config,executable," -p -l" if not dataMC == "" else "",frameworkDir),shell=True)
 
 
 
