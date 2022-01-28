@@ -76,7 +76,7 @@ class Jet: public Particle
 
   // Fill the jet. Overloaded functions for nanoAOD and BSM trees
   Bool_t Fill( std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, EventTree *evtr, Int_t iE, TLorentzVector * met, bool isMC, std::vector<std::vector<std::string> > * resolution, std::vector<std::vector<std::string> > * resSFs, TString * resFormula);
-  Bool_t Fill( std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, nanoAODTree *evtr, Int_t iE, TLorentzVector * met, bool isMC);
+  Bool_t Fill( std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, nanoAODTree *evtr, Int_t iE, TLorentzVector * met, bool isMC,std::vector<std::vector<std::string> > * resolution, std::vector<std::vector<std::string> > * resSFs, TString * resFormula, std::vector<std::vector<std::string> > * jesUncs);
   //  Bool_t Fill( double myJESCorr, double myJERCorr, std::vector<Electron>& selectedElectrons, EventTree *evtr, Int_t iE);
   // Also fill from FastSim tree:
   Bool_t FillFastSim( std::vector<MCJet>& MCBJets, std::vector<MCJet>& MCCJets, std::vector<MCTau>& MCTaus,  std::vector<Electron>& electrons, FastSimTree *tr,Int_t iE,TEnv *config,const TString& tagName="default", Double_t btagCut = 999, Double_t mistagCut = 999, Double_t eshift = 0 );
@@ -257,6 +257,7 @@ class Jet: public Particle
 
   float GetStochasticFactor(float pt, float eta, float rho, std::vector<std::vector<std::string> > * resolution, TString * resFormula);
   float GetJerFromFile(float eta, std::vector<std::vector<std::string> > * resSFs, int central);
+  float GetJesFromFile(float pt, float eta, std::vector<std::vector<std::string> > * resSFs);
   float GetSmearFactor(float pt, float genPt, float eta, float rho, float jer_sf, std::vector<std::vector<std::string> > * resolution, TString * resFormula);
 
   // Cuts applied to the jet objects
@@ -296,6 +297,7 @@ class Jet: public Particle
 
   //Read out the JES shifts from the event tree
   std::vector<Double_t> GetJESShifts(EventTree * evtr, Int_t iE, float jetEta, std::vector<std::vector<std::string> > * resSFs, std::vector<std::vector<std::string> > * resolution, TString * resFormula);
+  std::vector<Double_t> GetNanoJESShifts(float rho, std::vector<std::vector<std::string> > * resSFs, std::vector<std::vector<std::string> > * resolution, TString * resFormula, std::vector<std::vector<std::string> > * jesUnc);
  
   ////////////////////////////////////////////////////////////////////////////////
   // Integrate classes into the Root system

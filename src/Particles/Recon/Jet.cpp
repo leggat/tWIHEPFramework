@@ -344,7 +344,7 @@ void Jet::SetCuts(TEnv * config)
  ******************************************************************************/
 
 
-Bool_t Jet::Fill(std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, nanoAODTree *evtr, Int_t iE, TLorentzVector * met, bool isMC)
+Bool_t Jet::Fill(std::vector<Muon>& selectedMuons, std::vector<Electron>& selectedElectrons, nanoAODTree *evtr, Int_t iE, TLorentzVector * met, bool isMC, std::vector<std::vector<std::string> > * resolution, std::vector<std::vector<std::string> > * resSFs, TString * resFormula, std::vector<std::vector<std::string> > * jesUncs)
 {
   //Set up the TLorentzVector of this particle
   Double_t jetPt,jetEta,jetPhi,jetMass;
@@ -377,16 +377,45 @@ Bool_t Jet::Fill(std::vector<Muon>& selectedMuons, std::vector<Electron>& select
   SetbtagCMVA   			(evtr -> Jet_btagCMVA           	[iE]);
   SetbtagDeepC   			(evtr -> Jet_btagDeepCvL           	[iE]);
 */
-
+  _jesShifts.clear();
 
   if (isMC){
     SethadronFlavour                    (evtr -> Jet_hadronFlavour              [iE]);
     //This information does not seem immediately obvious either.
     //SetgenPt                            (evtr -> Jet_genpt                      -> operator[](iE));
+    SetgenPt                            (evtr -> GenJet_pt[evtr->Jet_genJetIdx  [iE]]); 
+    
+    //Get jer sf
+    SetjerSF(GetJerFromFile(Eta(),resSFs,0));
+
+    //jet smearing - should this include MET variation?
+    double smearFactor = GetSmearFactor(Pt(),genPt(),Eta(),evtr->fixedGridRhoFastjetAll,GetjerSF(),resolution,resFormula);
+    SetsmearFactor(smearFactor);
+
+    //Get jes shifts. Doing it here because maybe the pt shift changes some things
+    _jesShifts = GetNanoJESShifts(evtr->fixedGridRhoFastjetAll,resSFs,resolution,resFormula,jesUncs);
+        
+    double ptRescale = smearFactor;
+    if (ptRescale == 0) ptRescale = 1.;
+
+    //Propogate the smearing to the missing et
+    met->SetPx(met->Px() + (1-ptRescale)*Px());
+    met->SetPy(met->Py() + (1-ptRescale)*Py());
+
+
+    SetPx(Px()*ptRescale);
+    SetPy(Py()*ptRescale);
+    SetPz(Pz()*ptRescale);
+    SetE(E()*ptRescale);
+
   }
 
+  SetNominalPx(Px());
+  SetNominalPy(Py());
+  SetNominalPz(Pz());
+  SetNominalE(E());  
+
   //The current implementation of JES uncertainties relies on information directly stored in the BSM trees. TODO: Update to nanoAOD
-  _jesShifts.clear();
   
   //Apply the cuts. The return value is true if it passes, false if not.
   return ApplyCuts(selectedMuons,selectedElectrons,kTRUE); 
@@ -822,6 +851,46 @@ std::vector<Double_t> Jet::GetJESShifts(EventTree * evtr, Int_t iE, float jetEta
 
 }
 
+std::vector<Double_t> Jet::GetNanoJESShifts(float rho, std::vector<std::vector<std::string> > * resSFs, std::vector<std::vector<std::string> > * resolution, TString * resFormula, std::vector<std::vector<std::string> > * jesUncs){
+
+  //Define the vector
+  std::vector<Double_t> jesShifts;
+
+  //Calculate JER uncertainty
+  float nominalSmear = GetSmearFactor(Pt(),genPt(),Eta(),rho,GetJerFromFile(Eta(),resSFs,0),resolution,resFormula);
+  float jerDown = GetSmearFactor(Pt(),genPt(),Eta(),rho,GetJerFromFile(Eta(),resSFs,1),resolution,resFormula);
+  float jerUp = GetSmearFactor(Pt(),genPt(),Eta(),rho,GetJerFromFile(Eta(),resSFs,2),resolution,resFormula);
+  //This doesn't really work with the stoachastic term, so for that one we'll use the uncertainty from eta only
+  if (!(genPt() > 0.)){ 
+    nominalSmear =  GetJerFromFile(Eta(),resSFs,0);
+    jerDown =  GetJerFromFile(Eta(),resSFs,1);
+    jerUp =  GetJerFromFile(Eta(),resSFs,2);
+  }
+  jesShifts.push_back(jerDown/nominalSmear);
+  jesShifts.push_back(jerUp/nominalSmear);
+
+  //Now do jes uncertainty. For now we are only doing the one 'Total' uncertainty. Will split it up if I ever have to...
+  float jesUncert = GetJesFromFile(Pt(),Eta(),jesUncs);
+  jesShifts.push_back(1-jesUncert);
+  jesShifts.push_back(1+jesUncert);
+
+  //return these values
+  return jesShifts;
+
+}
+
+float Jet::GetJesFromFile(float pt,float eta, std::vector<std::vector<std::string> > * jesUnc){
+  float uncert = 0.;
+  for (auto res: *jesUnc){
+    if (eta < std::stof(res[0]) || eta > std::stof(res[1])) continue;
+    for (int i = 6; i < res.size(); i+=3){
+      if (pt < std::stof(res[i-3]) || pt > std::stof(res[i])) continue;
+      uncert = std::stof(res[i-2]);
+    }
+  }
+  return uncert;
+}
+
 Bool_t Jet::ShiftPtWithJESCorr(Int_t jesShiftInd, TLorentzVector * met){
 
   //  met->SetPx(met->Px() + Px());                                               
@@ -843,8 +912,8 @@ Bool_t Jet::ShiftPtWithJESCorr(Int_t jesShiftInd, TLorentzVector * met){
   //std::cout << Px() << " " << Py() << " " << Pt() << std::endl << std::endl;
 
   //  std::cout << met->Px() << " " << met->Py() << " " << ptSF << " ";
-                                                                              
-  //Propagate to MET                                                          
+
+  //Propagate to MET                                      
   met->SetPx(met->Px() + (1-ptSF)*nominalPx());                                               
   met->SetPy(met->Py() + (1-ptSF)*nominalPy());                                               
 
@@ -857,7 +926,7 @@ Bool_t Jet::ShiftPtWithJESCorr(Int_t jesShiftInd, TLorentzVector * met){
 }
 
 float Jet::GetStochasticFactor(float pt, float eta, float rho, std::vector<std::vector<std::string> > * resolution, TString * resFormula){
-  
+
   TFormula resForm("",*resFormula);
 
   for (auto res : *resolution){
@@ -881,6 +950,10 @@ float Jet::GetJerFromFile(float eta, std::vector<std::vector<std::string> > * re
 }
 
 float Jet::GetSmearFactor(float pt, float genPt, float eta, float rho, float jer_sf, std::vector<std::vector<std::string> > * resolution, TString * resFormula){
+
+  //If we don't have a resFormula there was an error in reading the file, just return 1.
+  if (*resFormula  == "") return 1.;
+
   float smearFactor = 1.;
   float relpterr = GetStochasticFactor(pt,eta,rho,resolution,resFormula);
   if (genPt > 0. && (abs(pt-genPt)<3*relpterr*pt)) {
