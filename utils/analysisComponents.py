@@ -32,9 +32,11 @@ class AnalysisComponents:
             self.dirName = "met"
             self.sample = ["dy","ttbar_2l","ww","wz","zz"]
             self.samples = self.sample
-            self.histoColours = {"dy":ROOT.kBlue,"ttbar":ROOT.kRed,"VV":"kYellow"}
+            self.year = era
+            self.era = era
+            self.histoColours = {"dy":ROOT.kBlue,"ttbar":ROOT.kRed,"VV":ROOT.kYellow}
             self.histoGramPerSample = {"dy":"dy","ttbar_2l":"ttbar","ww":"VV","wz":"VV","zz":"VV"}
-            self.histoGramOrder = ["dy","VV","ttbar"]
+            self.histoGramOrder = ["ttbar","VV","dy"]
             self.histNameInLegend = {"dy":"DY","ttbar":"t#bar{t}","VV":"VV"}
             if era == "2018":
                 if lepton == "muon":
@@ -92,9 +94,29 @@ class AnalysisComponents:
                                         "doubleEG_2016e",    
                                         "doubleEG_2016f_hipm"
                                         ]
-
-
-
+            if era == "2016Total":
+                if lepton == "muon":
+                    self.dataSamples = ["doubleMu_2016b_v1",
+                                        "doubleMu_2016b_v2",
+                                        "doubleMu_2016c",
+                                        "doubleMu_2016d",
+                                        "doubleMu_2016e",
+                                        "doubleMu_2016f_hipm",
+                                        "doubleMu_2016f",
+                                        "doubleMu_2016g",
+                                        "doubleMu_2016h",
+                                    ]
+                if lepton == "electron":
+                    self.dataSamples = ["doubleEG_2016b_v1",
+                                        "doubleEG_2016b_v2",
+                                        "doubleEG_2016c",
+                                        "doubleEG_2016d",
+                                        "doubleEG_2016e",
+                                        "doubleEG_2016f_hipm",
+                                        "doubleEG_2016f",
+                                        "doubleEG_2016g",
+                                        "doubleEG_2016h"
+                                        ]
 
                 
         #Generic ones
