@@ -220,6 +220,73 @@ def compareHists(name,compareHists,normaliseHists=False,includeRatio=True):
     canvy.SaveAs(outDir+name+".png")
     canvy.SaveAs(outDir+name+".root")
 
+def plotGraphs(graphs,name,xAxis="Z q_{T}",yAxis="-<u_par>/<Z q_{T}>",maximum=1.2,minimum=0.3,legendTitle=""):
+    
+    canvy = TCanvas(name,name,1000,800)
+    canvy.cd()
+
+    leggy = TLegend(0.6,0.15,0.93,0.33)
+    leggy.SetFillStyle(1001)
+    leggy.SetBorderSize(1)
+    leggy.SetFillColor(0)
+    leggy.SetLineColor(0)
+    leggy.SetShadowColor(0)
+    leggy.SetFillColor(kWhite)
+
+    if legendTitle:
+        leggy.SetHeader(legendTitle)
+
+    mg = TMultiGraph(name,name)
+
+    first = True
+    markerStyle = 21
+    markerColor = 3
+    for key in graphs.keys():
+        graphs[key].SetNameTitle(key,key)
+
+        graphs[key].SetMaximum(maximum)
+        graphs[key].SetMinimum(minimum)
+        graphs[key].SetMarkerStyle(markerStyle)
+        graphs[key].SetMarkerSize(1.)
+        markerStyle+=1
+        graphs[key].SetLineColor(markerColor)
+#        graphs[key].SetMarkerColor(markerColor)
+        markerColor+=1
+#        graphs[key].Draw("AC* {0}".format("same" if not first else ""))
+        graphs[key].GetXaxis().SetTitle(xAxis)
+        graphs[key].GetYaxis().SetTitle(yAxis)
+        mg.Add(graphs[key])
+        leggy.AddEntry(graphs[key],key,"lep")
+
+    mg.SetMaximum(maximum)
+    mg.Draw("APC")
+    mg.GetXaxis().SetTitle(xAxis)
+    mg.GetXaxis().SetLabelSize(0.03)
+    mg.GetXaxis().SetTitleSize(0.04)
+    mg.GetYaxis().SetLabelSize(0.03)
+    mg.GetYaxis().SetTitleOffset(1.)
+    mg.GetYaxis().SetTitleSize(0.04)
+    mg.GetYaxis().SetTitle(yAxis)
+    mg.SetMinimum(minimum)
+
+    leggy.Draw()
+
+    latex.SetTextSize(0.04)
+    latex.SetTextFont(cmsTextFont)
+    latex.DrawLatex(0.23, 0.95, cmsText )
+
+    latex.SetTextFont(extraTextFont)
+    latex.SetTextSize(0.04*0.76)
+    latex.DrawLatex(0.35, 0.95 , extraText )
+
+    latex2.DrawLatex(0.95, 0.95, latex2String)
+
+    text2.DrawLatex(0.18,0.92, text2String)
+
+    canvy.SaveAs("{1}{0}.root".format(name,outDir))
+    canvy.SaveAs("{1}{0}.png".format(name,outDir))
+    canvy.SaveAs("{1}{0}.pdf".format(name,outDir))
+
 def makeASingleStackPlot(histMap,name,doData=True,dataHistName="data_obs",xAxisLabel="",yAxisLabel="Events",xAxisBinLabels=[],isLog=False,forceDataMax=False):
 
     leggy = TLegend(0.8,0.6,0.95,0.9)
