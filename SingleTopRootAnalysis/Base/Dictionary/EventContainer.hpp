@@ -845,6 +845,8 @@ private:
 
   std::vector<std::vector<std::string> > _resolution;
   std::vector<std::vector<std::string> > _resSFs;
+  std::map<std::string,std::vector<std::vector<std::string> > > _jesComponents;
+  std::vector<std::string> _jesComponentNames;
   TString _resFormula;
 
   ////////////////////////////////////////////////////////////////////////////////

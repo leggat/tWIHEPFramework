@@ -355,6 +355,8 @@ void EventContainer::Initialize( EventTree* eventTree, nanoAODTree* nanoAODTree,
 //  uncertainty = Total;
 //
   
+  _resFormula = ""; //Then if we don't read in the formula don't do the resolution stuff
+
   // Check for any systematic uncertainties we may be calculating
   _metShift = _config.GetValue("Systs.metShift",0);
   _channelName = _config.GetValue("ChannelName","");
@@ -388,6 +390,28 @@ void EventContainer::Initialize( EventTree* eventTree, nanoAODTree* nanoAODTree,
     }                                                                                                                     
     _resSFs.push_back(vstrings);                                                                                      
   }                                                                                                                       
+
+  TString jesFileName = GetConfig()->GetValue("Include.jesSources","config/weights/jets/Summer19UL18_V5_MC_UncertaintySources_AK4PFchs.txt");
+  std::ifstream jesFile(jesFileName);
+  std::string currentEntry = "";
+  while (std::getline(jesFile,lineStr)){
+    if (lineStr.find("{") != std::string::npos) continue;
+    std::string::size_type n = lineStr.find("[");
+    if (n != std::string::npos){
+      //This is the uncertainty source
+      std::string::size_type n1 = lineStr.find("]");
+      currentEntry = lineStr.substr(n+1,n1-1);
+      _jesComponentNames.push_back(currentEntry);
+      _jesComponents[currentEntry] = {};
+      continue;
+    }
+    std::stringstream ss(lineStr);
+    std::istream_iterator<std::string> begin(ss);
+    std::istream_iterator<std::string> end;
+    std::vector<std::string> vstrings(begin, end);
+    _jesComponents[currentEntry].push_back(vstrings);
+  }
+  
 
   yearName = GetConfig()->GetValue("Info.RunYear","2018");
 
@@ -661,6 +685,8 @@ Int_t EventContainer::ReadEvent()
     missingEtVecs["met_uncorr"] = missingEtVec;
 
     missingEtVec.SetPtEtaPhiM(met_xyCorrectedPair.first,0.,met_xyCorrectedPair.second,0.);
+    missingEtVecs["met_unsmeared"] = missingEtVec;
+
     missingEtVecs["met"] = missingEtVec;
 
     sumETs["met"] = _nanoAODTree->MET_sumEt;
@@ -692,6 +718,31 @@ Int_t EventContainer::ReadEvent()
       missingEtVecs["puppi"] = tempMet;
       sumETs["puppi"] = _nanoAODTree->PuppiMET_sumEt;
       
+      //puppi met systematics
+      //JER
+      puppiMET_phiCorrectedPair =  METXYCorr_Met_MetPhi(_nanoAODTree->PuppiMET_ptJERUp,_nanoAODTree->PuppiMET_phiJERUp,runNumber,yearName,GetIsSimulation(),pv_npvs,true,true);
+      tempMet.SetPtEtaPhiM(puppiMET_phiCorrectedPair.first,0.,puppiMET_phiCorrectedPair.second,0.);
+      missingEtVecs["puppi_jerup"] = tempMet;
+      puppiMET_phiCorrectedPair =  METXYCorr_Met_MetPhi(_nanoAODTree->PuppiMET_ptJERDown,_nanoAODTree->PuppiMET_phiJERDown,runNumber,yearName,GetIsSimulation(),pv_npvs,true,true);
+      tempMet.SetPtEtaPhiM(puppiMET_phiCorrectedPair.first,0.,puppiMET_phiCorrectedPair.second,0.);
+      missingEtVecs["puppi_jerdown"] = tempMet;
+      
+      //JES
+      puppiMET_phiCorrectedPair =  METXYCorr_Met_MetPhi(_nanoAODTree->PuppiMET_ptJESUp,_nanoAODTree->PuppiMET_phiJESUp,runNumber,yearName,GetIsSimulation(),pv_npvs,true,true);
+      tempMet.SetPtEtaPhiM(puppiMET_phiCorrectedPair.first,0.,puppiMET_phiCorrectedPair.second,0.);
+      missingEtVecs["puppi_jesup"] = tempMet;
+      puppiMET_phiCorrectedPair =  METXYCorr_Met_MetPhi(_nanoAODTree->PuppiMET_ptJESDown,_nanoAODTree->PuppiMET_phiJESDown,runNumber,yearName,GetIsSimulation(),pv_npvs,true,true);
+      tempMet.SetPtEtaPhiM(puppiMET_phiCorrectedPair.first,0.,puppiMET_phiCorrectedPair.second,0.);
+      missingEtVecs["puppi_jesdown"] = tempMet;
+
+      //unclustered
+      puppiMET_phiCorrectedPair =  METXYCorr_Met_MetPhi(_nanoAODTree->PuppiMET_ptUnclusteredUp,_nanoAODTree->PuppiMET_phiUnclusteredUp,runNumber,yearName,GetIsSimulation(),pv_npvs,true,true);
+      tempMet.SetPtEtaPhiM(puppiMET_phiCorrectedPair.first,0.,puppiMET_phiCorrectedPair.second,0.);
+      missingEtVecs["puppi_unclustup"] = tempMet;
+      puppiMET_phiCorrectedPair =  METXYCorr_Met_MetPhi(_nanoAODTree->PuppiMET_ptUnclusteredDown,_nanoAODTree->PuppiMET_phiUnclusteredDown,runNumber,yearName,GetIsSimulation(),pv_npvs,true,true);
+      tempMet.SetPtEtaPhiM(puppiMET_phiCorrectedPair.first,0.,puppiMET_phiCorrectedPair.second,0.);
+      missingEtVecs["puppi_unclustdown"] = tempMet;
+
       //raw met
       tempMet.SetPtEtaPhiM(_nanoAODTree->RawMET_pt,0.,_nanoAODTree->RawMET_phi,0.);
       missingEtVecs["raw"] = tempMet;
@@ -799,7 +850,7 @@ Int_t EventContainer::ReadEvent()
       //Fill the jet object                                                                               
       //The MET vector is not actually adjusted in the nanoAOD version of jets YET, because no smearing etc is done. But we pass it anyway so that in the future it will.
       //Here muonsToUsePtr and electronsToUsePtr are proxies for the tight electrons and muons for jet cleaning purposes. These can be adjusted elsewhere if we want to clean with, say, loose or unisolation leptons.
-      useObj = newJet.Fill(*muonsToUsePtr, *electronsToUsePtr, _nanoAODTree, io, &missingEtVec, isSimulation);
+      useObj = newJet.Fill(*muonsToUsePtr, *electronsToUsePtr, _nanoAODTree, io, &(missingEtVecs["met"]), isSimulation,  &_resolution, &_resSFs, &_resFormula, &(_jesComponents["Total"]));
 
       //Record every jet in this
       alljets.push_back(newJet);                                                                                                        
@@ -818,7 +869,8 @@ Int_t EventContainer::ReadEvent()
 	metVecsJESShifted.clear();                                                   
 	jesShiftedJets.clear();                                                        
 	for (int jesSyst = 0; jesSyst < newJet.GetNumberOfJESCorrections(); jesSyst++){
-	  metVecsJESShifted.push_back(missingEtVec_xy);                                
+	  missingEtVecs["met_jesShift_"+std::to_string(jesSyst)] = missingEtVecs["met"];
+	  //	  metVecsJESShifted.push_back(missingEtVec_xy);                                
 	  std::vector<Jet> tempVec;                                                    
 	  jesShiftedJets.push_back(tempVec);                                           
 	}                                                                              
@@ -827,12 +879,21 @@ Int_t EventContainer::ReadEvent()
 
       //Now for each jet shift it by all of the JES corrections and append it to the shifted jet collections if it passes selections now
       //Currently for nanoAOD the GetNumberOfJESCorrections is zero, so this will do nothing, but leaving it here for when it works again.
-      for (int jesSyst = 0; jesSyst < newJet.GetNumberOfJESCorrections(); jesSyst++){                                                   
-        if (newJet.ShiftPtWithJESCorr(jesSyst,&(metVecsJESShifted[jesSyst]))) jesShiftedJets[jesSyst].push_back(newJet);                                                                                                                                                        
+      for (int jesSyst = 0; jesSyst < newJet.GetNumberOfJESCorrections(); jesSyst++){  
+        if (newJet.ShiftPtWithJESCorr(jesSyst,&(missingEtVecs["met_jesShift_"+std::to_string(jesSyst)]))) jesShiftedJets[jesSyst].push_back(newJet);                                                                                                                                                        
       }                                                                                                                                 
       
     }  //for jet loop
-   
+    //Calculate the unclustered shifted met 
+    missingEtVec.SetPtEtaPhiM(missingEtVecs["met"].Pt(),0.,missingEtVecs["met"].Phi(),0.);
+    missingEtVec.SetPx(missingEtVec.Px()+_nanoAODTree->MET_MetUnclustEnUpDeltaX);
+    missingEtVec.SetPy(missingEtVec.Py()+_nanoAODTree->MET_MetUnclustEnUpDeltaY);
+    missingEtVecs["met_unclustUp"] = missingEtVec;
+    missingEtVec.SetPtEtaPhiM(missingEtVecs["met"].Pt(),0.,missingEtVecs["met"].Phi(),0.);
+    missingEtVec.SetPx(missingEtVec.Px()-_nanoAODTree->MET_MetUnclustEnUpDeltaX);
+    missingEtVec.SetPy(missingEtVec.Py()-_nanoAODTree->MET_MetUnclustEnUpDeltaY);
+    missingEtVecs["met_unclustDown"] = missingEtVec;
+
 }
  else { //Fill using the classic BSM trees
     //    isSimulation = _eventTree->isSimulation; // Why is this always set to true?!?
